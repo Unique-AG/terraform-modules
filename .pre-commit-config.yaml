@@ -16,7 +16,9 @@ repos:
 
         - id: terraform_docs
           args:
-            - --args=markdown ./modules/azure --recursive
+            - --args=markdown
+            - --args=./modules/azure
+            - --args=--recursive
 
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
