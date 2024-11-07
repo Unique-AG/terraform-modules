@@ -16,7 +16,7 @@ repos:
 
         - id: terraform_docs
           args:
-            - --args=--recursive --output-file ./modules/**/README.md
+            - --args=markdown ./modules/azure --recursive --output-file ./modules/**/README.md
 
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
