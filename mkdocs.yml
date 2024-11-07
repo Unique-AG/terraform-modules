@@ -3,7 +3,15 @@ site_url: https://unique-ag.github.io/terraform-modules
 site_dir: build
 theme:
   name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.action.edit
 markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+
+repo_url: https://github.com/unique-ag/terraform-modules
+repo_name: terraform-modules
+edit_uri: edit/main/docs/
