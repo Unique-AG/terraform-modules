@@ -1,17 +1,5 @@
-# Welcome to MkDocs
+# Welcome to Unique Terraform Modules
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+!!! note
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+    This repository is incubating. As part of Uniques goal to accommodate industry-standards, Unique will slowly strive to industry-standardize its delivery process. Unique is welcoming feedback and contributions to help shape the future of this repository and its release and delivery. Log an issue or get in touch with your Unique SPOC.

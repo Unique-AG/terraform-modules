@@ -3,3 +3,7 @@ site_url: https://unique-ag.github.io/terraform-modules
 site_dir: build
 theme:
   name: material
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
