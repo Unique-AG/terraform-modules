@@ -16,7 +16,7 @@ repos:
 
         - id: terraform_docs
           args:
-            - --args=--recursive --output-file ./modules/**/README.md
+            - --args=--config=.tfdocs-config.yaml
 
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

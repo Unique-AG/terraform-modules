@@ -8,7 +8,7 @@ variable "resource_groups" {
     rg1 = {
       location = "eastus"
       tags = {
-        environment = "dev"
+        environment = "devv"
       }
     }
     rg2 = {
