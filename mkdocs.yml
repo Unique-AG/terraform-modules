@@ -1,0 +1,5 @@
+site_name: Terraform Modules
+site_url: https://unique-ag.github.io/terraform-modules
+site_dir: build
+theme:
+  name: material
