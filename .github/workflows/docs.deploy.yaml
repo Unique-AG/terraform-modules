@@ -7,6 +7,7 @@ on:
     paths:
       - docs/**
       - .github/workflows/docs.deploy.yaml
+      - mkdocs.yml
 
 defaults:
   run:
