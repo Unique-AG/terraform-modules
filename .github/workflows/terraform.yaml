@@ -28,7 +28,7 @@ jobs:
 
     - name: Terraform Init
       run: |
-        terraform -chdir=$TF_DIR/${{ matrix.module }} init
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
 
     - name: Terraform Format check
       run: terraform -chdir=$TF_DIR/${{ matrix.module }}/example fmt -check
