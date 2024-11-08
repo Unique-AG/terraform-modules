@@ -1,3 +1,5 @@
+This module is a pet-project to setup the `terraform-modules` repository. Do not use it in production.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
