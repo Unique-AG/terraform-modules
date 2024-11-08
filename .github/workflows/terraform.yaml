@@ -1,5 +1,4 @@
-name: 'TF-Azure'
-
+name: 'TF'
 on:
   push:
     branches: [ "*" ]
@@ -15,7 +14,6 @@ permissions:
 env:
   TF_DIR: modules/azure
 
-
 jobs:
   terraform:
     name: 'Terraform'
@@ -30,27 +28,23 @@ jobs:
 
     - name: Terraform Init
       run: |
-        terraform -chdir=$TF_DIR init
+        terraform -chdir=$TF_DIR/${{ matrix.module }} init
 
     - name: Terraform Format check
-      run: terraform -chdir=$TF_DIR/$MODULE_NAME/example fmt -check
-      env:
-        MODULE_NAME: ${{ matrix.module }}
+      run: terraform -chdir=$TF_DIR/${{ matrix.module }}/example fmt -check
 
     - name: Terraform Plan
-      run: terraform -chdir=$TF_DIR/$MODULE_NAME/example plan -out=plan.out && terraform -chdir=$TF_DIR/$MODULE_NAME/example show -json plan.out > $TF_DIR/$MODULE_NAME/example/plan.out.json
-      env:
-        MODULE_NAME: ${{ matrix.module }}
+      run: |
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -out=plan.out
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example show -json plan.out > $TF_DIR/${{ matrix.module }}/example/plan.out.json
 
     - name: Terraform security
       uses: aquasecurity/tfsec-action@v1.0.0
-      env:
-        MODULE_NAME: ${{ matrix.module }}
+      with:
+        directory: ${{ env.TF_DIR }}/${{ matrix.module }}/example
 
     - name: Terraform compliance
       uses: terraform-compliance/github_action@main
       with:
-        plan: $TF_DIR/$MODULE_NAME/example/plan.out.json
+        plan: ${{ env.TF_DIR }}/${{ matrix.module }}/example/plan.out.json
         features: ./compliances
-      env:
-        MODULE_NAME: ${{ matrix.module }}
