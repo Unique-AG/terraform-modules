@@ -7,6 +7,13 @@ theme:
     repo: fontawesome/brands/github
   features:
     - content.action.edit
+  favicon: https://www.unique.ch/hubfs/unique_assets/favicon/glyph_caumasee.svg
+  logo:
+    icon: assets/images/unique-logo.png
+    href: https://www.unique.ch
+  font:
+    text: Roboto
+    code: Roboto Mono
 markdown_extensions:
   - admonition
   - pymdownx.details

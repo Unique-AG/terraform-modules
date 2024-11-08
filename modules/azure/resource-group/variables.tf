@@ -1,8 +1,8 @@
 variable "resource_groups" {
   type = map(object({
     location   = string
-    managed_by = optional(string)
-    tags       = map(string)
+    managed_by = optional(string, null)
+    tags       = optional(map(string), {})
   }))
   default = {
     rg1 = {
@@ -14,7 +14,7 @@ variable "resource_groups" {
     rg2 = {
       location = "westus"
       tags = {
-        environment = "prod"
+        environment = "dev"
       }
     }
   }
