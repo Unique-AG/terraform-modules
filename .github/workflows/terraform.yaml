@@ -2,7 +2,7 @@ name: 'TF-Azure'
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
     paths:
       - "modules/azure/**"
   pull_request:
