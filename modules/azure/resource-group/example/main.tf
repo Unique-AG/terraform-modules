@@ -15,7 +15,6 @@ terraform {
 provider "azurerm" {
   features {}
 }
-
 #----------------------------------------------
 
 module "rg" {
