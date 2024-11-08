@@ -11,11 +11,5 @@ variable "resource_groups" {
         environment = "dev"
       }
     }
-    rg2 = {
-      location = "westus"
-      tags = {
-        environment = "dev"
-      }
-    }
   }
 }

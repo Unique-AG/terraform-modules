@@ -28,7 +28,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_resource_groups"></a> [resource\_groups](#input\_resource\_groups) | n/a | <pre>map(object({<br/>    location   = string<br/>    managed_by = optional(string, null)<br/>    tags       = optional(map(string), {})<br/>  }))</pre> | <pre>{<br/>  "rg1": {<br/>    "location": "eastus",<br/>    "tags": {<br/>      "environment": "dev"<br/>    }<br/>  },<br/>  "rg2": {<br/>    "location": "westus",<br/>    "tags": {<br/>      "environment": "dev"<br/>    }<br/>  }<br/>}</pre> | no |
+| <a name="input_resource_groups"></a> [resource\_groups](#input\_resource\_groups) | n/a | <pre>map(object({<br/>    location   = string<br/>    managed_by = optional(string, null)<br/>    tags       = optional(map(string), {})<br/>  }))</pre> | <pre>{<br/>  "rg1": {<br/>    "location": "eastus",<br/>    "tags": {<br/>      "environment": "dev"<br/>    }<br/>  }<br/>}</pre> | no |
 
 ## Outputs
 
