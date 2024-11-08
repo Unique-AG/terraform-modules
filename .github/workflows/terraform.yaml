@@ -32,8 +32,7 @@ jobs:
     - name: Terraform Plan
       run: |
         terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
-        terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -out=plan.out -refresh=false
-        terraform -chdir=$TF_DIR/${{ matrix.module }}/example show -json plan.out > $TF_DIR/${{ matrix.module }}/example/plan.out.json
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -refresh=false -out=plan.out
 
     - name: Terraform security
       uses: aquasecurity/tfsec-action@v1.0.0
