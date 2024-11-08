@@ -1,2 +1,4 @@
 build
 .tfdocs-config.yml
+.terraform*
+mkdocs
