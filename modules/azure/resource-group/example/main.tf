@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "3.115.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.3"
+    }
   }
 
   backend "local" {
@@ -15,7 +19,9 @@ terraform {
 provider "azurerm" {
   features {}
 }
-#----------------------------------------------
+
+provider "null" {}
+
 
 module "rg" {
   source = "../"
