@@ -13,8 +13,13 @@ site_url: https://unique-ag.github.io/terraform-modules
 theme:
   features:
     - content.action.edit
+  favicon: https://www.unique.ch/hubfs/unique_assets/favicon/glyph_caumasee.svg
+  logo:
+    icon: assets/images/unique-logo.png
+    href: https://www.unique.ch
   font:
     text: Roboto
+    code: Roboto Mono
   icon:
     repo: fontawesome/brands/github
   name: material
