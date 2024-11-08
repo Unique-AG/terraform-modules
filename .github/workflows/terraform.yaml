@@ -26,16 +26,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Terraform Init
-      run: |
-        terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
-
     - name: Terraform Format check
       run: terraform -chdir=$TF_DIR/${{ matrix.module }}/example fmt -check
 
     - name: Terraform Plan
       run: |
-        terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -out=plan.out
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -out=plan.out -refresh=false
         terraform -chdir=$TF_DIR/${{ matrix.module }}/example show -json plan.out > $TF_DIR/${{ matrix.module }}/example/plan.out.json
 
     - name: Terraform security
