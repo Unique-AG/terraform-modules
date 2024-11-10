@@ -16,7 +16,7 @@ repos:
 
   - repo: local
     hooks:
-      - id: copy-file
+      - id: copy-md-files
         name: Copy and Rename README Files
         entry: |
           bash -c '
