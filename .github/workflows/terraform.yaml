@@ -29,6 +29,7 @@ jobs:
     - name: Terraform Format check
       run: |
         terraform -chdir=$TF_DIR/${{ matrix.module }}/example fmt -check
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
         terraform -chdir=$TF_DIR/${{ matrix.module }}/example validate
 
     # - name: Terraform Plan
