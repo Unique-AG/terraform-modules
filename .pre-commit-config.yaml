@@ -1,18 +1,21 @@
 repos:
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.77.1
+  - repo: local
     hooks:
-        - id: terraform_fmt
-          args:
-            - --args=-recursive
-
-        - id: terraform_tfsec
-          args:
-            - --args=--config-file=./.tfsec-config.yml --run-statistics
-
-        - id: terraform_docs
-          args:
-            - --args=--config=.tfdocs-config.yaml --output-file=README.md
+        - id: tf-docs
+          name: tf-docs
+          entry: scripts/tf-docs.sh
+          language: script
+          pass_filenames: false
+        - id: tf-fmt
+          name: tf-fmt
+          entry: scripts/tf-fmt.sh
+          language: script
+          pass_filenames: false
+        - id: tf-sec
+          name: tf-sec
+          entry: scripts/tf-sec.sh
+          language: script
+          pass_filenames: false
 
   # - repo: local
   #   hooks:
@@ -29,7 +32,7 @@ repos:
   #       pass_filenames: false
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer

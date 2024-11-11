@@ -1,0 +1,54 @@
+name: '[terraform] Lint & Secure'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.tf"
+  pull_request:
+    paths:
+      - "**/*.tf"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module:
+          - "modules/azure/resource-group"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Format
+      run: |
+        terraform -chdir=${{ matrix.module }}/example fmt -check
+
+    - name: Docs
+      run: |
+        ./scripts/tf-docs.sh
+        if [[ $(git diff --stat) != '' ]]; then
+          echo -e '\033[0;31mDocumentation outdated, pre-commit hook wasn't installed or skipped!\033[0m ❌'
+          git diff --color
+          exit 1
+        else
+          echo -e '\033[0;32mDocumentation up to date\033[0m ✔'
+        fi
+
+    - name: Examples
+      run: |
+        terraform -chdir=${{ matrix.module }}/example init
+        terraform -chdir=${{ matrix.module }}/example validate
+
+    - name: Security Check
+      uses: aquasecurity/tfsec-action@v1.0.0
+      with:
+        working_directory: ${{ matrix.module }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        additional_args: "--config-file ./.github/configs/tfsec.yaml"

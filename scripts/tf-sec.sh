@@ -1,0 +1,8 @@
+#!/bin/bash
+# SPDX-SnippetBegin
+# SPDX-License-Identifier: Proprietary
+# SPDX-SnippetCopyrightText: 2024 © Unique AG
+# SPDX-SnippetEnd
+set -eux
+echo "Running tf-sec"
+docker run --rm -v "$(pwd):/workdir" aquasec/tfsec /workdir

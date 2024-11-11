@@ -1,4 +1,5 @@
 variable "resource_groups" {
+  description = "HELLO"
   type = map(object({
     location   = string
     managed_by = optional(string, null)
