@@ -4,7 +4,7 @@ repos:
     hooks:
         - id: terraform_fmt
           args:
-            - --args=-check -recursive
+            - --args=-recursive
 
         - id: terraform_tfsec
           args:
@@ -14,21 +14,19 @@ repos:
           args:
             - --args=--config=.tfdocs-config.yaml --output-file=README.md
 
-  - repo: local
-    hooks:
-      - id: copy-md-files
-        name: Copy and Rename README Files
-        entry: |
-          bash -c '
-            for readme in modules/azure/*/README.md; do
-              folder_name=$(basename $(dirname "$readme"))
-              cp "$readme" "docs/${folder_name}.md"
-            done
-          '
-        language: system
-        pass_filenames: false
-
-
+  # - repo: local
+  #   hooks:
+  #     - id: copy-md-files
+  #       name: Copy and Rename README Files
+  #       entry: |
+  #         bash -c '
+  #           for readme in modules/azure/*/README.md; do
+  #             folder_name=$(basename $(dirname "$readme"))
+  #             cp "$readme" "docs/${folder_name}.md"
+  #           done
+  #         '
+  #       language: system
+  #       pass_filenames: false
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
