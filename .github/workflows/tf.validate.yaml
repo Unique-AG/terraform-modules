@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         module:
-          - "modules/azure/resource-group"
+          - "modules/azure-resource-group"
 
     steps:
     - uses: actions/checkout@v4
