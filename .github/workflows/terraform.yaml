@@ -1,12 +1,12 @@
 name: 'TF'
 on:
   push:
-  #   branches: [ "*" ]
-  #   paths:
-  #     - "modules/azure/**"
-  # pull_request:
-  #   paths:
-  #     - "modules/azure/**"
+    branches: [ "main" ]
+    paths:
+      - "modules/azure/**"
+  pull_request:
+    paths:
+      - "modules/azure/**"
 
 permissions:
   contents: read
