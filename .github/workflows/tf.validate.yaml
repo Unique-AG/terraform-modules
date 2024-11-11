@@ -26,9 +26,10 @@ jobs:
 
     - name: Format & Docs
       run: |
-        ./scripts/tf-docs.sh && ./scripts/tf-fmt.sh
+        ./scripts/tf-docs.sh
+        ./scripts/tf-fmt.sh
         if [[ $(git diff --stat) != '' ]]; then
-          echo -e '\033[0;31mDocumentation outdated or terraform not formatted, pre-commit hook wasn't installed or skipped!\033[0m ❌'
+          echo -e '\033[0;31mDocumentation outdated or terraform not formatted, pre-commit hook was not installed or skipped!\033[0m ❌'
           git diff --color
           exit 1
         else
