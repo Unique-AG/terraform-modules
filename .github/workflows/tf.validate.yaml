@@ -1,13 +1,11 @@
 name: '[terraform] Lint & Secure'
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "**/*.tf"
   pull_request:
     paths:
-      - "**/*.tf"
+      - modules/**/*.tf"
+      - .github/workflows/tf.validate.yaml
+      - .github/configs/**
+      - scripts/**
 
 permissions:
   contents: read

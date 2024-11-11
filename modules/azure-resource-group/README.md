@@ -1,5 +1,7 @@
 This module is a pet-project to setup the `terraform-modules` repository. Do not use it in production.
 
+Refer to the [example](./example) to see a simple use case.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
