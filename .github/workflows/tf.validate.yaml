@@ -24,18 +24,16 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Format
-      run: ./scripts/tf-fmt.sh
-
-    - name: Docs
+    - name: Format & Docs
       run: |
         ./scripts/tf-docs.sh
+        ./scripts/tf-fmt.sh
         if [[ $(git diff --stat) != '' ]]; then
-          echo -e '\033[0;31mDocumentation outdated, pre-commit hook wasn't installed or skipped!\033[0m ❌'
+          echo -e '\033[0;31mDocumentation outdated or terraform not formatted, pre-commit hook wasn't installed or skipped!\033[0m ❌'
           git diff --color
           exit 1
         else
-          echo -e '\033[0;32mDocumentation up to date\033[0m ✔'
+          echo -e '\033[0;32mDocumentation and Format up to date\033[0m ✔'
         fi
 
     - name: Examples
@@ -43,5 +41,5 @@ jobs:
         terraform -chdir=${{ matrix.module }}/example init
         terraform -chdir=${{ matrix.module }}/example validate
 
-    - name: Format
+    - name: Sec
       run: ./scripts/tf-sec.sh

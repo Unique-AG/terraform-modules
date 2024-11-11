@@ -1,11 +1,9 @@
 #!/bin/bash
 # SPDX-SnippetBegin
-# SPDX-License-Identifier: Apache License 2.0
-# SPDX-SnippetCopyrightText: 2024 © Argo Project, argoproj/argo-helm
+# SPDX-License-Identifier: Proprietary
 # SPDX-SnippetCopyrightText: 2024 © Unique AG
 # SPDX-SnippetEnd
 ## Reference: https://github.com/norwoodj/helm-docs
-set -eux
 TF_DOCS_VERSION="0.19.0"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "Repo root: $REPO_ROOT"
