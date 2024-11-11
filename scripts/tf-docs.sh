@@ -11,5 +11,5 @@ echo "Repo root: $REPO_ROOT"
 echo "Running tf-docs"
 docker run \
     --rm --volume "$(pwd):/workdir" \
-    -u $(id -u) quay.io/terraform-docs/terraform-docs:$TF_DOCS_VERSION /workdir \
+    -u $(id -u) "quay.io/terraform-docs/terraform-docs:$TF_DOCS_VERSION" /workdir \
     --config /workdir/.github/configs/tfdocs.yaml
