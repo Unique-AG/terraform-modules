@@ -1,0 +1,3 @@
+---
+exclude:
+  - CUS002 # test exclusion from an AWS config, will be removed
