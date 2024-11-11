@@ -1,0 +1,47 @@
+name: 'TF'
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "modules/azure/**"
+  pull_request:
+    paths:
+      - "modules/azure/**"
+
+permissions:
+  contents: read
+
+env:
+  TF_DIR: modules/azure
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module: [resource-group]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Terraform Format check
+      run: |
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example fmt -check
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
+        terraform -chdir=$TF_DIR/${{ matrix.module }}/example validate
+
+    # - name: Terraform Plan
+    #   run: |
+    #     terraform -chdir=$TF_DIR/${{ matrix.module }}/example init
+    #     terraform -chdir=$TF_DIR/${{ matrix.module }}/example plan -refresh=false -out=plan.out
+
+    - name: Terraform security
+      uses: aquasecurity/tfsec-action@v1.0.0
+
+    # - name: Terraform compliance
+    #   uses: terraform-compliance/github_action@main
+    #   with:
+    #     plan: ${{ env.TF_DIR }}/${{ matrix.module }}/example/plan.out.json
+    #     features: ./compliances
