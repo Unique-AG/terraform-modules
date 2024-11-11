@@ -1,5 +1,7 @@
 This module is a pet-project to setup the `terraform-modules` repository. Do not use it in production.
 
+Refer to the [example](./example) to see a simple use case.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -28,7 +30,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_resource_groups"></a> [resource\_groups](#input\_resource\_groups) | n/a | <pre>map(object({<br/>    location   = string<br/>    managed_by = optional(string, null)<br/>    tags       = optional(map(string), {})<br/>  }))</pre> | <pre>{<br/>  "rg1": {<br/>    "location": "eastus",<br/>    "tags": {<br/>      "environment": "dev"<br/>    }<br/>  }<br/>}</pre> | no |
+| <a name="input_resource_groups"></a> [resource\_groups](#input\_resource\_groups) | Resource groups to create | <pre>map(object({<br/>    location   = string<br/>    managed_by = optional(string, null)<br/>    tags       = optional(map(string), {})<br/>  }))</pre> | <pre>{<br/>  "rg1": {<br/>    "location": "eastus",<br/>    "tags": {<br/>      "environment": "dev"<br/>    }<br/>  }<br/>}</pre> | no |
 
 ## Outputs
 
