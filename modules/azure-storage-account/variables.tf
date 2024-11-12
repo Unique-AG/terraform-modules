@@ -109,3 +109,11 @@ variable "storage_management_policy_default" {
   }
   nullable = false
 }
+
+variable "containers" {
+  description = "Map of containers to create in the storage account where the key is the name."
+  type = map(object({
+    access_type = optional(string, "private")
+  }))
+  default = {}
+}
