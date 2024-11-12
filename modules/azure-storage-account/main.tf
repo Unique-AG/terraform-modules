@@ -51,6 +51,8 @@ resource "azurerm_storage_account_customer_managed_key" "cmk" {
   count              = local.uses_cmk ? 1 : 0
   storage_account_id = azurerm_storage_account.storage_account.id
   # Accordig to our design principles we expect that not always the same principals to run 'perimeter' and 'workloads' terraform and thus must fall back to the full URI
+  # Docs: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key#key_vault_id-3
   key_vault_uri = var.customer_managed_key.key_vault_uri
   key_name      = var.customer_managed_key.key_name
+  key_version   = var.customer_managed_key.key_version
 }
