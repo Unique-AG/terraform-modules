@@ -33,27 +33,27 @@ resource "azurerm_storage_account" "storage_account" {
         max_age_in_seconds = cors_rule.value.max_age_in_seconds
       }
     }
-  }
 
-  dynamic "container_delete_retention_policy" {
-    for_each = var.storage_management_policy_default.enabled ? [1] : []
-    content {
-      days = var.storage_management_policy_default.container_deleted_retain_days
+    dynamic "container_delete_retention_policy" {
+      for_each = var.storage_management_policy_default.enabled ? [1] : []
+      content {
+        days = var.storage_management_policy_default.container_deleted_retain_days
+      }
     }
-  }
 
-  dynamic "delete_retention_policy" {
-    for_each = var.storage_management_policy_default.enabled ? [1] : []
-    content {
-      days                     = var.storage_management_policy_default.deleted_retain_days
-      permanent_delete_enabled = false
+    dynamic "delete_retention_policy" {
+      for_each = var.storage_management_policy_default.enabled ? [1] : []
+      content {
+        days                     = var.storage_management_policy_default.deleted_retain_days
+        permanent_delete_enabled = false
+      }
     }
-  }
 
-  dynamic "restore_policy" {
-    for_each = var.storage_management_policy_default.enabled ? [1] : []
-    content {
-      days = var.storage_management_policy_default.restorable_days
+    dynamic "restore_policy" {
+      for_each = var.storage_management_policy_default.enabled ? [1] : []
+      content {
+        days = var.storage_management_policy_default.restorable_days
+      }
     }
   }
 
