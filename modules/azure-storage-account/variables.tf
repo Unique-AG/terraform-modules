@@ -73,3 +73,14 @@ variable "cors_rules" {
   }))
   default = []
 }
+
+variable "customer_managed_key" {
+  description = "Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption."
+  type = object({
+    key_vault_uri = string
+    key_name      = string
+    key_version   = optional(string, null)
+  })
+  default  = null
+  nullable = true
+}
