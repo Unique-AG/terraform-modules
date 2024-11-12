@@ -65,4 +65,21 @@ module "sa" {
 
   depends_on = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
 
+  containers = {
+    service-one = {
+      access_type = "private"
+    }
+  }
+
+  storage_management_policy_default = {
+    enabled                                  = true
+    deleted_retain_days                      = 7
+    restorable_days                          = 6
+    container_deleted_retain_days            = 7
+    blob_to_cool_after_last_modified_days    = 1
+    blob_to_cold_after_last_modified_days    = 2
+    blob_to_archive_after_last_modified_days = 3
+    blob_to_deleted_after_last_modified_days = 1825 # 5 years
+  }
+
 }
