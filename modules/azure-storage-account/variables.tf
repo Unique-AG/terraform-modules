@@ -45,7 +45,7 @@ variable "account_replication_type" {
 }
 
 variable "access_tier" {
-  description = "Type of replication to use for this storage account. Learn more about storage account access tiers in the Azure Docs."
+  description = "Type of replication to use for this storage account. Learn more about storage account access tiers in the Azure Docs. Defaults to Cool as the difference is negligible for most use cases but is more cost-efficient."
   default     = "Cool"
 }
 
@@ -83,4 +83,29 @@ variable "customer_managed_key" {
   })
   default  = null
   nullable = true
+}
+
+variable "storage_management_policy_default" {
+  description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
+  type = object({
+    enabled                                  = optional(bool, true)
+    deleted_retain_days                      = optional(number, 7)
+    restorable_days                          = optional(number, 6)
+    container_deleted_retain_days            = optional(number, 7)
+    blob_to_cool_after_last_modified_days    = optional(number, 10)
+    blob_to_cold_after_last_modified_days    = optional(number, 50)
+    blob_to_archive_after_last_modified_days = optional(number, 100)
+    blob_to_deleted_after_last_modified_days = optional(number, 730)
+  })
+  default = {
+    enabled                                  = true
+    deleted_retain_days                      = 7
+    restorable_days                          = 6
+    container_deleted_retain_days            = 7
+    blob_to_cool_after_last_modified_days    = 10
+    blob_to_cold_after_last_modified_days    = 50
+    blob_to_archive_after_last_modified_days = 100
+    blob_to_deleted_after_last_modified_days = 730
+  }
+  nullable = false
 }

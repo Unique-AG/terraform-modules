@@ -6,3 +6,8 @@ output "storage_account_connection_strings" {
     secondary = azurerm_storage_account.storage_account.secondary_connection_string
   }
 }
+
+output "storage_account_id" {
+  description = "The ID of the storage account."
+  value       = azurerm_storage_account.storage_account.id
+}
