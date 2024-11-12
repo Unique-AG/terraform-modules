@@ -41,9 +41,9 @@ resource "azurerm_storage_account" "storage_account" {
   }
 
   lifecycle {
-    ignore_changes = local.uses_cmk ? [
+    ignore_changes = [
       customer_managed_key
-    ] : []
+    ]
   }
 }
 
