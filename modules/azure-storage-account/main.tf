@@ -35,6 +35,28 @@ resource "azurerm_storage_account" "storage_account" {
     }
   }
 
+  dynamic "container_delete_retention_policy" {
+    for_each = var.storage_management_policy_default.enabled ? [1] : []
+    content {
+      days = var.storage_management_policy_default.container_deleted_retain_days
+    }
+  }
+
+  dynamic "delete_retention_policy" {
+    for_each = var.storage_management_policy_default.enabled ? [1] : []
+    content {
+      days                     = var.storage_management_policy_default.deleted_retain_days
+      permanent_delete_enabled = false
+    }
+  }
+
+  dynamic "restore_policy" {
+    for_each = var.storage_management_policy_default.enabled ? [1] : []
+    content {
+      days = var.storage_management_policy_default.restorable_days
+    }
+  }
+
   identity {
     type         = "SystemAssigned, UserAssigned"
     identity_ids = var.identity_ids
@@ -42,7 +64,7 @@ resource "azurerm_storage_account" "storage_account" {
 
   lifecycle {
     ignore_changes = [
-      customer_managed_key
+      customer_managed_key # acc. to docs 🤷‍♂️
     ]
   }
 }
@@ -55,4 +77,25 @@ resource "azurerm_storage_account_customer_managed_key" "cmk" {
   key_vault_uri = var.customer_managed_key.key_vault_uri
   key_name      = var.customer_managed_key.key_name
   key_version   = var.customer_managed_key.key_version
+}
+
+resource "azurerm_storage_management_policy" "default" {
+  count              = var.storage_management_policy_default.enabled == true ? 1 : 0
+  storage_account_id = azurerm_storage_account.storage_account.id
+
+  rule {
+    name    = "default"
+    enabled = true
+    filters {
+      blob_types = ["blockBlob", "appendBlob"]
+    }
+    actions {
+      base_blob {
+        tier_to_cool_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cool_after_last_modified_days
+        tier_to_cold_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cold_after_last_modified_days
+        tier_to_archive_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_archive_after_last_modified_days
+        delete_after_days_since_modification_greater_than          = var.storage_management_policy_default.blob_to_deleted_after_last_modified_days
+      }
+    }
+  }
 }
