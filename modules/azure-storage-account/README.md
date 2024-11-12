@@ -4,8 +4,10 @@
 ```mermaid
 ---
 title: azure-storage-account
+config:
+    layout: elk
 ---
-graph LR
+graph TD
     subgraph perimeter
         K[Key] -->|provisioned in| KV[Key Vault]
         RA[Role Assignment] <-->|binds| UAMI[User-Assigned Managed Identity]
@@ -20,8 +22,8 @@ graph LR
             SA -->|uses| CMK
         end
     end
-    SANR -.->|_optional_| module
-    perimeter --->|key_id<br>identity_id| module
+    module -.->|"{storage_account_id}"| SANR
+    perimeter -->|"{key_vault_uri<br/>key_name,<br/>identity_id}"| module
     CMK -->|accesses using User-Assigned Managed Identity| K
 ```
 
@@ -91,8 +93,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_storage_account_connection_strings"></a> [storage\_account\_connection\_strings](#output\_storage\_account\_connection\_strings) | Connection strings for the storage account, provided for backward compatibility reasons. It is recommended to use Workload or Managed Identity authentication wherever possible. |
-| <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | The ID of the storage account. |
+| <a name="output_storage_account_connection_strings"></a> [storage\_account\_connection\_strings](#output\_storage\_account\_connection\_strings) | Connection strings for the storage account, provided for backward compatibility reasons. It is recommended to use Workload or Managed Identity authentication wherever possible |
+| <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | The ID of the storage account |
 <!-- END_TF_DOCS -->
 
 ## Limitations
