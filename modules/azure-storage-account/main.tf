@@ -1,18 +1,26 @@
 resource "azurerm_storage_account" "storage_account" {
-  name                = var.storage_account_name
+  name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  account_tier                    = "Standard"
-  account_replication_type        = "LRS"
-  allow_nested_items_to_be_public = false
-  min_tls_version                 = var.min_tls_version
-  https_traffic_only_enabled      = true
-  tags                            = var.tags
+  account_kind             = var.account_kind
+  account_tier             = var.account_tier
+  account_replication_type = var.account_replication_type
+  tags                     = var.tags
 
+  # secure by default
+  allow_nested_items_to_be_public = false
+  https_traffic_only_enabled      = true
+  min_tls_version                 = var.min_tls_version
+
+  # enable mounting account as disk
+  nfsv3_enabled  = var.is_nfs_mountable
+  is_hns_enabled = var.is_nfs_mountable
+
+  # enable access from browsers
   blob_properties {
     dynamic "cors_rule" {
-      for_each = var.storage_account_cors_rules
+      for_each = var.cors_rules
       content {
         allowed_origins    = cors_rule.value.allowed_origins
         allowed_methods    = cors_rule.value.allowed_methods
@@ -24,7 +32,8 @@ resource "azurerm_storage_account" "storage_account" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type         = "SystemAssigned, UserAssigned"
+    identity_ids = var.identity_ids
   }
 
   lifecycle {
