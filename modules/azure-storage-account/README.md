@@ -29,6 +29,8 @@ graph TD
 
 You can learn in the [Design principles](../../DESIGN.md) about the `perimeter` and `workloads` as well as other design principles.
 
+## [Examples](./examples)
+
 ## Backups
 > [!IMPORTANT]
 > A module holding a `azurerm_data_protection_backup_vault` will be provided in an upcoming release.
