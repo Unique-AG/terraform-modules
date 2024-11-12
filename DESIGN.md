@@ -26,3 +26,17 @@ The segregation of these layers is key to the modules designs and the way they i
 
 > [!IMPORTANT]
 > For most consumers, this decision is made based on the organization's security and compliance requirements and often by the organization's security and compliance teams and not the direct consumer themselves. The consumer should be aware of these requirements and should consult with the organization's security and compliance teams before implementing the modules. It can also occur, that central teams provide the implementation of these layers or own modules as a service to the consumers.
+
+## Explicitness
+
+Compared to earlier modules of us, we strive to be more explicit in the modules. This means that we try to make the modules more verbose and more explicit in what they do and how they do it. This is to make it easier for the consumer to understand what the module does and how it does it. This is also to make it easier for the consumer to understand the impact of the module on the environment.
+
+A concrete example is that you must specify `name`s yourself and we no longer compute random names for you. There can be documented exceptions to this rule, but in general, you must explicitly define properties that were earlier computed for you using `random` or similar approaches.
+
+## Low coupling, high cohesion
+
+Compared to earlier modules of Unique, we strive to have low coupling and high cohesion in the modules. This means that we try to make the modules as independent as possible from each other and that we try to make the modules as self-contained as possible.
+
+This also applies to mixing `provider`s. We try to avoid mixing providers in the modules. This means that if you use an Azure module, you should not have to use a GitHub provider in the same module. This is to make it easier for the consumer to understand the impact of the module on the environment and to make it easier for the consumer to understand the dependencies of the module.
+
+This naturally offloads more work to the consumer, but it also makes the modules more predictable, easier to understand, more maintainable, and more reusable (especially in our clients naturally/organically different landscapes).

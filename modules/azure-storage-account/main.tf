@@ -1,3 +1,7 @@
+locals {
+  uses_cmk = var.customer_managed_key != null
+}
+
 resource "azurerm_storage_account" "storage_account" {
   name                = var.name
   location            = var.location
@@ -37,8 +41,16 @@ resource "azurerm_storage_account" "storage_account" {
   }
 
   lifecycle {
-    ignore_changes = [
+    ignore_changes = local.uses_cmk ? [
       customer_managed_key
-    ]
+    ] : []
   }
+}
+
+resource "azurerm_storage_account_customer_managed_key" "cmk" {
+  count              = local.uses_cmk ? 1 : 0
+  storage_account_id = azurerm_storage_account.storage_account.id
+  # Accordig to our design principles we expect that not always the same principals to run 'perimeter' and 'workloads' terraform and thus must fall back to the full URI
+  key_vault_uri = var.customer_managed_key.key_vault_uri
+  key_name      = var.customer_managed_key.key_name
 }
