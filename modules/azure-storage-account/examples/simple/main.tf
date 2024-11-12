@@ -4,10 +4,10 @@ terraform {
   }
 }
 module "sa" {
-  source              = "../"
+  source              = "../.."
   name                = "my-storage-account"
   resource_group_name = "my-resource-group"
-  location            = "eastus"
+  location            = "switzerlandnorth"
   tags = {
     environment = "example"
   }
