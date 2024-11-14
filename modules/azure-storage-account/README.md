@@ -13,6 +13,7 @@ graph TD
         RA[Role Assignment] <-->|binds| UAMI[User-Assigned Managed Identity]
         RA -->|"Key: Get,Unwrap,Wrap"| KV
         SANR[Storage Account Network Rules]
+        SMP["Storage Management Policy (advanced)"]
     end
     subgraph workloads
         subgraph module["azure-storage-account"]
@@ -23,11 +24,18 @@ graph TD
         end
     end
     module -.->|"{storage_account_id}"| SANR
+    module -.->|"{storage_account_id}"| SMP
     perimeter -->|"{key_vault_uri<br/>key_name,<br/>identity_id}"| module
     CMK -->|accesses using User-Assigned Managed Identity| K
 ```
 
 You can learn in the [Design principles](../../DESIGN.md) about the `perimeter` and `workloads` as well as other design principles.
+
+## Pre-requisites
+- To deploy this module, you have at least the following permissions:
+    + Reader of the subscription
+    + Access to the [Key Vault where the Customer-Managed Key is stored](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key#key_vault_id-1) in case one is used
+    + Contributor of the resource group
 
 ## [Examples](./examples)
 
@@ -79,16 +87,18 @@ No modules.
 | <a name="input_account_kind"></a> [account\_kind](#input\_account\_kind) | Kind to use for the storage account. Learn more about storage account kinds in the Azure Docs. | `string` | `"StorageV2"` | no |
 | <a name="input_account_replication_type"></a> [account\_replication\_type](#input\_account\_replication\_type) | Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs. | `string` | `"ZRS"` | no |
 | <a name="input_account_tier"></a> [account\_tier](#input\_account\_tier) | Tier to use for the storage account. Learn more about storage account tiers in the Azure Docs. | `string` | `"Standard"` | no |
+| <a name="input_container_deleted_retain_days"></a> [container\_deleted\_retain\_days](#input\_container\_deleted\_retain\_days) | Number of days to retain deleted containers. | `number` | `7` | no |
 | <a name="input_containers"></a> [containers](#input\_containers) | Map of containers to create in the storage account where the key is the name. | <pre>map(object({<br/>    access_type = optional(string, "private")<br/>  }))</pre> | `{}` | no |
 | <a name="input_cors_rules"></a> [cors\_rules](#input\_cors\_rules) | CORS rules for the storage account | <pre>list(object({<br/>    allowed_origins    = list(string)<br/>    allowed_methods    = list(string)<br/>    allowed_headers    = list(string)<br/>    exposed_headers    = list(string)<br/>    max_age_in_seconds = number<br/>  }))</pre> | `[]` | no |
-| <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. | <pre>object({<br/>    key_vault_uri = string<br/>    key_name      = string<br/>    key_version   = optional(string, null)<br/>  })</pre> | `null` | no |
+| <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the executor of the module. | <pre>object({<br/>    key_vault_id = string<br/>    key_name     = string<br/>    key_version  = optional(string, null)<br/>  })</pre> | `null` | no |
+| <a name="input_deleted_retain_days"></a> [deleted\_retain\_days](#input\_deleted\_retain\_days) | Number of days to retain deleted blobs. | `number` | `7` | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
-| <a name="input_is_nfs_mountable"></a> [is\_nfs\_mountable](#input\_is\_nfs\_mountable) | Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes. | `bool` | `false` | no |
+| <a name="input_is_nfs_mountable"></a> [is\_nfs\_mountable](#input\_is\_nfs\_mountable) | Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes. In order to enable this, the account\_tier and the account\_kind must be set to a limited subset, refer to the Azure Docs(https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#is_hns_enabled-1) for more information. | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Location of the resources. | `string` | n/a | yes |
 | <a name="input_min_tls_version"></a> [min\_tls\_version](#input\_min\_tls\_version) | Minimum TLS version supported by the storage account. | `string` | `"TLS1_2"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the storage account. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group to put the resources in. | `string` | n/a | yes |
-| <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. | <pre>object({<br/>    enabled                                  = optional(bool, true)<br/>    deleted_retain_days                      = optional(number, 7)<br/>    restorable_days                          = optional(number, 6)<br/>    container_deleted_retain_days            = optional(number, 7)<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, 100)<br/>    blob_to_deleted_after_last_modified_days = optional(number, 730)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": 100,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": 730,<br/>  "container_deleted_retain_days": 7,<br/>  "deleted_retain_days": 7,<br/>  "enabled": true,<br/>  "restorable_days": 6<br/>}</pre> | no |
+| <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. | <pre>object({<br/>    enabled                                  = optional(bool, true)<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, 100)<br/>    blob_to_deleted_after_last_modified_days = optional(number, 730)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": 100,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": 730,<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resources. | `map(string)` | `{}` | no |
 
 ## Outputs

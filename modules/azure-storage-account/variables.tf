@@ -50,7 +50,7 @@ variable "access_tier" {
 }
 
 variable "is_nfs_mountable" {
-  description = "Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes."
+  description = "Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes. In order to enable this, the account_tier and the account_kind must be set to a limited subset, refer to the Azure Docs(https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#is_hns_enabled-1) for more information."
   type        = bool
   default     = false
 }
@@ -75,23 +75,32 @@ variable "cors_rules" {
 }
 
 variable "customer_managed_key" {
-  description = "Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation."
+  description = "Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key_vault_id must be accessible to the executor of the module."
   type = object({
-    key_vault_uri = string
-    key_name      = string
-    key_version   = optional(string, null)
+    key_vault_id = string
+    key_name     = string
+    key_version  = optional(string, null)
   })
   default  = null
   nullable = true
+}
+
+variable "deleted_retain_days" {
+  description = "Number of days to retain deleted blobs."
+  type        = number
+  default     = 7
+}
+
+variable "container_deleted_retain_days" {
+  description = "Number of days to retain deleted containers."
+  type        = number
+  default     = 7
 }
 
 variable "storage_management_policy_default" {
   description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
   type = object({
     enabled                                  = optional(bool, true)
-    deleted_retain_days                      = optional(number, 7)
-    restorable_days                          = optional(number, 6)
-    container_deleted_retain_days            = optional(number, 7)
     blob_to_cool_after_last_modified_days    = optional(number, 10)
     blob_to_cold_after_last_modified_days    = optional(number, 50)
     blob_to_archive_after_last_modified_days = optional(number, 100)
@@ -99,9 +108,6 @@ variable "storage_management_policy_default" {
   })
   default = {
     enabled                                  = true
-    deleted_retain_days                      = 7
-    restorable_days                          = 6
-    container_deleted_retain_days            = 7
     blob_to_cool_after_last_modified_days    = 10
     blob_to_cold_after_last_modified_days    = 50
     blob_to_archive_after_last_modified_days = 100
