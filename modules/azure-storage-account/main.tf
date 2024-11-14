@@ -35,30 +35,23 @@ resource "azurerm_storage_account" "storage_account" {
     }
 
     dynamic "container_delete_retention_policy" {
-      for_each = var.storage_management_policy_default.enabled ? [1] : []
+      for_each = var.container_deleted_retain_days > 0 ? [1] : []
       content {
-        days = var.storage_management_policy_default.container_deleted_retain_days
+        days = var.container_deleted_retain_days
       }
     }
 
     dynamic "delete_retention_policy" {
-      for_each = var.storage_management_policy_default.enabled ? [1] : []
+      for_each = var.deleted_retain_days > 0 ? [1] : []
       content {
-        days                     = var.storage_management_policy_default.deleted_retain_days
+        days                     = var.deleted_retain_days
         permanent_delete_enabled = false
-      }
-    }
-
-    dynamic "restore_policy" {
-      for_each = var.storage_management_policy_default.enabled ? [1] : []
-      content {
-        days = var.storage_management_policy_default.restorable_days
       }
     }
   }
 
   identity {
-    type         = "SystemAssigned, UserAssigned"
+    type         = length(var.identity_ids) > 0 ? "SystemAssigned, UserAssigned" : "SystemAssigned"
     identity_ids = var.identity_ids
   }
 
@@ -72,11 +65,9 @@ resource "azurerm_storage_account" "storage_account" {
 resource "azurerm_storage_account_customer_managed_key" "cmk" {
   count              = local.uses_cmk ? 1 : 0
   storage_account_id = azurerm_storage_account.storage_account.id
-  # Accordig to our design principles we expect that not always the same principals to run 'perimeter' and 'workloads' terraform and thus must fall back to the full URI
-  # Docs: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key#key_vault_id-3
-  key_vault_uri = var.customer_managed_key.key_vault_uri
-  key_name      = var.customer_managed_key.key_name
-  key_version   = var.customer_managed_key.key_version
+  key_vault_id       = var.customer_managed_key.key_vault_id
+  key_name           = var.customer_managed_key.key_name
+  key_version        = var.customer_managed_key.key_version
 }
 
 resource "azurerm_storage_management_policy" "default" {

@@ -59,8 +59,8 @@ module "sa" {
   ]
 
   customer_managed_key = {
-    key_vault_uri = azurerm_key_vault.sensitive.vault_uri
-    key_name      = azurerm_key_vault_key.auditlogs_key.name
+    key_vault_id = azurerm_key_vault.sensitive.id
+    key_name     = azurerm_key_vault_key.auditlogs_key.name
   }
 
   depends_on = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
