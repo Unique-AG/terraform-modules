@@ -82,4 +82,12 @@ module "sa" {
     blob_to_deleted_after_last_modified_days = 1825 # 5 years
   }
 
+  network_rules = {
+    ip_rules                   = ["12.34.56.78/21"]
+    virtual_network_subnet_ids = ["/subnet/id"]
+    private_link_accesses = [{
+      endpoint_resource_id = "/sub/uuid/scanner"
+      endpoint_tenant_id   = "58455a0c-c831-4f5a-b460-07156e44f4c2"
+    }]
+  }
 }
