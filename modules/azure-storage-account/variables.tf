@@ -125,7 +125,7 @@ variable "containers" {
 }
 
 variable "network_rules" {
-  description = "Generally network rules should be managed outside this module, but when using `is_nfs_mountable` then a `network_rules` variable is required as Azure does not allow the creation of such accounts without `Deny`ing traffic from creation.."
+  description = "Generally network rules should be managed outside this module, but when using `is_nfs_mountable` then a `network_rules` variable is required as Azure does not allow the creation of such accounts without `Deny`ing traffic from creation."
   type = object({
     virtual_network_subnet_ids = list(string)
     ip_rules                   = list(string)
