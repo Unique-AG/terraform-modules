@@ -56,6 +56,23 @@ resource "azurerm_storage_account" "storage_account" {
     identity_ids = var.identity_ids
   }
 
+  dynamic "network_rules" {
+    for_each = var.network_rules != null ? [1] : []
+    content {
+      default_action             = "Deny"
+      virtual_network_subnet_ids = var.network_rules.virtual_network_subnet_ids
+      ip_rules                   = var.network_rules.ip_rules
+
+      dynamic "private_link_access" {
+        for_each = { for pla in var.network_rules.private_link_accesses : pla.endpoint_resource_id => pla }
+        content {
+          endpoint_resource_id = var.network_rules.private_link_access.endpoint_resource_id
+          endpoint_tenant_id   = var.network_rules.private_link_access.endpoint_tenant_id
+        }
+      }
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       customer_managed_key # acc. to docs 🤷‍♂️
