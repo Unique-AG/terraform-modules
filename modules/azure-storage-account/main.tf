@@ -10,6 +10,7 @@ resource "azurerm_storage_account" "storage_account" {
   account_kind             = var.account_kind
   account_tier             = var.account_tier
   account_replication_type = var.account_replication_type
+  access_tier              = var.access_tier
   tags                     = var.tags
 
   # secure by default
@@ -60,6 +61,13 @@ resource "azurerm_storage_account" "storage_account" {
       customer_managed_key # acc. to docs 🤷‍♂️
     ]
   }
+}
+
+resource "azurerm_storage_container" "container" {
+  for_each              = var.containers
+  name                  = each.key
+  storage_account_id    = azurerm_storage_account.storage_account.id
+  container_access_type = each.value.access_type
 }
 
 resource "azurerm_storage_account_customer_managed_key" "cmk" {
