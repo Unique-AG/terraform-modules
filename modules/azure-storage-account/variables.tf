@@ -29,19 +29,19 @@ variable "min_tls_version" {
   default     = "TLS1_2"
 }
 
-variable "account_kind" {
-  description = "Kind to use for the storage account. Learn more about storage account kinds in the Azure Docs."
-  default     = "BlobStorage"
-}
-
 variable "account_tier" {
   description = "Tier to use for the storage account. Learn more about storage account tiers in the Azure Docs."
   default     = "Standard"
 }
 
+variable "account_kind" {
+  description = "Kind to use for the storage account. Learn more about storage account kinds in the Azure Docs."
+  default     = "StorageV2"
+}
+
 variable "account_replication_type" {
   description = "Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs."
-  default     = "ZRS"
+  default     = "LRS"
 }
 
 variable "access_tier" {
