@@ -31,7 +31,7 @@ variable "min_tls_version" {
 
 variable "account_kind" {
   description = "Kind to use for the storage account. Learn more about storage account kinds in the Azure Docs."
-  default     = "StorageV2"
+  default     = "BlobStorage"
 }
 
 variable "account_tier" {
