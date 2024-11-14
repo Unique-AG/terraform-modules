@@ -89,11 +89,12 @@ resource "azurerm_storage_container" "container" {
 }
 
 resource "azurerm_storage_account_customer_managed_key" "cmk" {
-  count              = local.uses_cmk ? 1 : 0
-  storage_account_id = azurerm_storage_account.storage_account.id
-  key_vault_id       = var.customer_managed_key.key_vault_id
-  key_name           = var.customer_managed_key.key_name
-  key_version        = var.customer_managed_key.key_version
+  count                     = local.uses_cmk ? 1 : 0
+  storage_account_id        = azurerm_storage_account.storage_account.id
+  key_vault_id              = var.customer_managed_key.key_vault_id
+  key_name                  = var.customer_managed_key.key_name
+  key_version               = var.customer_managed_key.key_version
+  user_assigned_identity_id = var.customer_managed_key.user_assigned_identity_id
 }
 
 resource "azurerm_storage_management_policy" "default" {

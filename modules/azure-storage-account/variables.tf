@@ -77,10 +77,10 @@ variable "cors_rules" {
 variable "customer_managed_key" {
   description = "Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key_vault_id must be accessible to the user_assigned_identity_id."
   type = object({
-    user_assigned_identity_id = string
-    key_vault_id              = string
     key_name                  = string
+    key_vault_id              = string
     key_version               = optional(string, null)
+    user_assigned_identity_id = string
   })
   default  = null
   nullable = true
