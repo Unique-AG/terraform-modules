@@ -104,7 +104,7 @@ resource "azurerm_storage_management_policy" "default" {
     name    = "default"
     enabled = true
     filters {
-      blob_types = ["blockBlob", "appendBlob"]
+      blob_types = ["blockBlob"]
     }
     actions {
       base_blob {
