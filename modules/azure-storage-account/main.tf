@@ -67,8 +67,8 @@ resource "azurerm_storage_account" "storage_account" {
       dynamic "private_link_access" {
         for_each = { for pla in var.network_rules.private_link_accesses : pla.endpoint_resource_id => pla }
         content {
-          endpoint_resource_id = var.network_rules.private_link_access.endpoint_resource_id
-          endpoint_tenant_id   = var.network_rules.private_link_access.endpoint_tenant_id
+          endpoint_resource_id = private_link_access.endpoint_resource_id
+          endpoint_tenant_id   = private_link_access.endpoint_tenant_id
         }
       }
     }
