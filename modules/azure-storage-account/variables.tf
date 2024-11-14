@@ -129,6 +129,7 @@ variable "network_rules" {
   type = object({
     virtual_network_subnet_ids = list(string)
     ip_rules                   = list(string)
+    bypass                     = optional(list(string), ["Metrics", "Logging", "AzureServices"])
     private_link_accesses = list(object({
       endpoint_resource_id = string
       endpoint_tenant_id   = string
