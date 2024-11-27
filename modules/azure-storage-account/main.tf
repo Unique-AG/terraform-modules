@@ -125,7 +125,7 @@ resource "azurerm_storage_management_policy" "default" {
 
 resource "azurerm_key_vault_key" "storage-account-byok" {
   count        = local.self_cmk_key ? 1 : 0
-  name         = var.self_cmk_key.name
+  name         = var.self_cmk_key.key_name
   key_vault_id = var.self_cmk_key.key_vault_id
   key_type     = var.self_cmk_key.key_type
   key_size     = var.self_cmk_key.key_size
