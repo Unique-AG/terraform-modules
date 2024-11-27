@@ -139,3 +139,50 @@ variable "network_rules" {
   default  = null
   nullable = true
 }
+
+variable "cmk_key_name" {
+  description = "The name of the Key Vault key"
+  type        = string
+  default     = null
+}
+
+variable "cmk_key_vault_id" {
+  description = "The ID of the Key Vault where the key will be created"
+  type        = string
+}
+
+variable "cmk_key_type" {
+  description = "The type of the key (e.g., RSA, RSA-HSM, EC)"
+  type        = string
+  default     = "RSA-HSM"
+}
+
+variable "cmk_key_size" {
+  description = "The size of the key"
+  type        = number
+  default     = 2048
+}
+
+variable "cmk_key_opts" {
+  description = "The options for the key"
+  type        = list(string)
+  default     = ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"]
+}
+
+variable "storage_account_connection_string_1" {
+  description = "The name of the Key Vault secret where the connection string will be stored"
+  type        = string
+  default     = null
+}
+
+variable "storage_account_connection_string_2" {
+  description = "The name of the Key Vault secret where the connection string will be stored"
+  type        = string
+  default     = null
+}
+
+variable "kv_sac_id" {
+  description = "The ID of the Key Vault where the connection strings will be stored"
+  type        = string
+  default     = null
+}

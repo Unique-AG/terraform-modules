@@ -1,5 +1,8 @@
 locals {
-  uses_cmk = var.customer_managed_key != null
+  uses_cmk                 = var.customer_managed_key != null
+  self_cmk_key             = var.cmk_key_name != null
+  store_connection_strings = var.storage_account_connection_string_1 != null && var.storage_account_connection_string_2 != null
+
 }
 
 resource "azurerm_storage_account" "storage_account" {
@@ -116,4 +119,37 @@ resource "azurerm_storage_management_policy" "default" {
       }
     }
   }
+}
+
+# cmk is created if cmk name is provided
+
+resource "azurerm_key_vault_key" "storage-account-byok" {
+  count        = local.self_cmk_key ? 1 : 0
+  name         = var.cmk_key_name
+  key_vault_id = var.cmk_key_vault_id
+  key_type     = var.cmk_key_type
+  key_size     = var.cmk_key_size
+  key_opts     = var.cmk_key_opts
+}
+
+resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
+  count              = local.self_cmk_key ? 1 : 0
+  storage_account_id = azurerm_storage_account.storage_account.id
+  key_vault_id       = var.cmk_key_vault_id
+  key_name           = azurerm_key_vault_key.storage-account-byok.name
+  depends_on         = [azurerm_key_vault_key.storage-account-byok]
+}
+
+resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {
+  count        = local.store_connection_strings ? 1 : 0
+  name         = var.storage_account_connection_string_1
+  value        = azurerm_storage_account.storage_account.primary_connection_string
+  key_vault_id = var.kv_sac_id
+}
+
+resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
+  count        = local.store_connection_strings ? 1 : 0
+  name         = var.storage_account_connection_string_2
+  value        = azurerm_storage_account.storage_account.secondary_connection_string
+  key_vault_id = var.kv_sac_id
 }
