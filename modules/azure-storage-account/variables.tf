@@ -140,34 +140,17 @@ variable "network_rules" {
   nullable = true
 }
 
-variable "cmk_key_name" {
-  description = "The name of the Key Vault key"
-  type        = string
-  default     = null
-}
-
-variable "cmk_key_vault_id" {
-  description = "The ID of the Key Vault where the key will be created"
-  type        = string
-  default     = null
-}
-
-variable "cmk_key_type" {
-  description = "The type of the key (e.g., RSA, RSA-HSM, EC)"
-  type        = string
-  default     = "RSA-HSM"
-}
-
-variable "cmk_key_size" {
-  description = "The size of the key"
-  type        = number
-  default     = 2048
-}
-
-variable "cmk_key_opts" {
-  description = "The options for the key"
-  type        = list(string)
-  default     = ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"]
+variable "self_cmk_key" {
+  description = "Details for the self customer managed key."
+  type = object({
+    key_name     = string
+    key_vault_id = string
+    key_type     = optional(string, "RSA-HSM")
+    key_size     = optional(number, 2048)
+    key_opts     = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
+  })
+  default  = null
+  nullable = true
 }
 
 variable "storage_account_connection_string_1" {
