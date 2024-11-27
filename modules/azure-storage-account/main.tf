@@ -136,7 +136,7 @@ resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
   count              = local.self_cmk_key ? 1 : 0
   storage_account_id = azurerm_storage_account.storage_account.id
   key_vault_id       = var.cmk_key_vault_id
-  key_name           = azurerm_key_vault_key.storage-account-byok.name
+  key_name           = azurerm_key_vault_key.storage-account-byok[0].name
   depends_on         = [azurerm_key_vault_key.storage-account-byok[0]]
 }
 
