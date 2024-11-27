@@ -78,8 +78,12 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_key_vault_key.storage-account-byok](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) | resource |
+| [azurerm_key_vault_secret.storage-account-connection-string-1](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.storage-account-connection-string-2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_storage_account.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | resource |
 | [azurerm_storage_account_customer_managed_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key) | resource |
+| [azurerm_storage_account_customer_managed_key.storage_account_cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key) | resource |
 | [azurerm_storage_container.container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) | resource |
 | [azurerm_storage_management_policy.default](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_management_policy) | resource |
 
@@ -91,6 +95,11 @@ No modules.
 | <a name="input_account_kind"></a> [account\_kind](#input\_account\_kind) | Kind to use for the storage account. Learn more about storage account kinds in the Azure Docs. | `string` | `"StorageV2"` | no |
 | <a name="input_account_replication_type"></a> [account\_replication\_type](#input\_account\_replication\_type) | Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs. | `string` | `"LRS"` | no |
 | <a name="input_account_tier"></a> [account\_tier](#input\_account\_tier) | Tier to use for the storage account. Learn more about storage account tiers in the Azure Docs. | `string` | `"Standard"` | no |
+| <a name="input_cmk_key_name"></a> [cmk\_key\_name](#input\_cmk\_key\_name) | The name of the Key Vault key | `string` | `null` | no |
+| <a name="input_cmk_key_opts"></a> [cmk\_key\_opts](#input\_cmk\_key\_opts) | The options for the key | `list(string)` | <pre>[<br/>  "decrypt",<br/>  "encrypt",<br/>  "sign",<br/>  "unwrapKey",<br/>  "verify",<br/>  "wrapKey"<br/>]</pre> | no |
+| <a name="input_cmk_key_size"></a> [cmk\_key\_size](#input\_cmk\_key\_size) | The size of the key | `number` | `2048` | no |
+| <a name="input_cmk_key_type"></a> [cmk\_key\_type](#input\_cmk\_key\_type) | The type of the key (e.g., RSA, RSA-HSM, EC) | `string` | `"RSA-HSM"` | no |
+| <a name="input_cmk_key_vault_id"></a> [cmk\_key\_vault\_id](#input\_cmk\_key\_vault\_id) | The ID of the Key Vault where the key will be created | `string` | n/a | yes |
 | <a name="input_container_deleted_retain_days"></a> [container\_deleted\_retain\_days](#input\_container\_deleted\_retain\_days) | Number of days to retain deleted containers. | `number` | `7` | no |
 | <a name="input_containers"></a> [containers](#input\_containers) | Map of containers to create in the storage account where the key is the name. | <pre>map(object({<br/>    access_type = optional(string, "private")<br/>  }))</pre> | `{}` | no |
 | <a name="input_cors_rules"></a> [cors\_rules](#input\_cors\_rules) | CORS rules for the storage account | <pre>list(object({<br/>    allowed_origins    = list(string)<br/>    allowed_methods    = list(string)<br/>    allowed_headers    = list(string)<br/>    exposed_headers    = list(string)<br/>    max_age_in_seconds = number<br/>  }))</pre> | `[]` | no |
@@ -98,11 +107,14 @@ No modules.
 | <a name="input_deleted_retain_days"></a> [deleted\_retain\_days](#input\_deleted\_retain\_days) | Number of days to retain deleted blobs. | `number` | `7` | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
 | <a name="input_is_nfs_mountable"></a> [is\_nfs\_mountable](#input\_is\_nfs\_mountable) | Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes. In order to enable this, the account\_tier and the account\_kind must be set to a limited subset, refer to the Azure Docs(https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#is_hns_enabled-1) for more information. | `bool` | `false` | no |
+| <a name="input_kv_sac_id"></a> [kv\_sac\_id](#input\_kv\_sac\_id) | The ID of the Key Vault where the connection strings will be stored | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | Location of the resources. | `string` | n/a | yes |
 | <a name="input_min_tls_version"></a> [min\_tls\_version](#input\_min\_tls\_version) | Minimum TLS version supported by the storage account. | `string` | `"TLS1_2"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the storage account. | `string` | n/a | yes |
 | <a name="input_network_rules"></a> [network\_rules](#input\_network\_rules) | Generally network rules should be managed outside this module, but when using `is_nfs_mountable` then a `network_rules` variable is required as Azure does not allow the creation of such accounts without `Deny`ing traffic from creation. | <pre>object({<br/>    virtual_network_subnet_ids = list(string)<br/>    ip_rules                   = list(string)<br/>    bypass                     = optional(list(string), ["Metrics", "Logging", "AzureServices"])<br/>    private_link_accesses = list(object({<br/>      endpoint_resource_id = string<br/>      endpoint_tenant_id   = string<br/>    }))<br/>  })</pre> | `null` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group to put the resources in. | `string` | n/a | yes |
+| <a name="input_storage_account_connection_string_1"></a> [storage\_account\_connection\_string\_1](#input\_storage\_account\_connection\_string\_1) | The name of the Key Vault secret where the connection string will be stored | `string` | `null` | no |
+| <a name="input_storage_account_connection_string_2"></a> [storage\_account\_connection\_string\_2](#input\_storage\_account\_connection\_string\_2) | The name of the Key Vault secret where the connection string will be stored | `string` | `null` | no |
 | <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. | <pre>object({<br/>    enabled                                  = optional(bool, true)<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, 100)<br/>    blob_to_deleted_after_last_modified_days = optional(number, 730)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": 100,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": 730,<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resources. | `map(string)` | `{}` | no |
 
