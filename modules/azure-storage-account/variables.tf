@@ -149,6 +149,7 @@ variable "cmk_key_name" {
 variable "cmk_key_vault_id" {
   description = "The ID of the Key Vault where the key will be created"
   type        = string
+  default     = null
 }
 
 variable "cmk_key_type" {

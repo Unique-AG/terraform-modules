@@ -99,7 +99,7 @@ No modules.
 | <a name="input_cmk_key_opts"></a> [cmk\_key\_opts](#input\_cmk\_key\_opts) | The options for the key | `list(string)` | <pre>[<br/>  "decrypt",<br/>  "encrypt",<br/>  "sign",<br/>  "unwrapKey",<br/>  "verify",<br/>  "wrapKey"<br/>]</pre> | no |
 | <a name="input_cmk_key_size"></a> [cmk\_key\_size](#input\_cmk\_key\_size) | The size of the key | `number` | `2048` | no |
 | <a name="input_cmk_key_type"></a> [cmk\_key\_type](#input\_cmk\_key\_type) | The type of the key (e.g., RSA, RSA-HSM, EC) | `string` | `"RSA-HSM"` | no |
-| <a name="input_cmk_key_vault_id"></a> [cmk\_key\_vault\_id](#input\_cmk\_key\_vault\_id) | The ID of the Key Vault where the key will be created | `string` | n/a | yes |
+| <a name="input_cmk_key_vault_id"></a> [cmk\_key\_vault\_id](#input\_cmk\_key\_vault\_id) | The ID of the Key Vault where the key will be created | `string` | `null` | no |
 | <a name="input_container_deleted_retain_days"></a> [container\_deleted\_retain\_days](#input\_container\_deleted\_retain\_days) | Number of days to retain deleted containers. | `number` | `7` | no |
 | <a name="input_containers"></a> [containers](#input\_containers) | Map of containers to create in the storage account where the key is the name. | <pre>map(object({<br/>    access_type = optional(string, "private")<br/>  }))</pre> | `{}` | no |
 | <a name="input_cors_rules"></a> [cors\_rules](#input\_cors\_rules) | CORS rules for the storage account | <pre>list(object({<br/>    allowed_origins    = list(string)<br/>    allowed_methods    = list(string)<br/>    allowed_headers    = list(string)<br/>    exposed_headers    = list(string)<br/>    max_age_in_seconds = number<br/>  }))</pre> | `[]` | no |
