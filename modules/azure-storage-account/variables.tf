@@ -140,7 +140,7 @@ variable "network_rules" {
   nullable = true
 }
 
-variable "self_cmk_key" {
+variable "self_cmk" {
   description = "Details for the self customer managed key."
   type = object({
     key_name     = string
@@ -153,20 +153,13 @@ variable "self_cmk_key" {
   nullable = true
 }
 
-variable "storage_account_connection_string_1" {
-  description = "The name of the Key Vault secret where the connection string will be stored"
-  type        = string
-  default     = null
-}
-
-variable "storage_account_connection_string_2" {
-  description = "The name of the Key Vault secret where the connection string will be stored"
-  type        = string
-  default     = null
-}
-
-variable "kv_sac_id" {
-  description = "The ID of the Key Vault where the connection strings will be stored"
-  type        = string
-  default     = null
+variable "connection_settings" {
+  description = "Object containing the connection strings and the Key Vault secret ID where the connection strings will be stored"
+  type = object({
+    connection_string_1 = string
+    connection_string_2 = string
+    key_vault_id        = string
+  })
+  default  = null
+  nullable = true
 }
