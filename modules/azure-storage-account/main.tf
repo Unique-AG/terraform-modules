@@ -132,11 +132,11 @@ resource "azurerm_key_vault_key" "storage-account-byok" {
 }
 
 resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
-  count              = local.self_cmk ? 1 : 0
-  storage_account_id = azurerm_storage_account.storage_account.id
-  key_vault_id       = var.self_cmk.key_vault_id
-  key_name           = azurerm_key_vault_key.storage-account-byok[0].name
-  depends_on         = [azurerm_key_vault_key.storage-account-byok[0]]
+  count                     = local.self_cmk ? 1 : 0
+  storage_account_id        = azurerm_storage_account.storage_account.id
+  key_vault_id              = var.self_cmk.key_vault_id
+  key_name                  = azurerm_key_vault_key.storage-account-byok[0].name
+  user_assigned_identity_id = var.self_cmk.user_assigned_identity_id
 }
 
 resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {
