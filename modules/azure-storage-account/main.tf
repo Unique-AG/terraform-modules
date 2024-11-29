@@ -148,7 +148,7 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {
 
 resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
   count        = local.store_connection_strings ? 1 : 0
-  name         = var.connection_settings.connection_string_1
+  name         = var.connection_settings.connection_string_2
   value        = azurerm_storage_account.storage_account.secondary_connection_string
   key_vault_id = var.connection_settings.key_vault_id
 }
