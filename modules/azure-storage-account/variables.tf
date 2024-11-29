@@ -143,11 +143,13 @@ variable "network_rules" {
 variable "self_cmk" {
   description = "Details for the self customer managed key."
   type = object({
-    key_name     = string
-    key_vault_id = string
-    key_type     = optional(string, "RSA-HSM")
-    key_size     = optional(number, 2048)
-    key_opts     = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
+    key_name                  = string
+    key_vault_id              = string
+    key_type                  = optional(string, "RSA-HSM")
+    key_size                  = optional(number, 2048)
+    key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
+    user_assigned_identity_id = string
+
   })
   default  = null
   nullable = true
