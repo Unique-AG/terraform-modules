@@ -161,6 +161,7 @@ variable "connection_settings" {
     connection_string_1 = string
     connection_string_2 = string
     key_vault_id        = string
+    expiration_date     = optional(string, "9999-12-31T23:59:59Z")
   })
   default  = null
   nullable = true
