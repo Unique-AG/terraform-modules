@@ -14,11 +14,6 @@ jobs:
   lint:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        module:
-          - "modules/azure-resource-group"
-
     steps:
     - uses: actions/checkout@v4
       with:
@@ -37,9 +32,7 @@ jobs:
         fi
 
     - name: Examples
-      run: |
-        terraform -chdir=${{ matrix.module }}/example init
-        terraform -chdir=${{ matrix.module }}/example validate
+      run: ./scripts/examples.sh
 
     - name: Sec
       run: ./scripts/tf-sec.sh
