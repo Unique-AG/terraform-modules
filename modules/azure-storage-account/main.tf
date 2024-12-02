@@ -140,15 +140,17 @@ resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
 }
 
 resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {
-  count        = local.store_connection_strings ? 1 : 0
-  name         = var.connection_settings.connection_string_1
-  value        = azurerm_storage_account.storage_account.primary_connection_string
-  key_vault_id = var.connection_settings.key_vault_id
+  count           = local.store_connection_strings ? 1 : 0
+  name            = var.connection_settings.connection_string_1
+  value           = azurerm_storage_account.storage_account.primary_connection_string
+  key_vault_id    = var.connection_settings.key_vault_id
+  expiration_date = var.connection_settings.expiration_date
 }
 
 resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
-  count        = local.store_connection_strings ? 1 : 0
-  name         = var.connection_settings.connection_string_2
-  value        = azurerm_storage_account.storage_account.secondary_connection_string
-  key_vault_id = var.connection_settings.key_vault_id
+  count           = local.store_connection_strings ? 1 : 0
+  name            = var.connection_settings.connection_string_2
+  value           = azurerm_storage_account.storage_account.secondary_connection_string
+  key_vault_id    = var.connection_settings.key_vault_id
+  expiration_date = var.connection_settings.expiration_date
 }
