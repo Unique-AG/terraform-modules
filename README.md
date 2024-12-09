@@ -9,7 +9,7 @@
 ```hcl
 # select a specific tag
 module "module_name" {
-  source = "git::https://github.com/unique-ag/terraform-modules.git//modules/azure/module?depth=1&ref=v1.2.0"
+  source = "git::https://github.com/unique-ag/terraform-modules.git//modules/azure/module?depth=1&ref=module/module-version"
 }
 # where 'module_name' is a model name of your choice and 'module' an actual module of this repository.
 ```
