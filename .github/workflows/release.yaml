@@ -62,4 +62,4 @@ jobs:
             ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }} \
             --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
             --notes "${{ steps.module.outputs.changes }}" \
-            --target ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
+            --target ${{ github.sha }}
