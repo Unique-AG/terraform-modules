@@ -1,0 +1,63 @@
+name: '[terraform] Create Module Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      module_path:
+        description: 'Path to module.yaml file'
+        required: true
+        type: choice
+        options:
+          - modules/azure-storage-account/module.yaml
+          # Add other module paths here as they are created
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse module.yaml
+        id: module
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const yaml = require('yaml')
+            const fs = require('fs')
+
+            const modulePath = '${{ inputs.module_path }}'
+            const moduleContent = fs.readFileSync(modulePath, 'utf8')
+            const moduleData = yaml.parse(moduleContent)
+
+            // Extract module name and version
+            const name = moduleData.name
+            const version = moduleData.version
+
+            // Format changes as markdown
+            let changeLog = ''
+            if (moduleData.changes) {
+              changeLog = moduleData.changes.map(change =>
+                `- **${change.kind}**: ${change.description}`
+              ).join('\n')
+            }
+
+            core.setOutput('name', name)
+            core.setOutput('version', version)
+            core.setOutput('changes', changeLog)
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create and push tag
+          git tag ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
+          git push origin ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
+
+          # Create GitHub release
+          gh release create \
+            ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }} \
+            --title "${{ steps.module.outputs.name }} v${{ steps.module.outputs.version }}" \
+            --notes "${{ steps.module.outputs.changes }}" \
+            --target ${{ github.sha }}

@@ -14,7 +14,12 @@ module "module_name" {
 # where 'module_name' is a model name of your choice and 'module' an actual module of this repository.
 ```
 
-To learn more about Unique Terraform modules, visit the [documentation](https://unique-ag.github.io/terraform-modules).
+## Design
+Before using any module, you should get familiar with the [design principles](./DESIGN.md) of this repository as well as the _glossary_ in there.
+
+## Examples
+
+Each module contains an `example` folder, wherein you can see how to use the module.
 
 ## Security
 Head over to the [security policy](./SECURITY.md) to learn more about our security policy!
