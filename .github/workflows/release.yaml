@@ -52,8 +52,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Create and push tag
-          git tag ${{ steps.module.outputs.name }}/v${{ steps.module.outputs.version }}
-          git push origin ${{ steps.module.outputs.name }}/v${{ steps.module.outputs.version }}
+          git tag ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
+          git push origin ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
 
           # Create GitHub release
           gh release create \
