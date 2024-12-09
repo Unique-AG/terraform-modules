@@ -3,12 +3,12 @@ name: '[terraform] Create Module Release'
 on:
   workflow_dispatch:
     inputs:
-      module_path:
-        description: 'Path to module.yaml file'
+      module:
+        description: 'Module to release'
         required: true
         type: choice
         options:
-          - modules/azure-storage-account/module.yaml
+          - azure-storage-account
           # Add other module paths here as they are created
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
             const yaml = require('yaml')
             const fs = require('fs')
 
-            const modulePath = '${{ inputs.module_path }}'
+            const modulePath = `modules/${{ inputs.module }}/module.yaml`
             const moduleContent = fs.readFileSync(modulePath, 'utf8')
             const moduleData = yaml.parse(moduleContent)
 
