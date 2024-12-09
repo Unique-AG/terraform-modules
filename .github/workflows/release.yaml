@@ -54,12 +54,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Create and push tag
-          git tag ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
-          git push origin ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}
+          git tag ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
+          git push origin ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
 
           # Create GitHub release
           gh release create \
-            ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }} \
+            ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }} \
             --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
             --notes "${{ steps.module.outputs.changes }}" \
-            --target ${{ github.sha }}
+            --target ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
