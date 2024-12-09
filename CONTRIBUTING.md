@@ -20,3 +20,7 @@ Each modules version follows the [semver standard](https://semver.org/).
 New modules should start at version `1.0.0`, if it's considered stable. If it isn't considered stable, it must be released as `prerelease`. Azure modules start at version `2.0.0` due to the fact that Unique already supported a lot of modules prior to the public repository which are summarized as `1.x`.
 
 Any breaking changes to a module (backwards incompatible) require a major version bump.
+
+## Release
+
+To release a module, you can use the `[terraform] Create Module Release` workflow. For now sadly this action is manual we we would need some form of recurring action to automatically release changed modules. To be added later when we see this thing here flies 🕊️
