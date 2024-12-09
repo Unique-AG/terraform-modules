@@ -60,6 +60,6 @@ jobs:
           # Create GitHub release
           gh release create \
             ${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }} \
-            --title "${{ steps.module.outputs.name }} v${{ steps.module.outputs.version }}" \
+            --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
             --notes "${{ steps.module.outputs.changes }}" \
             --target ${{ github.sha }}
