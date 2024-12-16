@@ -119,7 +119,6 @@ variable "customer_managed_key" {
   nullable = true
 }
 
-
 variable "tags" {
   description = "Tags for the resources."
   type        = map(string)
@@ -127,7 +126,7 @@ variable "tags" {
 }
 
 variable "databases" {
-  description = "List of databases and its properties"
+  description = "Map of databases and its properties"
   type = map(
     object({
       name      = string
@@ -140,7 +139,7 @@ variable "databases" {
 }
 
 variable "timeouts" {
-  description = "List of databases and its properties"
+  description = "Timeout properties of the database"
   type = object({
     create = optional(string)
     read   = optional(string)
@@ -161,20 +160,21 @@ variable "public_network_access_enabled" {
   default     = false
 }
 
-
 variable "zone" {
   description = "(Optional) Specifies the Availability Zone in which the PostgreSQL Flexible Server should be located."
   type        = string
   default     = null
   nullable    = true
 }
+
 variable "administrator_login" {
-  description = "Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false"
+  description = "The Administrator login for the PostgreSQL Flexible Server"
   type        = string
   sensitive   = true
 }
+
 variable "admin_password" {
-  description = "Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false"
+  description = "The Password associated with the administrator_login for the PostgreSQL Flexible Server"
   type        = string
   sensitive   = true
 }
