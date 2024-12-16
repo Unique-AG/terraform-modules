@@ -1,6 +1,13 @@
 
 This Terraform module creates a PostgreSQL flexible server on Azure and configures the server's parameters and databases. It's designed to be reusable as a module, allowing you to easily deploy PostgreSQL servers with different configurations.
 
+## Pre-requisites
+- To deploy this module, you have at least the following permissions:
+    + Reader of the subscription
+    + Access to the [Key Vault where the Customer-Managed Key is stored](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key) in case one is used
+    + Contributor of the resource group
+
+## [Examples](./examples)
 
 # Module
 
@@ -37,10 +44,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_admin_password"></a> [admin\_password](#input\_admin\_password) | Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false | `string` | n/a | yes |
-| <a name="input_administrator_login"></a> [administrator\_login](#input\_administrator\_login) | Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false | `string` | n/a | yes |
-| <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_vault_key_id                  = string<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
-| <a name="input_databases"></a> [databases](#input\_databases) | List of databases and its properties | <pre>map(<br/>    object({<br/>      name      = string<br/>      collation = optional(string, null)<br/>      charset   = optional(string, null)<br/>      lifecycle = optional(bool, false)<br/>    })<br/>  )</pre> | `{}` | no |
+| <a name="input_admin_password"></a> [admin\_password](#input\_admin\_password) | The Password associated with the administrator\_login for the PostgreSQL Flexible Server | `string` | n/a | yes |
+| <a name="input_administrator_login"></a> [administrator\_login](#input\_administrator\_login) | The Administrator login for the PostgreSQL Flexible Server | `string` | n/a | yes |
+| <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_vault_key_id          = string<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
+| <a name="input_databases"></a> [databases](#input\_databases) | Map of databases and its properties | <pre>map(<br/>    object({<br/>      name      = string<br/>      collation = optional(string, null)<br/>      charset   = optional(string, null)<br/>      lifecycle = optional(bool, false)<br/>    })<br/>  )</pre> | `{}` | no |
 | <a name="input_delegated_subnet_id"></a> [delegated\_subnet\_id](#input\_delegated\_subnet\_id) | The ID of the delegated subnet. | `string` | `null` | no |
 | <a name="input_flex_pg_backup_retention_days"></a> [flex\_pg\_backup\_retention\_days](#input\_flex\_pg\_backup\_retention\_days) | The number of days to retain backups for the PostgreSQL server. | `number` | `7` | no |
 | <a name="input_flex_pg_version"></a> [flex\_pg\_version](#input\_flex\_pg\_version) | The version of the PostgreSQL server. | `string` | `"14"` | no |
@@ -55,7 +62,7 @@ No modules.
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group where the resources will be created. | `string` | n/a | yes |
 | <a name="input_self_cmk"></a> [self\_cmk](#input\_self\_cmk) | Details for the self customer managed key. | <pre>object({<br/>    key_name                  = string<br/>    key_vault_id              = string<br/>    key_type                  = optional(string, "RSA-HSM")<br/>    key_size                  = optional(number, 2048)<br/>    key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])<br/>    user_assigned_identity_id = string<br/><br/>  })</pre> | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resources. | `map(string)` | `{}` | no |
-| <a name="input_timeouts"></a> [timeouts](#input\_timeouts) | List of databases and its properties | <pre>object({<br/>    create = optional(string)<br/>    read   = optional(string)<br/>    update = optional(string)<br/>    delete = optional(object({<br/>    }), null)<br/>  })</pre> | <pre>{<br/>  "update": "30m"<br/>}</pre> | no |
+| <a name="input_timeouts"></a> [timeouts](#input\_timeouts) | Timeout properties of the database | <pre>object({<br/>    create = optional(string)<br/>    read   = optional(string)<br/>    update = optional(string)<br/>    delete = optional(object({<br/>    }), null)<br/>  })</pre> | <pre>{<br/>  "update": "30m"<br/>}</pre> | no |
 | <a name="input_zone"></a> [zone](#input\_zone) | (Optional) Specifies the Availability Zone in which the PostgreSQL Flexible Server should be located. | `string` | `null` | no |
 
 ## Outputs
