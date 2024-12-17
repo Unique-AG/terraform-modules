@@ -8,6 +8,7 @@ module "redis" {
   name                = "my-redis"
   resource_group_name = "my-resource-group"
   location            = "switzerlandnorth"
+  public_network_access_enabled = true
   tags = {
     environment = "example"
   }
