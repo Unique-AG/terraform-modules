@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - azure-storage-account
+          - azure-postgresql
           # Add other module paths here as they are created
 
 jobs:
