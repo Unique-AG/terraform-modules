@@ -144,8 +144,7 @@ variable "timeouts" {
     create = optional(string)
     read   = optional(string)
     update = optional(string)
-    delete = optional(object({
-    }), null)
+    delete = optional(string)
   })
 
   default = {
