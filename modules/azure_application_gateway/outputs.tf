@@ -5,5 +5,5 @@ output "appgw_id" {
 
 output "appgw_ip_address" {
   description = "The public IP address of the Application Gateway"
-  value       = azurerm_public_ip.appgw.ip_address
+  value       = azurerm_public_ip.appgw[0].ip_address
 }
