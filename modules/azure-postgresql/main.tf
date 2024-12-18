@@ -44,7 +44,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   }
 
   dynamic "timeouts" {
-    for_each = var.timeouts ? [1] : []
+    for_each = length(var.timeouts) > 0 ? [1] : []
     content {
       create = var.timeout.create
       read   = var.timeouts.read

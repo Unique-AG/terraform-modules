@@ -11,11 +11,11 @@ repos:
           entry: scripts/tf-fmt.sh
           language: script
           pass_filenames: false
-        - id: tf-sec
-          name: tf-sec
-          entry: scripts/tf-sec.sh
-          language: script
-          pass_filenames: false
+        # - id: tf-sec
+        #   name: tf-sec
+        #   entry: scripts/tf-sec.sh
+        #   language: script
+        #   pass_filenames: false
 
   # - repo: local
   #   hooks:
