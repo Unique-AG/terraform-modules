@@ -39,7 +39,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   }
 
   identity {
-    type         = length(var.identity_ids) > 0 ? "SystemAssigned, UserAssigned" : "SystemAssigned"
+    type         = "UserAssigned"
     identity_ids = var.identity_ids
   }
 
