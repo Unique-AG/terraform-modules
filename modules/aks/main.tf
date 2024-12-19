@@ -23,7 +23,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     outbound_type  = "userDefinedRouting"
     load_balancer_profile {
       idle_timeout_in_minutes = 100
-      outbound_ip_address_ids = [azurerm_public_ip.this.id]
+      outbound_ip_address_ids = var.outbound_ip_address_ids
     }
   }
 
