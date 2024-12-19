@@ -148,17 +148,6 @@ variable "kubernetes_default_node_os_disk_size" {
   }
 }
 
-variable "subnet_pods_id" {
-  description = "The ID of the subnet for pods."
-  type        = string
-  default     = "/subscriptions/<subscription-id>/resourceGroups/<rg-name>/providers/Microsoft.Network/virtualNetworks/<vnet-name>/subnets/<subnet-name>"
-
-  validation {
-    condition     = length(var.subnet_pods_id) > 0
-    error_message = "The subnet ID for pods must not be empty."
-  }
-}
-
 variable "subnet_nodes_id" {
   description = "The ID of the subnet for nodes."
   type        = string

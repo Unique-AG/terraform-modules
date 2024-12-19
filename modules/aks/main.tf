@@ -21,6 +21,10 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     network_plugin = "azure"
     network_policy = "azure"
     outbound_type  = "userDefinedRouting"
+    load_balancer_profile {
+      idle_timeout_in_minutes = 100
+      outbound_ip_address_ids = [azurerm_public_ip.this.id]
+    }
   }
 
   dynamic "api_server_access_profile" {
@@ -67,7 +71,6 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     min_count                    = var.kubernetes_default_node_count_min
     max_count                    = var.kubernetes_default_node_count_max
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
-    pod_subnet_id                = var.subnet_pods_id
     type                         = "VirtualMachineScaleSets"
     vnet_subnet_id               = var.subnet_nodes_id
     zones                        = ["1", "2", "3"]
@@ -145,6 +148,5 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   }
 
   tags           = var.tags
-  pod_subnet_id  = var.subnet_pods_id
   vnet_subnet_id = var.subnet_nodes_id
 }
