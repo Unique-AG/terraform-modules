@@ -297,15 +297,3 @@ variable "monitoring_account_name" {
     error_message = "The monitoring account name must not be empty."
   }
 }
-
-variable "outbound_ip_address_ids" {
-  description = "The IDs of the public IP addresses for outbound traffic."
-  type        = list(string)
-  default     = []
-
-  validation {
-    condition     = length(var.outbound_ip_address_ids) > 0
-    error_message = "The outbound IP address IDs must not be empty."
-  }
-
-}
