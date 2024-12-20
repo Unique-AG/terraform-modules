@@ -18,14 +18,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   automatic_upgrade_channel           = "stable"
 
   network_profile {
-    network_plugin    = "azure"
-    network_policy    = "azure"
-    outbound_type     = "userDefinedRouting"
-    load_balancer_sku = "standard"
-    # load_balancer_profile {
-    #   idle_timeout_in_minutes = 100
-    #   outbound_ip_address_ids = var.outbound_ip_address_ids
-    # }
+    network_plugin = "azure"
+    network_policy = "azure"
+    load_balancer_profile {
+      idle_timeout_in_minutes = 100
+      outbound_ip_address_ids = var.outbound_ip_address_ids
+    }
   }
 
   dynamic "api_server_access_profile" {
