@@ -20,6 +20,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
+    service_cidr   = "172.20.0.0/16" # For Kubernetes services (ClusterIP)
+    dns_service_ip = "172.20.0.10"   # Inside the service_cidr
     load_balancer_profile {
       idle_timeout_in_minutes = 100
       outbound_ip_address_ids = var.outbound_ip_address_ids
