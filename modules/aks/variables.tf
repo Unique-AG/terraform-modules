@@ -307,5 +307,80 @@ variable "outbound_ip_address_ids" {
     condition     = length(var.outbound_ip_address_ids) > 0
     error_message = "The outbound IP address IDs must not be empty."
   }
+}
 
+variable "azure_policy_enabled" {
+  description = "Specifies whether Azure Policy is enabled for the Kubernetes Cluster."
+  type        = bool
+  default     = true
+}
+
+variable "local_account_disabled" {
+  description = "Specifies whether the local account is disabled for the Kubernetes Cluster."
+  type        = bool
+  default     = true
+}
+
+variable "oidc_issuer_enabled" {
+  description = "The OIDC issuer URL for the Kubernetes Cluster."
+  type        = bool
+  default     = true
+}
+
+variable "workload_identity_enabled" {
+  description = "Specifies whether workload identity is enabled for the Kubernetes Cluster."
+  type        = bool
+  default     = true
+}
+
+variable "private_cluster_enabled" {
+  description = "Specifies whether the Kubernetes Cluster is private."
+  type        = bool
+  default     = true
+}
+
+variable "cost_analysis_enabled" {
+  description = "Specifies whether cost analysis is enabled for the Kubernetes Cluster."
+  type        = bool
+  default     = true
+}
+
+variable "private_cluster_public_fqdn_enabled" {
+  description = "Specifies whether the private cluster has a public FQDN."
+  type        = bool
+  default     = true
+}
+
+variable "sku_tier" {
+  description = "The SKU tier for the Kubernetes Cluster."
+  type        = string
+  default     = "Standard"
+  validation {
+    condition     = contains("Free", "Premium", var.sku_tier)
+    error_message = "The SKU tier must be either Free, Standard or Paid."
+  }
+}
+
+variable "private_dns_zone_id" {
+  description = "The ID of the private DNS zone."
+  type        = string
+  default     = "none"
+}
+
+variable "automatic_upgrade_channel" {
+  description = "The automatic upgrade channel for the Kubernetes Cluster."
+  type        = string
+  default     = "stable"
+}
+
+variable "service_cidr" {
+  description = "The service CIDR for the Kubernetes Cluster."
+  type        = string
+  default     = "172.20.0.0/16"
+}
+
+variable "dns_service_ip" {
+  description = "The DNS service IP for the Kubernetes Cluster."
+  type        = string
+  default     = "172.20.0.10"
 }

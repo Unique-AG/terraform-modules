@@ -6,22 +6,22 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   kubernetes_version                  = var.kubernetes_version
   node_resource_group                 = var.node_rg_name
   tags                                = var.tags
-  azure_policy_enabled                = true
-  local_account_disabled              = true
-  oidc_issuer_enabled                 = true
-  workload_identity_enabled           = true
-  private_cluster_enabled             = true
-  cost_analysis_enabled               = true
-  private_cluster_public_fqdn_enabled = true
-  sku_tier                            = "Standard"
-  private_dns_zone_id                 = "None"
-  automatic_upgrade_channel           = "stable"
+  azure_policy_enabled                = var.azure_policy_enabled
+  local_account_disabled              = var.local_account_disabled
+  oidc_issuer_enabled                 = var.oidc_issuer_enabled
+  workload_identity_enabled           = var.workload_identity_enabled
+  private_cluster_enabled             = var.private_cluster_enabled
+  cost_analysis_enabled               = var.cost_analysis_enabled
+  private_cluster_public_fqdn_enabled = var.private_cluster_public_fqdn_enabled
+  sku_tier                            = var.sku_tier
+  private_dns_zone_id                 = var.private_dns_zone_id
+  automatic_upgrade_channel           = var.automatic_upgrade_channel
 
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
-    service_cidr   = "172.20.0.0/16" # For Kubernetes services (ClusterIP)
-    dns_service_ip = "172.20.0.10"   # Inside the service_cidr
+    service_cidr   = var.service_cidr
+    dns_service_ip = var.dns_service_ip
     load_balancer_profile {
       idle_timeout_in_minutes = 100
       outbound_ip_address_ids = var.outbound_ip_address_ids
