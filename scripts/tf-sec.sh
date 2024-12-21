@@ -4,4 +4,4 @@
 # SPDX-SnippetCopyrightText: 2024 © Unique AG
 # SPDX-SnippetEnd
 echo "Running tf-sec"
-docker run --rm -v "$(pwd):/workdir" aquasec/tfsec /workdir
+docker run --rm -v "$(pwd):/workdir" aquasec/tfsec /workdir --config-file /workdir/.tfsec-config.yaml
