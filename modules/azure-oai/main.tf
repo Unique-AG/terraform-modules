@@ -24,13 +24,13 @@ resource "azurerm_cognitive_deployment" "deployments" {
   version_upgrade_option = each.value.version_upgrade_option
 
   model {
-    format  = each.value.deployment_format
+    format  = each.value.model_format
     name    = each.value.model_name
     version = each.value.model_version
   }
 
   sku {
-    name     = each.value.deployment_sku_type
-    capacity = each.value.deployment_sku_capacity
+    name     = each.value.sku_type
+    capacity = each.value.sku_capacity
   }
 }

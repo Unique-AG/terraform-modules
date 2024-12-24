@@ -56,6 +56,7 @@ variable "cognitive_deployments" {
     name                   = string
     model_name             = string
     model_version          = string
+    model_format           = optional(string, "OpenAI")
     sku_capacity           = number
     sku_type               = optional(string, "Standard")
     location               = string
@@ -63,7 +64,6 @@ variable "cognitive_deployments" {
     cognitive_account      = string
     rai_policy_name        = optional(string)
     version_upgrade_option = optional(string, "NoAutoUpgrade")
-    deployment_format      = optional(string, "OpenAI")
   }))
   validation {
     condition     = length(keys(var.cognitive_deployments)) > 0
