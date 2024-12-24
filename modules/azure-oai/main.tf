@@ -1,6 +1,6 @@
 locals {
   model_version_endpoints = {
-    for deployment in azurerm_cognitive_deployment.deployments : "${deployment.model_name}-${deployment.model_version}" => azurerm_cognitive_account.aca[deployment.cognitive_account].endpoint
+    for deployment in azurerm_cognitive_deployment.deployments : "${deployment.model[0].name}-${deployment.model[0].version}" => azurerm_cognitive_account.aca[deployment.cognitive_account_id].endpoint
   }
 }
 resource "azurerm_cognitive_account" "aca" {
