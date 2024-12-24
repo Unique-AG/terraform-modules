@@ -364,7 +364,7 @@ variable "sku_tier" {
 variable "private_dns_zone_id" {
   description = "The ID of the private DNS zone."
   type        = string
-  default     = "none"
+  default     = "None"
 }
 
 variable "automatic_upgrade_channel" {
