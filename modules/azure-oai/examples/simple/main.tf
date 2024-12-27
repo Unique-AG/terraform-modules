@@ -3,9 +3,14 @@ terraform {
     path = "terraform.tfstate"
   }
 }
+resource "azurerm_resource_group" "example" {
+  name = "my-resource-group"
+  location = "switzerlandnorth"
+  
+}
 module "oai" {
   source              = "../.."
-  resource_group_name = "my-resource-group"
+  resource_group_name = azurerm_resource_group.example.name
   tags = {
     environment = "example"
   }
