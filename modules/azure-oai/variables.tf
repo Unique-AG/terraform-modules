@@ -23,7 +23,7 @@ variable "cognitive_accounts" {
     local_auth_enabled            = optional(bool, false)
     public_network_access_enabled = optional(bool, false)
 
-    custom_subdomain_name = optional(string, "S0")
+    custom_subdomain_name = optional(string)
 
   }))
   validation {
