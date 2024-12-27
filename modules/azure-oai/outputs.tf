@@ -8,9 +8,7 @@ output "primary_access_keys" {
   value       = values(azurerm_cognitive_account.aca)[*].primary_access_key
   sensitive   = true
 }
-
 output "model_version_endpoints" {
-  description = "Map of endpoints where 'model_name-model_version is the key and endpoint is the value'"
+  description = "List of objects containing endpoint, location and list of models"
   value       = jsonencode(local.model_version_endpoints)
-  sensitive   = true
 }

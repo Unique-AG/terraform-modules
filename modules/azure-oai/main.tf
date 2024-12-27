@@ -1,7 +1,17 @@
 locals {
-  model_version_endpoints = {
-    for deployment in azurerm_cognitive_deployment.deployments : "${deployment.model[0].name}-${deployment.model[0].version}" => azurerm_cognitive_account.aca[deployment.cognitive_account_id].endpoint
-  }
+  model_version_endpoints = [
+    for account in azurerm_cognitive_account.aca :  {
+      "endpoint": account.endpoint,
+      "location": account.location,
+      "models": [
+        for deployment in azurerm_cognitive_deployment.deployments : {
+          "modelName": deployment.model[0].name,
+          "deploymentName": deployment.name,
+          "modelVersion": deployment.model[0].version
+        } if deployment.cognitive_account_id == account.id
+      ]
+    }
+  ]
 }
 resource "azurerm_cognitive_account" "aca" {
   for_each                      = var.cognitive_accounts
