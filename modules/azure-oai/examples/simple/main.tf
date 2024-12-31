@@ -40,3 +40,7 @@ module "oai" {
 output "model_version_endpoints" {
   value = module.oai.model_version_endpoints
 }
+
+output "cognitive_account_endpoints" {
+  value = module.oai.cognitive_account_endpoints
+}
