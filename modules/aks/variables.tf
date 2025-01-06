@@ -356,8 +356,8 @@ variable "sku_tier" {
   type        = string
   default     = "Standard"
   validation {
-    condition     = contains("Free", "Premium", var.sku_tier)
-    error_message = "The SKU tier must be either Free, Standard or Paid."
+    condition     = contains(["Free", "Premium"], var.sku_tier)
+    error_message = "The SKU tier must be either Free, Standard or Premium."
   }
 }
 
