@@ -355,10 +355,6 @@ variable "sku_tier" {
   description = "The SKU tier for the Kubernetes Cluster."
   type        = string
   default     = "Standard"
-  validation {
-    condition     = contains(["Free", "Premium"], var.sku_tier)
-    error_message = "The SKU tier must be either Free, Standard or Premium."
-  }
 }
 
 variable "private_dns_zone_id" {
