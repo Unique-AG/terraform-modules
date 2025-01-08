@@ -17,13 +17,20 @@ locals {
     for account_key, account in var.cognitive_accounts : [
       for deployment in account.cognitive_deployments : {
         account_key = account_key
-        deployment  = deployment
+        name = deployment.name
+        model_name = deployment.model_name
+        model_version = deployment.model_version
+        model_format = deployment.model_format
+        sku_capacity = deployment.sku_capacity
+        sku_type = deployment.sku_type
+        custom_subdomain_name = deployment.custom_subdomain_name
+        rai_policy_name = deployment.rai_policy_name
+        version_upgrade_option = deployment.version_upgrade_option
       }
     ]
   ])
-
-
 }
+
 resource "azurerm_cognitive_account" "aca" {
   for_each                      = var.cognitive_accounts
   name                          = each.value.name
@@ -40,21 +47,21 @@ resource "azurerm_cognitive_account" "aca" {
 resource "azurerm_cognitive_deployment" "deployments" {
 
   for_each = {
-    for deployment in local.flattened_deployments : "${deployment.account_key}-${deployment.deployment.name}" => deployment
+    for deployment in local.flattened_deployments : "${deployment.account_key}-${deployment.name}" => deployment
   }
-  name                   = each.value.deployment.name
+  name                   = each.value.name
   cognitive_account_id   = azurerm_cognitive_account.aca[each.value.account_key].id
-  rai_policy_name        = each.value.deployment.rai_policy_name
-  version_upgrade_option = each.value.deployment.version_upgrade_option
+  rai_policy_name        = each.value.rai_policy_name
+  version_upgrade_option = each.value.version_upgrade_option
 
   model {
-    format  = each.value.deployment.model_format
-    name    = each.value.deployment.model_name
-    version = each.value.deployment.model_version
+    format  = each.value.model_format
+    name    = each.value.model_name
+    version = each.value.model_version
   }
 
   sku {
-    name     = each.value.deployment.sku_type
-    capacity = each.value.deployment.sku_capacity
+    name     = each.value.sku_type
+    capacity = each.value.sku_capacity
   }
 }
