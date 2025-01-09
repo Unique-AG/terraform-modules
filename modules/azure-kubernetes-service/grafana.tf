@@ -1,5 +1,5 @@
 locals {
-  grafana_name = "${substr(var.cluster_name, 0, 15)}grafana"
+  grafana_name = "${substr(var.cluster_name, 0, 15)}-grafana"
 }
 
 resource "azurerm_dashboard_grafana" "grafana" {
