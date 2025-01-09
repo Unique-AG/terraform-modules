@@ -381,7 +381,7 @@ variable "dns_service_ip" {
   default     = "172.20.0.10"
 }
 
-variable "default_node_pool_zones" {
+variable "kubernetes_default_node_zones" {
   description = "The zones for the default node pool."
   type        = list(string)
   default     = ["1", "2", "3"]
