@@ -52,6 +52,11 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
       delete = var.timeouts.delete
     }
   }
+  lifecycle {
+    ignore_changes = [
+      zone
+    ]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_configuration" "parameters" {
