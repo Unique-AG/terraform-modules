@@ -74,7 +74,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
     type                         = "VirtualMachineScaleSets"
     vnet_subnet_id               = var.subnet_nodes_id
-    zones                        = ["1", "2", "3"]
+    zones                        = var.default_node_pool_zones
     tags                         = var.tags
     only_critical_addons_enabled = true
     upgrade_settings {
