@@ -386,3 +386,9 @@ variable "kubernetes_default_node_zones" {
   type        = list(string)
   default     = ["1", "2", "3"]
 }
+
+variable "admin_group_object_ids" {
+  description = "The object IDs of the admin groups for the Kubernetes Cluster."
+  type        = list(string)
+  default     = []
+}
