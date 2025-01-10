@@ -1,8 +1,6 @@
 variable "cluster_name" {
   description = "The name of the Kubernetes cluster."
   type        = string
-  default     = "test-cluster"
-
   validation {
     condition     = length(var.cluster_name) > 0
     error_message = "The cluster name must not be empty."
@@ -12,8 +10,6 @@ variable "cluster_name" {
 variable "resource_group_location" {
   description = "The location of the resource group."
   type        = string
-  default     = "eastus"
-
   validation {
     condition     = length(var.resource_group_location) > 0
     error_message = "The resource group location must not be empty."
@@ -23,8 +19,6 @@ variable "resource_group_location" {
 variable "resource_group_name" {
   description = "The name of the resource group."
   type        = string
-  default     = "test-rg"
-
   validation {
     condition     = length(var.resource_group_name) > 0
     error_message = "The resource group name must not be empty."
@@ -96,8 +90,6 @@ variable "api_server_authorized_ip_ranges" {
 variable "node_rg_name" {
   description = "The name of the node resource group for the AKS cluster."
   type        = string
-  default     = "node-rg"
-
   validation {
     condition     = length(var.node_rg_name) > 0
     error_message = "The node resource group name must not be empty."
@@ -151,7 +143,6 @@ variable "kubernetes_default_node_os_disk_size" {
 variable "subnet_nodes_id" {
   description = "The ID of the subnet for nodes."
   type        = string
-  default     = "/subscriptions/<subscription-id>/resourceGroups/<rg-name>/providers/Microsoft.Network/virtualNetworks/<vnet-name>/subnets/<subnet-name>"
 
   validation {
     condition     = length(var.subnet_nodes_id) > 0
@@ -162,10 +153,6 @@ variable "subnet_nodes_id" {
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
-  default = {
-    environment = "test"
-    cost_center = "12345"
-  }
 
   validation {
     condition     = length(var.tags) > 0
@@ -190,7 +177,7 @@ variable "azure_prometheus_grafana_monitor" {
   description = "Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster."
   type = object({
     enabled                = bool
-    azure_monitor_location = optional(string, "westeurope")
+    azure_monitor_location = string
     azure_monitor_rg_name  = string
     grafana_major_version  = optional(number, 10)
   })
@@ -205,8 +192,6 @@ variable "azure_prometheus_grafana_monitor" {
 variable "tenant_id" {
   description = "The tenant ID for the Azure subscription."
   type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-
   validation {
     condition     = length(var.tenant_id) > 0
     error_message = "The tenant ID must not be empty."
@@ -301,7 +286,6 @@ variable "monitoring_account_name" {
 variable "outbound_ip_address_ids" {
   description = "The IDs of the public IP addresses for outbound traffic."
   type        = list(string)
-  default     = []
 
   validation {
     condition     = length(var.outbound_ip_address_ids) > 0
