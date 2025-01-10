@@ -16,15 +16,15 @@ locals {
   flattened_deployments = flatten([
     for account_key, account in var.cognitive_accounts : [
       for deployment in account.cognitive_deployments : {
-        account_key = account_key
-        name = deployment.name
-        model_name = deployment.model_name
-        model_version = deployment.model_version
-        model_format = deployment.model_format
-        sku_capacity = deployment.sku_capacity
-        sku_type = deployment.sku_type
-        custom_subdomain_name = deployment.custom_subdomain_name
-        rai_policy_name = deployment.rai_policy_name
+        account_key            = account_key
+        name                   = deployment.name
+        model_name             = deployment.model_name
+        model_version          = deployment.model_version
+        model_format           = deployment.model_format
+        sku_capacity           = deployment.sku_capacity
+        sku_type               = deployment.sku_type
+        custom_subdomain_name  = deployment.custom_subdomain_name
+        rai_policy_name        = deployment.rai_policy_name
         version_upgrade_option = deployment.version_upgrade_option
       }
     ]
