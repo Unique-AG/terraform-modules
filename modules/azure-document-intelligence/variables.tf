@@ -40,11 +40,11 @@ variable "tags" {
 }
 variable "key_vault_output_settings" {
   type = object({
-    key_vault_output_enabled              = optional(boolean, true)
+    key_vault_output_enabled              = optional(bool, true)
     key_vault_id                          = string
     endpoint_definitions_secret_name      = optional(string, "azure-document-intelligence-endpoint-definitions")
     endpoints_secret_name                 = optional(string, "azure-document-intelligence-endpoints")
-    primary_access_key_secret_name_suffix = optional(list(string), "-key")
+    primary_access_key_secret_name_suffix = optional(string, "-key")
   })
   default  = null
   nullable = true
