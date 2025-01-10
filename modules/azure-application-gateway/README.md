@@ -38,9 +38,18 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_agw_diagnostic_name"></a> [agw\_diagnostic\_name](#input\_agw\_diagnostic\_name) | Name for the agw\_diagnostic | `string` | `null` | no |
+| <a name="input_application_gateway_name"></a> [application\_gateway\_name](#input\_application\_gateway\_name) | Name for the Gateway | `string` | `null` | no |
+| <a name="input_backend_address_pool_name"></a> [backend\_address\_pool\_name](#input\_backend\_address\_pool\_name) | Name for the backend\_address\_pool | `string` | `null` | no |
+| <a name="input_backend_http_settings_name"></a> [backend\_http\_settings\_name](#input\_backend\_http\_settings\_name) | Name for the backend\_http\_settings | `string` | `null` | no |
+| <a name="input_frontend_ip_config_name"></a> [frontend\_ip\_config\_name](#input\_frontend\_ip\_config\_name) | Name for the frontend\_ip\_config | `string` | `null` | no |
+| <a name="input_frontend_ip_private_config_name"></a> [frontend\_ip\_private\_config\_name](#input\_frontend\_ip\_private\_config\_name) | Name for the frontend\_ip\_private\_config | `string` | `null` | no |
+| <a name="input_frontend_port_name"></a> [frontend\_port\_name](#input\_frontend\_port\_name) | Name for the frontend\_port | `string` | `null` | no |
 | <a name="input_gateway_mode"></a> [gateway\_mode](#input\_gateway\_mode) | The mode of the gateway (Prevention or Detection) | `string` | `"Prevention"` | no |
 | <a name="input_gateway_sku"></a> [gateway\_sku](#input\_gateway\_sku) | The SKU of the gateway | `string` | `"Standard_v2"` | no |
 | <a name="input_gateway_tier"></a> [gateway\_tier](#input\_gateway\_tier) | The tier of the gateway | `string` | `"Standard_v2"` | no |
+| <a name="input_gw_ip_config_name"></a> [gw\_ip\_config\_name](#input\_gw\_ip\_config\_name) | Name for the gw\_ip\_config | `string` | `null` | no |
+| <a name="input_http_listener_name"></a> [http\_listener\_name](#input\_http\_listener\_name) | Name for the http\_listener | `string` | `null` | no |
 | <a name="input_ip_name"></a> [ip\_name](#input\_ip\_name) | The name of the public IP address. | `string` | n/a | yes |
 | <a name="input_ip_waf_list"></a> [ip\_waf\_list](#input\_ip\_waf\_list) | List of IP addresses for custom rules | <pre>list(object({<br/>    name = string<br/>    list = list(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace | `string` | `null` | no |
@@ -51,6 +60,7 @@ No modules.
 | <a name="input_public_ip_address_id"></a> [public\_ip\_address\_id](#input\_public\_ip\_address\_id) | The ID of the public IP address | `string` | `""` | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | The location of the resource group. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group. | `string` | n/a | yes |
+| <a name="input_routing_rule_name"></a> [routing\_rule\_name](#input\_routing\_rule\_name) | Name for the routing\_rule | `string` | `null` | no |
 | <a name="input_ssl_policy_name"></a> [ssl\_policy\_name](#input\_ssl\_policy\_name) | Name of the SSL policy | `string` | `"AppGwSslPolicy20220101"` | no |
 | <a name="input_ssl_policy_type"></a> [ssl\_policy\_type](#input\_ssl\_policy\_type) | Type of the SSL policy | `string` | `"Predefined"` | no |
 | <a name="input_subnet_appgw"></a> [subnet\_appgw](#input\_subnet\_appgw) | The ID of the subnet for the application gateway | `string` | n/a | yes |

@@ -139,8 +139,69 @@ variable "log_analytics_workspace_id" {
   type        = string
   default     = null
 }
+
 variable "public_ip_address_id" {
   description = "The ID of the public IP address"
   type        = string
   default     = ""
+}
+
+variable "application_gateway_name" {
+  description = "Name for the Gateway"
+  type        = string
+  default     = null
+}
+
+variable "frontend_ip_config_name" {
+  description = "Name for the frontend_ip_config"
+  type        = string
+  default     = null
+}
+
+variable "frontend_ip_private_config_name" {
+  description = "Name for the frontend_ip_private_config"
+  type        = string
+  default     = null
+}
+
+variable "http_listener_name" {
+  description = "Name for the http_listener"
+  type        = string
+  default     = null
+}
+
+variable "backend_http_settings_name" {
+  description = "Name for the backend_http_settings"
+  type        = string
+  default     = null
+}
+
+variable "routing_rule_name" {
+  description = "Name for the routing_rule"
+  type        = string
+  default     = null
+}
+
+variable "backend_address_pool_name" {
+  description = "Name for the backend_address_pool"
+  type        = string
+  default     = null
+}
+
+variable "frontend_port_name" {
+  description = "Name for the frontend_port"
+  type        = string
+  default     = null
+}
+
+variable "gw_ip_config_name" {
+  description = "Name for the gw_ip_config"
+  type        = string
+  default     = null
+}
+
+variable "agw_diagnostic_name" {
+  description = "Name for the agw_diagnostic"
+  type        = string
+  default     = null
 }
