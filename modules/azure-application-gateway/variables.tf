@@ -32,7 +32,6 @@ variable "gateway_mode" {
 variable "resource_group_location" {
   description = "The location of the resource group."
   type        = string
-  default     = "eastus"
 
   validation {
     condition     = length(var.resource_group_location) > 0
@@ -43,7 +42,6 @@ variable "resource_group_location" {
 variable "resource_group_name" {
   description = "The name of the resource group."
   type        = string
-  default     = "test-rg"
 
   validation {
     condition     = length(var.resource_group_name) > 0
@@ -54,7 +52,6 @@ variable "resource_group_name" {
 variable "ip_name" {
   description = "The name of the public IP address."
   type        = string
-  default     = "default-public-ip-name"
   validation {
     condition     = length(var.ip_name) > 0
     error_message = "The IP name must not be empty."
@@ -64,11 +61,6 @@ variable "ip_name" {
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
-  default = {
-    environment = "test"
-    cost_center = "12345"
-  }
-
   validation {
     condition     = length(var.tags) > 0
     error_message = "The tags map must not be empty."
@@ -78,8 +70,6 @@ variable "tags" {
 variable "name_prefix" {
   description = "Prefix for naming resources"
   type        = string
-  default     = "myapp"
-
   validation {
     condition     = length(var.name_prefix) > 0 && length(var.name_prefix) <= 20
     error_message = "The name_prefix must be between 1 and 20 characters long."
@@ -133,7 +123,6 @@ variable "ssl_policy_type" {
 variable "subnet_appgw" {
   description = "The ID of the subnet for the application gateway"
   type        = string
-  default     = "default-subnet-id"
   validation {
     condition     = length(var.subnet_appgw) > 0
     error_message = "The subnet_appgw must not be empty."
