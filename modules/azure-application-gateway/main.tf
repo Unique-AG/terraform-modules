@@ -8,6 +8,7 @@ locals {
   backend_address_pool_name       = "${var.name_prefix}-beap"
   frontend_port_name              = "${var.name_prefix}-feport"
   gw_ip_config_name               = "${var.name_prefix}-gwip"
+  agw_diagnostic_name             = "log-${var.name_prefix}-appgw"
   firewall_policy_id              = var.gateway_sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
 }
 
@@ -154,7 +155,7 @@ resource "azurerm_application_gateway" "appgw" {
 
 resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
   count                      = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? 1 : 0
-  name                       = "log-${local.app_gw_name}"
+  name                       = local.agw_diagnostic_name
   target_resource_id         = azurerm_application_gateway.appgw.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
 
