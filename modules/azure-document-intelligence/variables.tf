@@ -38,14 +38,16 @@ variable "tags" {
     error_message = "At least one tag must be defined"
   }
 }
-
-variable "key_vault_id" {
-  type        = string
-  description = "The ID of the key vault"
-  validation {
-    condition     = length(var.key_vault_id) > 0
-    error_message = "The key_vault_id must be a non-empty string"
-  }
+variable "key_vault_output_settings" {
+  type = object({
+    key_vault_output_enabled              = optional(boolean, true)
+    key_vault_id                          = string
+    endpoint_definitions_secret_name      = optional(string, "azure-document-intelligence-endpoint-definitions")
+    endpoints_secret_name                 = optional(string, "azure-document-intelligence-endpoints")
+    primary_access_key_secret_name_suffix = optional(list(string), "-key")
+  })
+  default  = null
+  nullable = true
 }
 
 variable "user_assigned_identity_ids" {
