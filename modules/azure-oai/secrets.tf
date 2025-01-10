@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_key_vault_secret" "primary_access_keys" {
-  for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : []
+  for_each     = var.key_vault_id != null ? azurerm_cognitive_account.aca : []
   name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
   value        = each.value.primary_access_key
   key_vault_id = var.key_vault_id
