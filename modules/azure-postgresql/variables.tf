@@ -133,6 +133,7 @@ variable "databases" {
       collation = optional(string, null)
       charset   = optional(string, null)
       lifecycle = optional(bool, false)
+      prevent_destroy = optional(bool, true)
     })
   )
   default = {}
@@ -176,4 +177,28 @@ variable "admin_password" {
   description = "The Password associated with the administrator_login for the PostgreSQL Flexible Server"
   type        = string
   sensitive   = true
+}
+
+variable "key_vault_id" {
+
+  default = null
+}
+
+variable "host_secret_name" {
+  default = null
+}
+
+variable "port_secret_name" {
+  default = null
+}
+
+variable "username_secret_name" {
+  default = null
+}
+
+variable "password_secret_name" {
+  default = null
+}
+variable "database_connection_string_secret_prefix" {
+  default = "database-url-"
 }
