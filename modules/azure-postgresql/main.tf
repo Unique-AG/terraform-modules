@@ -38,9 +38,12 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     }
   }
 
-  identity {
-    type         = "UserAssigned"
-    identity_ids = var.identity_ids
+  dynamic "identity" {
+    for_each = length(var.identity_ids) > 0 ? [1] : []
+    content {
+      type         = "UserAssigned"
+      identity_ids = var.identity_ids
+    }
   }
 
   dynamic "timeouts" {
