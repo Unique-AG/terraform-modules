@@ -3,10 +3,10 @@ resource "azurerm_cognitive_account" "aca" {
   name                  = "${var.doc_intelligence_name}-${each.key}"
   location              = each.value.location
   resource_group_name   = var.resource_group_name
-  kind                  = lookup(each.value, "account_kind", "FormRecognizer")
-  sku_name              = lookup(each.value, "account_sku_name", "S0")
+  kind                  = each.value.account_kind
+  sku_name              = each.value.account_sku_name
   tags                  = var.tags
-  custom_subdomain_name = lookup(each.value, "custom_subdomain_name", null)
+  custom_subdomain_name = each.value.custom_subdomain_name
   dynamic "identity" {
     for_each = var.user_assigned_identity_ids
     content {
