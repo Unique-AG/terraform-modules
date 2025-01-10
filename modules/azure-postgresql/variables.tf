@@ -129,10 +129,10 @@ variable "databases" {
   description = "Map of databases and its properties"
   type = map(
     object({
-      name      = string
-      collation = optional(string, null)
-      charset   = optional(string, null)
-      lifecycle = optional(bool, false)
+      name            = string
+      collation       = optional(string, null)
+      charset         = optional(string, null)
+      lifecycle       = optional(bool, false)
       prevent_destroy = optional(bool, true)
     })
   )
@@ -180,25 +180,36 @@ variable "admin_password" {
 }
 
 variable "key_vault_id" {
-
-  default = null
+  description = "The ID of the Key Vault where the secrets will be stored"
+  default     = null
+  type        = string
 }
 
 variable "host_secret_name" {
-  default = null
+  description = "Name of the secret containing the host"
+  default     = null
+  type        = string
 }
 
 variable "port_secret_name" {
-  default = null
+  description = "Name of the secret containing the port"
+  default     = null
+  type        = string
 }
 
 variable "username_secret_name" {
-  default = null
+  description = "Name of the secret containing the admin username"
+  default     = null
+  type        = string
 }
 
 variable "password_secret_name" {
-  default = null
+  description = "Name of the secret containing the admin password"
+  default     = null
+  type        = string
 }
 variable "database_connection_string_secret_prefix" {
-  default = "database-url-"
+  description = "Prefix of the secret containing the full connection string. The full name of the secret is this prefix + database name"
+  default     = "database-url-"
+  type        = string
 }
