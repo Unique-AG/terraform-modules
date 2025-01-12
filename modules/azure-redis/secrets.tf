@@ -12,14 +12,14 @@ resource "azurerm_key_vault_secret" "redis-cache-password" {
   key_vault_id = var.key_vault_id
 }
 
-resource "azurerm_key_vault_secret" "redis-cache-host-dns" {
+resource "azurerm_key_vault_secret" "redis-cache-host" {
   count        = local.create_vault_secrets ? 1 : 0
   name         = local.host_secret_name
   value        = azurerm_redis_cache.arc.hostname
   key_vault_id = var.key_vault_id
 }
 
-resource "azurerm_key_vault_secret" "redis-cache-host-dns" {
+resource "azurerm_key_vault_secret" "redis-cache-port" {
   count        = local.create_vault_secrets ? 1 : 0
   name         = local.port_secret_name
   value        = azurerm_redis_cache.arc.ssl_port
