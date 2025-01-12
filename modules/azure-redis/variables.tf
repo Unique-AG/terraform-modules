@@ -52,3 +52,27 @@ variable "public_network_access_enabled" {
   type        = bool
   default     = false
 }
+
+variable "key_vault_id" {
+  description = "The ID of the Key Vault where the secrets will be stored"
+  default     = null
+  type        = string
+}
+
+variable "password_secret_name" {
+  description = "Name of the secret containing the password"
+  default     = null
+  type        = string
+}
+
+variable "host_secret_name" {
+  description = "Name of the secret containing the host"
+  default     = null
+  type        = string
+}
+
+variable "port_secret_name" {
+  description = "Name of the secret containing the port"
+  default     = null
+  type        = string
+}
