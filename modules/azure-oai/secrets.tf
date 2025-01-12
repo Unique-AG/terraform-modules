@@ -9,10 +9,10 @@ resource "azurerm_key_vault_secret" "primary_access_keys" {
   key_vault_id = var.key_vault_id
 }
 
-resource "azurerm_key_vault_secret" "cognitive_account_endpoints" {
-  count        = local.create_vault_secrets ? 1 : 0
-  name         = var.endpoints_secret_name
-  value        = { for aca in azurerm_cognitive_account.aca : aca.name => aca.endpoint }
+resource "azurerm_key_vault_secret" "endpoint" {
+  for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
+  name         = "${each.key}-endpoint"
+  value        = each.value.endpoint
   key_vault_id = var.key_vault_id
 }
 
