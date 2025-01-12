@@ -1,7 +1,7 @@
 locals {
   create_vault_secrets = var.key_vault_id != null
   password_secret_name = var.password_secret_name == null ? "${var.name}-password" : var.password_secret_name
-  host_secret_name     = var.host_secret_name == null ? "${var.name}-username" : var.host_secret_name
+  host_secret_name     = var.host_secret_name == null ? "${var.name}-host" : var.host_secret_name
   port_secret_name     = var.port_secret_name == null ? "${var.name}-port" : var.port_secret_name
 }
 
