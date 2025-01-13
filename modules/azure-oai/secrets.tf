@@ -4,15 +4,15 @@ locals {
 
 resource "azurerm_key_vault_secret" "primary_access_keys" {
   for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
-  name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
-  value        = azurerm_cognitive_account.aca.primary_access_key
+  name         = basename("${each.key.id}") - "${var.primary_access_key_secret_name_suffix}"
+  value        = each.key.primary_access_key
   key_vault_id = var.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "endpoint" {
   for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
   name         = "${each.key}-endpoint"
-  value        = azurerm_cognitive_account.aca.endpoint
+  value        = each.key.endpoint
   key_vault_id = var.key_vault_id
 }
 
