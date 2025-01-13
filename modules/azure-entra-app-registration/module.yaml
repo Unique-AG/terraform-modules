@@ -1,7 +1,7 @@
 
-name: entra-app-registration
+name: azure-entra-app-registration
 sources:
-  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/entra-app-registration
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration
 version: 2.0.0-rc.1
 changes:
   - kind: added
