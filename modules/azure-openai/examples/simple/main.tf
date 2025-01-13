@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "example" {
   location = "switzerlandnorth"
 
 }
-module "oai" {
+module "openai" {
   source              = "../.."
   resource_group_name = azurerm_resource_group.example.name
   tags = {
@@ -38,9 +38,9 @@ module "oai" {
 }
 
 output "model_version_endpoints" {
-  value = module.oai.model_version_endpoints
+  value = module.openai.model_version_endpoints
 }
 
 output "cognitive_account_endpoints" {
-  value = module.oai.cognitive_account_endpoints
+  value = module.openai.cognitive_account_endpoints
 }

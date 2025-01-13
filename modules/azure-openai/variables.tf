@@ -77,11 +77,11 @@ variable "key_vault_id" {
 }
 variable "endpoint_definitions_secret_name" {
   description = "Name of the secret for the endpoint definitions"
-  default     = "azure-oai-endpoint-definitions"
+  default     = "azure-openai-endpoint-definitions"
 }
 variable "endpoints_secret_name" {
   description = "Name of the secret for the endpoints"
-  default     = "azure-oai-endpoints"
+  default     = "azure-openai-endpoints"
 }
 variable "primary_access_key_secret_name_suffix" {
   description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
