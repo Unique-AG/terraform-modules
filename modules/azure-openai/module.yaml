@@ -4,5 +4,5 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
 version: 2.0.0-rc.2
 changes:
-  - kind: added
-    description: "Fix the way secrets are stored in the KeyVault"
+  - kind: fixed
+    description: "Secrets stored in the wrong format in KeyVault"
