@@ -17,7 +17,7 @@ resource "azurerm_key_vault_secret" "key" {
 # Store the endpoint for each cognitive account in Key Vault
 resource "azurerm_key_vault_secret" "endpoint" {
   for_each        = local.create_vault_secrets ? local.aca_with_local_auth : {}
-  name            = "${each.key}${endpoint_secret_name_suffix}"
+  name            = "${each.key}${var.endpoint_secret_name_suffix}"
   value           = each.value.endpoint
   key_vault_id    = var.key_vault_id
 }
