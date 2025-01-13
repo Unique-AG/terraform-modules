@@ -8,13 +8,14 @@ on:
         required: true
         type: choice
         options:
-          - azure-storage-account
-          - azure-postgresql
-          - azure-kubernetes-service
-          - azure-document-intelligence
           - azure-application-gateway
+          - azure-document-intelligence
           - azure-entra-app-registration
-          # Add other module paths here as they are created
+          - azure-kubernetes-service
+          - azure-openai
+          - azure-postgresql
+          - azure-redis
+          - azure-storage-account
 
 jobs:
   create-release:
