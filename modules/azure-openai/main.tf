@@ -3,6 +3,7 @@ locals {
     for account in azurerm_cognitive_account.aca : {
       "endpoint" : account.endpoint,
       "location" : account.location,
+      "key" : "WORKLOAD_IDENTITY",
       "models" : [
         for deployment in azurerm_cognitive_deployment.deployments : {
           "modelName" : deployment.model[0].name,

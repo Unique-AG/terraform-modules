@@ -2,7 +2,7 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.0-rc.2
+version: 2.0.0-rc.3
 changes:
   - kind: fixed
-    description: "Secrets stored in the wrong format in KeyVault"
+    description: "azure-openai-endpoint-definitions secret was missing key property set to WORKLOAD_IDENTITY"
