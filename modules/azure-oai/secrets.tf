@@ -7,6 +7,7 @@ resource "azurerm_key_vault_secret" "primary_access_keys" {
   name         = "${basename(each.value.id)}${var.primary_access_key_secret_name_suffix}"
   value        = try(each.value.primary_access_key, "")
   key_vault_id = var.key_vault_id
+  depends_on   = [azurerm_cognitive_account.aca]
 }
 
 resource "azurerm_key_vault_secret" "endpoint" {
@@ -14,6 +15,7 @@ resource "azurerm_key_vault_secret" "endpoint" {
   name         = "${basename(each.value.id)}-endpoint"
   value        = each.value.endpoint
   key_vault_id = var.key_vault_id
+  depends_on   = [azurerm_cognitive_account.aca]
 }
 
 resource "azurerm_key_vault_secret" "model_version_endpoints" {
@@ -21,4 +23,5 @@ resource "azurerm_key_vault_secret" "model_version_endpoints" {
   name         = var.endpoint_definitions_secret_name
   value        = jsonencode(local.model_version_endpoints)
   key_vault_id = var.key_vault_id
+  depends_on   = [azurerm_cognitive_account.aca]
 }
