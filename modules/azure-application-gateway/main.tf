@@ -1,13 +1,14 @@
 locals {
-  app_gw_name                     = "${var.name_prefix}-appgw"
-  frontend_ip_config_name         = "${var.name_prefix}-feip"
-  frontend_ip_private_config_name = "${var.name_prefix}-privatefeip"
-  http_listener_name              = "${var.name_prefix}-httplstn"
-  backend_http_settings_name      = "${var.name_prefix}-be-htst"
-  routing_rule_name               = "${var.name_prefix}-rqrt"
-  backend_address_pool_name       = "${var.name_prefix}-beap"
-  frontend_port_name              = "${var.name_prefix}-feport"
-  gw_ip_config_name               = "${var.name_prefix}-gwip"
+  app_gw_name                     = var.application_gateway_name == null ? "${var.name_prefix}-appgw" : var.application_gateway_name
+  frontend_ip_config_name         = var.frontend_ip_config_name == null ? "${var.name_prefix}-feip" : var.frontend_ip_config_name
+  frontend_ip_private_config_name = var.frontend_ip_private_config_name == null ? "${var.name_prefix}-privatefeip" : var.frontend_ip_private_config_name
+  http_listener_name              = var.http_listener_name == null ? "${var.name_prefix}-httplstn" : var.http_listener_name
+  backend_http_settings_name      = var.backend_http_settings_name == null ? "${var.name_prefix}-be-htst" : var.backend_http_settings_name
+  routing_rule_name               = var.routing_rule_name == null ? "${var.name_prefix}-rqrt" : var.routing_rule_name
+  backend_address_pool_name       = var.backend_address_pool_name == null ? "${var.name_prefix}-beap" : var.backend_address_pool_name
+  frontend_port_name              = var.frontend_port_name == null ? "${var.name_prefix}-feport" : var.frontend_port_name
+  gw_ip_config_name               = var.gw_ip_config_name == null ? "${var.name_prefix}-gwip" : var.gw_ip_config_name
+  agw_diagnostic_name             = var.agw_diagnostic_name == null ? "log-${var.name_prefix}-appgw" : var.agw_diagnostic_name
   firewall_policy_id              = var.gateway_sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
 }
 
@@ -154,7 +155,7 @@ resource "azurerm_application_gateway" "appgw" {
 
 resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
   count                      = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? 1 : 0
-  name                       = "log-${local.app_gw_name}"
+  name                       = local.agw_diagnostic_name
   target_resource_id         = azurerm_application_gateway.appgw.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
 

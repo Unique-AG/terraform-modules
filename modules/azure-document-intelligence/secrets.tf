@@ -1,19 +1,24 @@
-# Store the primary access key for each cognitive account in Key Vault
+locals {
+  create_vault_secrets = var.key_vault_id != null
+}
+
 resource "azurerm_key_vault_secret" "key" {
-  for_each     = azurerm_cognitive_account.aca
-  name         = "${each.key}-key"
+  for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
+  name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
   value        = each.value.primary_access_key
   key_vault_id = var.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "azure_document_intelligence_endpoints" {
-  name         = "azure-document-intelligence-endpoints"
+  count        = local.create_vault_secrets ? 1 : 0
+  name         = var.endpoints_secret_name
   value        = jsonencode(local.azure_document_intelligence_endpoints)
   key_vault_id = var.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "azure_document_intelligence_endpoint_definitions" {
-  name         = "azure-document-intelligence-endpoint-definitions"
+  count        = local.create_vault_secrets ? 1 : 0
+  name         = var.endpoint_definitions_secret_name
   value        = jsonencode(local.azure_document_intelligence_endpoint_definitions)
   key_vault_id = var.key_vault_id
 }
