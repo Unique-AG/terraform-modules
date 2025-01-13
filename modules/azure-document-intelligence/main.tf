@@ -17,13 +17,14 @@ resource "azurerm_cognitive_account" "aca" {
 }
 
 locals {
-  azure_document_intelligence_endpoints = {
-    for key, value in var.accounts : key => azurerm_cognitive_account.aca[key].endpoint
-  }
-  azure_document_intelligence_endpoint_definitions = {
-    for key, value in var.accounts : key => {
+  azure_document_intelligence_endpoints = [
+    for key, value in var.accounts : azurerm_cognitive_account.aca[key].endpoint
+  ]
+  azure_document_intelligence_endpoint_definitions = [
+    for key, value in var.accounts : {
+      name     = key
       endpoint = azurerm_cognitive_account.aca[key].endpoint
       location = azurerm_cognitive_account.aca[key].location
     }
-  }
+  ]
 }
