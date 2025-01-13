@@ -87,3 +87,7 @@ variable "primary_access_key_secret_name_suffix" {
   description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
   default     = "-key"
 }
+variable "endpoint_secret_name_suffix" {
+  description = "The suffix of the secret name where the Cognitive Account Endpoint is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
+  default     = "-endpoint"
+}
