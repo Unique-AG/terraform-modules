@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - uses: hashicorp/setup-terraform@v3
       with:
         fetch-depth: 0
     - name: Setup Terraform

@@ -9,6 +9,11 @@ on:
         type: choice
         options:
           - azure-storage-account
+          - azure-postgresql
+          - azure-kubernetes-service
+          - azure-document-intelligence
+          - azure-application-gateway
+          - azure-entra-app-registration
           # Add other module paths here as they are created
 
 jobs:
