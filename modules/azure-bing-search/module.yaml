@@ -1,0 +1,8 @@
+
+name: azure-bing-search
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-search
+version: 1.0.0-rc.1
+changes:
+  - kind: added
+    description: "Azure Bing Search Module."

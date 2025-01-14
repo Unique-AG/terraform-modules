@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - azure-application-gateway
+          - azure-bing-search
           - azure-document-intelligence
           - azure-entra-app-registration
           - azure-kubernetes-service
