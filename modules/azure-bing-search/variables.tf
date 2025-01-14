@@ -15,6 +15,10 @@ variable "secret_name_bing_search_api_url" {
   description = "Name of the Key Vault secret that will store the Bing Search API endpoint URL"
   default     = "bing-search-api-url"
   nullable    = false
+  validation {
+    condition     = can(regex("^[a-z-]+$", var.secret_name_bing_search_api_url))
+    error_message = "The secret name must contain only lowercase letters and dashes."
+  }
 }
 
 variable "secret_name_bing_search_subscription_key" {
@@ -22,6 +26,10 @@ variable "secret_name_bing_search_subscription_key" {
   description = "Name of the Key Vault secret that will store the Bing Search subscription key"
   default     = "bing-search-subscription-key"
   nullable    = false
+  validation {
+    condition     = can(regex("^[a-z-]+$", var.secret_name_bing_search_subscription_key))
+    error_message = "The secret name must contain only lowercase letters and dashes."
+  }
 }
 
 variable "bing_search_v7_sku_name" {
