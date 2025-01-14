@@ -24,7 +24,6 @@ locals {
         model_format           = deployment.model_format
         sku_capacity           = deployment.sku_capacity
         sku_type               = deployment.sku_type
-        custom_subdomain_name  = deployment.custom_subdomain_name
         rai_policy_name        = deployment.rai_policy_name
         version_upgrade_option = deployment.version_upgrade_option
       }
