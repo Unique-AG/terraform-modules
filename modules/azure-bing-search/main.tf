@@ -1,11 +1,11 @@
 # https://stackoverflow.com/questions/75904744/unable-to-create-bing-services-through-terraform-az-cli
 resource "azurerm_resource_group_template_deployment" "argtd_bing_search_v7" {
-  name                = module.context.full_name
-  resource_group_name = module.context.resource_group.name
+  name                = var.name
+  resource_group_name = var.resource_group_name
   deployment_mode     = "Incremental"
   parameters_content = jsonencode({
     "name" = {
-      value = module.context.full_name
+      value = var.name
     },
     "location" = {
       value = "Global"

@@ -1,3 +1,8 @@
+variable "name" {
+  description = "Name of the Search service."
+  type        = string
+  nullable    = false
+}
 variable "resource_group_name" {
   description = "The name of the resource group where the Bing Search resources will be deployed"
   type        = string
