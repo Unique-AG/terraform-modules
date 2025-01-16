@@ -29,11 +29,10 @@ variable "cognitive_accounts" {
       model_format           = optional(string, "OpenAI")
       sku_capacity           = number
       sku_type               = optional(string, "Standard")
-      custom_subdomain_name  = optional(string)
       rai_policy_name        = optional(string)
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
-    custom_subdomain_name = optional(string)
+    custom_subdomain_name = string
 
   }))
   validation {
