@@ -11,3 +11,12 @@ output "azure_document_intelligence_endpoint_definitions" {
   value     = jsonencode(local.azure_document_intelligence_endpoint_definitions)
   sensitive = true
 }
+output "endpoint_definitions_secret_name" {
+  value = var.endpoint_definitions_secret_name
+}
+output "endpoints_secret_name" {
+  value = var.endpoints_secret_name
+}
+output "keys_secret_names" {
+    value = [for k, v in azurerm_key_vault_secret.key : v.name]
+}

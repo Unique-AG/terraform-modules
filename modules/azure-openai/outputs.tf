@@ -11,3 +11,12 @@ output "model_version_endpoints" {
   description = "List of objects containing endpoint, location and list of models"
   value       = jsonencode(local.model_version_endpoints)
 }
+output "endpoints_secret_names" {
+  value =  local.create_vault_secrets ? [for k, v in azurerm_key_vault_secret.endpoint : v.name] : null
+}
+output "model_version_endpoint_secret_name" {
+  value =  local.create_vault_secrets ? var.endpoint_definitions_secret_name : null
+}
+output "keys_secret_names" {
+    value = local.create_vault_secrets ? [for k, v in azurerm_key_vault_secret.key : v.name] : null
+}
