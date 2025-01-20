@@ -3,12 +3,14 @@ terraform {
     path = "terraform.tfstate"
   }
 }
+
 resource "azurerm_resource_group" "example" {
   name     = "my-resource-group"
   location = "switzerlandnorth"
-
 }
-resource "random_pet" "example_custom_subdomain_name" {}
+
+resource "random_pet" "example" {
+}
 
 module "openai" {
   source              = "../.."
@@ -20,7 +22,7 @@ module "openai" {
     "cognitive-account-switzerlandnorth" = {
       name                  = "cognitive-account-switzerlandnorth"
       location              = "switzerlandnorth"
-      custom_subdomain_name = random_pet.example_custom_subdomain_name.id
+      custom_subdomain_name = random_pet.example.id
       cognitive_deployments = [
         {
           name            = "text-embedding-ada-002-2"
