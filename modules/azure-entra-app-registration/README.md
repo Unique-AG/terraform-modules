@@ -1,15 +1,20 @@
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3.1 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.6 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azuread"></a> [azuread](#provider\_azuread) | n/a |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
+| <a name="provider_azuread"></a> [azuread](#provider\_azuread) | ~> 3.1 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.6 |
 
 ## Modules
 

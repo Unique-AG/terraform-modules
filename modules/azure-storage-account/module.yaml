@@ -2,9 +2,7 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 2.0.1
+version: 2.0.2
 changes:
-  - kind: fixed
-    description: "Example for audit logs edited to use correct mounting mode."
-  - kind: fixed
-    description: "Types for variables."
+  - kind: changed
+    description: "Required azurerm provider version is now ~> 4.15"

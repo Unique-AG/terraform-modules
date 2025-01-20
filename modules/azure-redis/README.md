@@ -15,13 +15,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.117 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.117 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
 
 ## Modules
 
