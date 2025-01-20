@@ -3,6 +3,23 @@
 
 This Terraform code configures Azure Defender for a subscription, enabling various security features and settings.
 
+## Default settings
+
+This module is secure by default, activating paid Defender features. While this provides comprehensive security coverage, it is important to note that enabling these Defender features will incur additional costs.
+
+### Important Notice
+
+**Warning:** The default settings of this module activate all Defender features, which will result in additional costs. If you do not wish to incur these costs, you need to configure the `tier` settings appropriately, e.g.:
+```hcl
+module "defender" {
+...
+  cloud_posture_defender_settings = {
+    tier = "Free"
+  }
+}
+```
+Possible values for the `tier` are `Free` or `Standard`.
+
 ## [Examples](./examples)
 
 # Module
