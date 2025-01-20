@@ -46,28 +46,6 @@ variable "cognitive_accounts" {
     ])
     error_message = "cognitive_deployments cannot be empty for any of the accounts"
   }
-
-
-  default = {
-    "cognitive-account-switzerlandnorth" = {
-      name     = "cognitive-account-switzerlandnorth"
-      location = "switzerlandnorth"
-      cognitive_deployments = [
-        {
-          name          = "text-embedding-ada-002-2"
-          model_name    = "text-embedding-ada-002"
-          model_version = "2"
-          sku_capacity  = 350
-        },
-        {
-          name          = "gpt-4-0613"
-          model_name    = "gpt-4"
-          model_version = "0613"
-          sku_capacity  = 20
-        }
-      ]
-    }
-  }
 }
 
 variable "key_vault_id" {
