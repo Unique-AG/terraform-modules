@@ -1,0 +1,8 @@
+
+name: azure-defender
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
+version: 2.0.0-rc.1
+changes:
+  - kind: added
+    description: "All Unique Azure Modules start off in the major version `2.0.0` as Unique already supported a lot of modules prior to the public repository which are summarized as `1.x`. Like that, it is easier to separate the modules that were already handed out from the modules that are new and will be handed out in the future."
