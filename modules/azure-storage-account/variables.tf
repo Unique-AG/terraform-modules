@@ -42,11 +42,15 @@ variable "account_kind" {
 variable "account_replication_type" {
   description = "Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs."
   default     = "LRS"
+  type        = string
+  nullable    = false
 }
 
 variable "access_tier" {
   description = "Type of replication to use for this storage account. Learn more about storage account access tiers in the Azure Docs. Defaults to Cool as the difference is negligible for most use cases but is more cost-efficient."
   default     = "Cool"
+  type        = string
+  nullable    = false
 }
 
 variable "is_nfs_mountable" {
