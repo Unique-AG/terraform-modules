@@ -61,6 +61,9 @@ No modules.
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | The Hostname of the Redis Instance |
 | <a name="output_non_ssl_port"></a> [non\_ssl\_port](#output\_non\_ssl\_port) | The non-SSL Port of the Redis Instance |
 | <a name="output_primary_access_key"></a> [primary\_access\_key](#output\_primary\_access\_key) | The current primary key that clients can use to authenticate with Redis cache. |
+| <a name="output_redis_cache_host_secret_name"></a> [redis\_cache\_host\_secret\_name](#output\_redis\_cache\_host\_secret\_name) | Name of the secret containing Redis host. |
+| <a name="output_redis_cache_password_secret_name"></a> [redis\_cache\_password\_secret\_name](#output\_redis\_cache\_password\_secret\_name) | Name of the secret containing Redis password. |
+| <a name="output_redis_cache_port_secret_name"></a> [redis\_cache\_port\_secret\_name](#output\_redis\_cache\_port\_secret\_name) | Name of the secret containing Redis port. |
 | <a name="output_routeid"></a> [routeid](#output\_routeid) | The Route ID |
 | <a name="output_secondary_access_key"></a> [secondary\_access\_key](#output\_secondary\_access\_key) | The current secondary key that clients can use to authenticate with Redis cache. |
 | <a name="output_ssl_port"></a> [ssl\_port](#output\_ssl\_port) | The SSL Port of the Redis Instance |

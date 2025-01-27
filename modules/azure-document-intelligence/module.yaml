@@ -6,3 +6,5 @@ version: 2.0.0-rc.3
 changes:
   - kind: fixed
     description: "Explicitly state the version requirements for all providers"
+  - kind: added
+    description: "Include names of created secrets in the outputs"

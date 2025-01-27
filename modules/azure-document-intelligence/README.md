@@ -57,5 +57,8 @@ No modules.
 |------|-------------|
 | <a name="output_azure_document_intelligence_endpoint_definitions"></a> [azure\_document\_intelligence\_endpoint\_definitions](#output\_azure\_document\_intelligence\_endpoint\_definitions) | n/a |
 | <a name="output_azure_document_intelligence_endpoints"></a> [azure\_document\_intelligence\_endpoints](#output\_azure\_document\_intelligence\_endpoints) | n/a |
+| <a name="output_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#output\_endpoint\_definitions\_secret\_name) | n/a |
+| <a name="output_endpoints_secret_name"></a> [endpoints\_secret\_name](#output\_endpoints\_secret\_name) | n/a |
+| <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | n/a |
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
 <!-- END_TF_DOCS -->
