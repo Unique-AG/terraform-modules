@@ -132,19 +132,20 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
-  for_each              = var.node_pool_settings
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
-  name                  = each.key
-  vm_size               = each.value.vm_size
-  auto_scaling_enabled  = each.value.auto_scaling_enabled
-  min_count             = each.value.min_count
-  max_count             = each.value.max_count
-  os_disk_size_gb       = each.value.os_disk_size_gb
-  mode                  = each.value.mode
-  node_labels           = each.value.node_labels
-  zones                 = each.value.zones
-  node_taints           = each.value.node_taints
-  os_sku                = each.value.os_sku
+  for_each                    = var.node_pool_settings
+  kubernetes_cluster_id       = azurerm_kubernetes_cluster.cluster.id
+  name                        = each.key
+  vm_size                     = each.value.vm_size
+  temporary_name_for_rotation = each.value.temporary_name_for_rotation
+  auto_scaling_enabled        = each.value.auto_scaling_enabled
+  min_count                   = each.value.min_count
+  max_count                   = each.value.max_count
+  os_disk_size_gb             = each.value.os_disk_size_gb
+  mode                        = each.value.mode
+  node_labels                 = each.value.node_labels
+  zones                       = each.value.zones
+  node_taints                 = each.value.node_taints
+  os_sku                      = each.value.os_sku
   upgrade_settings {
     max_surge = each.value.upgrade_settings.max_surge
   }
