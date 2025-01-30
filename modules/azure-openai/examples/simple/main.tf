@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "example" {
   location = "switzerlandnorth"
 }
 
-resource "random_pet" "example" {
+resource "random_pet" "example_custom_subdomain_name" {
 }
 
 module "openai" {
@@ -22,7 +22,7 @@ module "openai" {
     "cognitive-account-switzerlandnorth" = {
       name                  = "cognitive-account-switzerlandnorth"
       location              = "switzerlandnorth"
-      custom_subdomain_name = random_pet.example.id
+      custom_subdomain_name = random_pet.example_custom_subdomain_name.id
       cognitive_deployments = [
         {
           name            = "text-embedding-ada-002-2"
