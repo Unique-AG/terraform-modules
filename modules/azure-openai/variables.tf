@@ -22,6 +22,7 @@ variable "cognitive_accounts" {
     sku_name                      = optional(string, "S0")
     local_auth_enabled            = optional(bool, false)
     public_network_access_enabled = optional(bool, false)
+    custom_subdomain_name         = string
     cognitive_deployments = list(object({
       name                   = string
       model_name             = string
@@ -29,10 +30,9 @@ variable "cognitive_accounts" {
       model_format           = optional(string, "OpenAI")
       sku_capacity           = number
       sku_type               = optional(string, "Standard")
-      rai_policy_name        = optional(string)
+      rai_policy_name        = optional(string, "Default")
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
-    custom_subdomain_name = string
 
   }))
   validation {
@@ -45,28 +45,6 @@ variable "cognitive_accounts" {
       length(account.cognitive_deployments) > 0
     ])
     error_message = "cognitive_deployments cannot be empty for any of the accounts"
-  }
-
-
-  default = {
-    "cognitive-account-switzerlandnorth" = {
-      name     = "cognitive-account-switzerlandnorth"
-      location = "switzerlandnorth"
-      cognitive_deployments = [
-        {
-          name          = "text-embedding-ada-002-2"
-          model_name    = "text-embedding-ada-002"
-          model_version = "2"
-          sku_capacity  = 350
-        },
-        {
-          name          = "gpt-4-0613"
-          model_name    = "gpt-4"
-          model_version = "0613"
-          sku_capacity  = 20
-        }
-      ]
-    }
   }
 }
 

@@ -13,13 +13,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.117 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.117 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
 
 ## Modules
 
@@ -39,7 +39,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cognitive_accounts"></a> [cognitive\_accounts](#input\_cognitive\_accounts) | Map of cognitive accounts | <pre>map(object({<br/>    name                          = string<br/>    location                      = string<br/>    kind                          = optional(string, "OpenAI")<br/>    sku_name                      = optional(string, "S0")<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    cognitive_deployments = list(object({<br/>      name                   = string<br/>      model_name             = string<br/>      model_version          = string<br/>      model_format           = optional(string, "OpenAI")<br/>      sku_capacity           = number<br/>      sku_type               = optional(string, "Standard")<br/>      rai_policy_name        = optional(string)<br/>      version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    }))<br/>    custom_subdomain_name = string<br/><br/>  }))</pre> | <pre>{<br/>  "cognitive-account-switzerlandnorth": {<br/>    "cognitive_deployments": [<br/>      {<br/>        "model_name": "text-embedding-ada-002",<br/>        "model_version": "2",<br/>        "name": "text-embedding-ada-002-2",<br/>        "sku_capacity": 350<br/>      },<br/>      {<br/>        "model_name": "gpt-4",<br/>        "model_version": "0613",<br/>        "name": "gpt-4-0613",<br/>        "sku_capacity": 20<br/>      }<br/>    ],<br/>    "location": "switzerlandnorth",<br/>    "name": "cognitive-account-switzerlandnorth"<br/>  }<br/>}</pre> | no |
+| <a name="input_cognitive_accounts"></a> [cognitive\_accounts](#input\_cognitive\_accounts) | Map of cognitive accounts | <pre>map(object({<br/>    name                          = string<br/>    location                      = string<br/>    kind                          = optional(string, "OpenAI")<br/>    sku_name                      = optional(string, "S0")<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    custom_subdomain_name         = string<br/>    cognitive_deployments = list(object({<br/>      name                   = string<br/>      model_name             = string<br/>      model_version          = string<br/>      model_format           = optional(string, "OpenAI")<br/>      sku_capacity           = number<br/>      sku_type               = optional(string, "Standard")<br/>      rai_policy_name        = optional(string, "Default")<br/>      version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    }))<br/><br/>  }))</pre> | n/a | yes |
 | <a name="input_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#input\_endpoint\_definitions\_secret\_name) | Name of the secret for the endpoint definitions | `string` | `"azure-openai-endpoint-definitions"` | no |
 | <a name="input_endpoint_secret_name_suffix"></a> [endpoint\_secret\_name\_suffix](#input\_endpoint\_secret\_name\_suffix) | The suffix of the secret name where the Cognitive Account Endpoint is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix | `string` | `"-endpoint"` | no |
 | <a name="input_endpoints_secret_name"></a> [endpoints\_secret\_name](#input\_endpoints\_secret\_name) | Name of the secret for the endpoints | `string` | `"azure-openai-endpoints"` | no |
@@ -53,6 +53,9 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_cognitive_account_endpoints"></a> [cognitive\_account\_endpoints](#output\_cognitive\_account\_endpoints) | The endpoints used to connect to the Cognitive Service Account. |
+| <a name="output_endpoints_secret_names"></a> [endpoints\_secret\_names](#output\_endpoints\_secret\_names) | List of secret names containing the endpoints for each Cognitive Service Account. Returns null if Key Vault integration is disabled. |
+| <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of secret names containing the access keys for each Cognitive Service Account. Returns null if Key Vault integration is disabled. |
+| <a name="output_model_version_endpoint_secret_name"></a> [model\_version\_endpoint\_secret\_name](#output\_model\_version\_endpoint\_secret\_name) | Name of the secret containing the model version endpoint definitions. Returns null if Key Vault integration is disabled. |
 | <a name="output_model_version_endpoints"></a> [model\_version\_endpoints](#output\_model\_version\_endpoints) | List of objects containing endpoint, location and list of models |
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | A primary access keys which can be used to connect to the Cognitive Service Accounts. |
 <!-- END_TF_DOCS -->

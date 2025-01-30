@@ -10,6 +10,9 @@ echo "Repo root: $REPO_ROOT"
 # Set the base directory to the modules folder
 BASE_DIR="modules"
 
+# Exit on any error
+set -e
+
 for module in "$BASE_DIR"/*; do
   if [ -d "$module" ]; then
     echo "Processing module: $module"
@@ -24,10 +27,10 @@ for module in "$BASE_DIR"/*; do
 
         # Run terraform init and validate
         echo "    Running terraform init"
-        terraform init -input=false
+        terraform init -input=false || exit 1 # if any example error occurs, exit the script
 
         echo "    Running terraform validate"
-        terraform validate
+        terraform validate || exit 1 # if any example error occurs, exit the script
 
         # Return to the base directory
         cd - > /dev/null || exit
@@ -36,4 +39,4 @@ for module in "$BASE_DIR"/*; do
   fi
 done
 
-echo "All modules and examples processed."
+echo "All modules and examples processed successfully."
