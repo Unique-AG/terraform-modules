@@ -27,7 +27,7 @@ module "openai" {
           model_name      = "text-embedding-ada-002"
           model_version   = "2"
           sku_capacity    = 350
-          rai_policy_name = "DefaultV2"
+          rai_policy_name = "Microsoft.Default"
         },
         {
           name          = "gpt-4-01613"

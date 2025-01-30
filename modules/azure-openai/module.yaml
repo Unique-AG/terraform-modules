@@ -2,15 +2,7 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.0
+version: 2.0.1
 changes:
-  - kind: changed
-    description: "Content Filter Policy (`rai_policy`) now defaults to `Default`"
-  - kind: changed
-    description: "Required azurerm provider version is now `~> 4.15`"
   - kind: fixed
-    description: "The example now sets the required variable `custom_subdomain_name`."
-  - kind: changed
-    description: "The default value for `cognitive_accounts` is no longer set. This should be a conscious choice of the user."
-  - kind: added
-    description: "Include names of created secrets in the outputs."
+    description: "Correct used expression for default policy."
