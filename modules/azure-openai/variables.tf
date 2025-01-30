@@ -30,7 +30,7 @@ variable "cognitive_accounts" {
       model_format           = optional(string, "OpenAI")
       sku_capacity           = number
       sku_type               = optional(string, "Standard")
-      rai_policy_name        = optional(string, "Default")
+      rai_policy_name        = optional(string, "Microsoft.Default")
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
 
