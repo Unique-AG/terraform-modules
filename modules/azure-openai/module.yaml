@@ -2,7 +2,7 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.0
+version: 2.0.1
 changes:
   - kind: changed
     description: "Content Filter Policy (`rai_policy`) now defaults to `Default`"

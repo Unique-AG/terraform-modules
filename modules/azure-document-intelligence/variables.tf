@@ -40,19 +40,23 @@ variable "tags" {
 }
 
 variable "key_vault_id" {
+  type        = string
   description = "The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault"
   default     = null
 }
 
 variable "endpoint_definitions_secret_name" {
+  type        = string
   description = "Name of the secret for the endpoint definitions"
   default     = "azure-document-intelligence-endpoint-definitions"
 }
 variable "endpoints_secret_name" {
+  type        = string
   description = "Name of the secret for the endpoints"
   default     = "azure-document-intelligence-endpoints"
 }
 variable "primary_access_key_secret_name_suffix" {
+  type        = string
   description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
   default     = "-key"
 }

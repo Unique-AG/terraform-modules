@@ -2,7 +2,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 2.0.0-rc.2
+version: 2.0.0
 changes:
   - kind: fixed
     description: "Explicitly state the version requirements for all providers"
