@@ -2,7 +2,7 @@
 name: azure-entra-app-registration
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration
-version: 2.0.0-rc.2
+version: 2.0.0-rc.3
 changes:
   - kind: fixed
-    description: "Module name was changed to `azure-entra-app-registration` to match the naming convention of the other modules."
+    description: "Explicitly state the version requirements for all providers"

@@ -26,3 +26,18 @@ output "secondary_access_key" {
   description = "The current secondary key that clients can use to authenticate with Redis cache. "
   sensitive   = true
 }
+
+output "redis_cache_password_secret_name" {
+  description = "Name of the secret containing Redis password."
+  value       = local.create_vault_secrets ? local.password_secret_name : null
+}
+
+output "redis_cache_host_secret_name" {
+  description = "Name of the secret containing Redis host."
+  value       = local.create_vault_secrets ? local.host_secret_name : null
+}
+
+output "redis_cache_port_secret_name" {
+  description = "Name of the secret containing Redis port."
+  value       = local.create_vault_secrets ? local.port_secret_name : null
+}

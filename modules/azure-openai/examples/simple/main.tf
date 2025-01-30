@@ -3,12 +3,14 @@ terraform {
     path = "terraform.tfstate"
   }
 }
+
 resource "azurerm_resource_group" "example" {
   name     = "my-resource-group"
   location = "switzerlandnorth"
-
 }
-resource "random_pet" "example_custom_subdomain_name" {}
+
+resource "random_pet" "example_custom_subdomain_name" {
+}
 
 module "openai" {
   source              = "../.."
