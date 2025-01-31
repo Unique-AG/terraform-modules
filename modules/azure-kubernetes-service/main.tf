@@ -136,7 +136,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   kubernetes_cluster_id       = azurerm_kubernetes_cluster.cluster.id
   name                        = each.key
   vm_size                     = each.value.vm_size
-  temporary_name_for_rotation = each.value.temporary_name_for_rotation
+  temporary_name_for_rotation = lookup(each.value, "temporary_name_for_rotation", "${each.key}repl")
   auto_scaling_enabled        = each.value.auto_scaling_enabled
   min_count                   = each.value.min_count
   max_count                   = each.value.max_count

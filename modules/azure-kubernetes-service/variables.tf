@@ -230,7 +230,7 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
-    temporary_name_for_rotation = string
+    temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge = string
     })
