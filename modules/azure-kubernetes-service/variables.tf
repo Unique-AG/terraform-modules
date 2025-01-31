@@ -218,18 +218,19 @@ variable "log_table_plan" {
 
 variable "node_pool_settings" {
   type = map(object({
-    vm_size              = string
-    node_count           = number
-    min_count            = number
-    max_count            = number
-    os_disk_size_gb      = number
-    os_sku               = optional(string, "Ubuntu")
-    os_type              = optional(string, "Linux")
-    node_labels          = map(string)
-    node_taints          = list(string)
-    auto_scaling_enabled = bool
-    mode                 = string
-    zones                = list(string)
+    vm_size                     = string
+    node_count                  = number
+    min_count                   = number
+    max_count                   = number
+    os_disk_size_gb             = number
+    os_sku                      = optional(string, "Ubuntu")
+    os_type                     = optional(string, "Linux")
+    node_labels                 = map(string)
+    node_taints                 = list(string)
+    auto_scaling_enabled        = bool
+    mode                        = string
+    zones                       = list(string)
+    temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge = string
     })
@@ -245,10 +246,11 @@ variable "node_pool_settings" {
       node_labels = {
         pool = "stable"
       }
-      node_taints          = []
-      auto_scaling_enabled = true
-      mode                 = "User"
-      zones                = ["1", "2", "3"]
+      node_taints                 = []
+      auto_scaling_enabled        = true
+      mode                        = "User"
+      zones                       = ["1", "2", "3"]
+      temporary_name_for_rotation = "stablerepl"
       upgrade_settings = {
         max_surge = "10%"
       }
@@ -262,10 +264,11 @@ variable "node_pool_settings" {
       node_labels = {
         pool = "burst"
       }
-      node_taints          = ["burst=true:NoSchedule"]
-      auto_scaling_enabled = true
-      mode                 = "User"
-      zones                = ["1", "2", "3"]
+      node_taints                 = ["burst=true:NoSchedule"]
+      auto_scaling_enabled        = true
+      mode                        = "User"
+      zones                       = ["1", "2", "3"]
+      temporary_name_for_rotation = "burstrepl"
       upgrade_settings = {
         max_surge = "10%"
       }
