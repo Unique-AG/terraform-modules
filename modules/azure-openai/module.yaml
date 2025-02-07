@@ -2,7 +2,7 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.1
+version: 2.0.2
 changes:
   - kind: fixed
     description: "Add cognitive keys to sensitive keyvault."
