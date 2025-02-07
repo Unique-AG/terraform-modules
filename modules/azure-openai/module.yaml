@@ -5,4 +5,4 @@ sources:
 version: 2.0.1
 changes:
   - kind: fixed
-    description: "Correct used expression for default policy."
+    description: "Add cognitive keys to sensitive keyvault."

@@ -46,6 +46,7 @@ No modules.
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault | `any` | `null` | no |
 | <a name="input_primary_access_key_secret_name_suffix"></a> [primary\_access\_key\_secret\_name\_suffix](#input\_primary\_access\_key\_secret\_name\_suffix) | The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix | `string` | `"-key"` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group | `string` | n/a | yes |
+| <a name="input_sens_key_vault_id"></a> [sens\_key\_vault\_id](#input\_sens\_key\_vault\_id) | The ID of the sensitive Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault | `any` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags for the resource | `map(string)` | n/a | yes |
 
 ## Outputs

@@ -1,5 +1,6 @@
 locals {
-  create_vault_secrets = var.key_vault_id != null
+  create_vault_secrets      = var.key_vault_id != null
+  create_vault_secrets_sens = var.sens_key_vault_id != null
   # Filtered  cognitive accounts to include only those with a local auth enabled
   aca_with_local_auth = {
     for k, v in var.cognitive_accounts : k => v
@@ -8,10 +9,10 @@ locals {
 }
 
 resource "azurerm_key_vault_secret" "key" {
-  for_each     = local.create_vault_secrets ? local.aca_with_local_auth : {}
+  for_each     = local.create_vault_secrets_sens ? local.aca_with_local_auth : {}
   name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
   value        = azurerm_cognitive_account.aca[each.value.name].primary_access_key
-  key_vault_id = var.key_vault_id
+  key_vault_id = var.sens_key_vault_id
 }
 
 # Store the endpoint for each cognitive account in Key Vault
