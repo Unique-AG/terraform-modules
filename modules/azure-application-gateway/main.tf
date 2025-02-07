@@ -18,6 +18,11 @@ resource "azurerm_application_gateway" "appgw" {
   resource_group_name = var.resource_group_name
   enable_http2        = true
 
+  global {
+    request_buffering_enabled  = var.request_buffering_enabled
+    response_buffering_enabled = var.response_buffering_enabled
+  }
+
   sku {
     name = var.gateway_sku
     tier = var.gateway_tier

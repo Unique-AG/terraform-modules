@@ -61,8 +61,10 @@ No modules.
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
 | <a name="input_private_ip"></a> [private\_ip](#input\_private\_ip) | Private IP address for the frontend IP configuration | `string` | n/a | yes |
 | <a name="input_public_ip_address_id"></a> [public\_ip\_address\_id](#input\_public\_ip\_address\_id) | The ID of the public IP address | `string` | `""` | no |
+| <a name="input_request_buffering_enabled"></a> [request\_buffering\_enabled](#input\_request\_buffering\_enabled) | Enable request buffering | `bool` | `true` | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | The location of the resource group. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group. | `string` | n/a | yes |
+| <a name="input_response_buffering_enabled"></a> [response\_buffering\_enabled](#input\_response\_buffering\_enabled) | Enable response buffering | `bool` | `false` | no |
 | <a name="input_routing_rule_name"></a> [routing\_rule\_name](#input\_routing\_rule\_name) | Name for the routing\_rule | `string` | `null` | no |
 | <a name="input_ssl_policy_name"></a> [ssl\_policy\_name](#input\_ssl\_policy\_name) | Name of the SSL policy | `string` | `"AppGwSslPolicy20220101"` | no |
 | <a name="input_ssl_policy_type"></a> [ssl\_policy\_type](#input\_ssl\_policy\_type) | Type of the SSL policy | `string` | `"Predefined"` | no |
