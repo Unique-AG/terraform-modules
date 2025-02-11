@@ -205,3 +205,20 @@ variable "agw_diagnostic_name" {
   type        = string
   default     = null
 }
+
+variable "response_buffering_enabled" {
+  description = "Enable response buffering"
+  type        = bool
+  default     = false
+}
+
+variable "request_buffering_enabled" {
+  description = "Enable request buffering"
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.request_buffering_enabled == true || var.gateway_sku != "WAF_v2"
+    error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
+  }
+}
