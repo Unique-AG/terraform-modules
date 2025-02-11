@@ -52,6 +52,7 @@ variable "key_vault_id" {
   description = "The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault"
   default     = null
 }
+
 variable "endpoint_definitions_secret_name" {
   description = "Name of the secret for the endpoint definitions"
   default     = "azure-openai-endpoint-definitions"
