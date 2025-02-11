@@ -5,4 +5,4 @@ sources:
 version: 2.0.2
 changes:
   - kind: fixed
-    description: "Add cognitive keys to sensitive keyvault."
+    description: "Delete aca_with_local_auth variable as we would like to use a sensitive key vault"
