@@ -2,7 +2,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.3
+version: 2.1.0
 changes:
+  - kind: added
+    description: "Added support for customer managed key and network ACLs"
   - kind: fixed
     description: "Revert changes of the previous version"
