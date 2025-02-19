@@ -125,24 +125,38 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   dynamic "maintenance_window_auto_upgrade" {
     for_each = var.maintenance_window_auto_upgrade != null ? [1] : []
     content {
-      frequency   = var.maintenance_window_auto_upgrade.frequency
-      interval    = var.maintenance_window_auto_upgrade.interval
-      duration    = var.maintenance_window_auto_upgrade.duration
-      day_of_week = var.maintenance_window_auto_upgrade.day_of_week
-      start_time  = var.maintenance_window_auto_upgrade.start_time
-      utc_offset  = var.maintenance_window_auto_upgrade.utc_offset
+      frequency    = var.maintenance_window_auto_upgrade.frequency
+      interval     = var.maintenance_window_auto_upgrade.interval
+      duration     = var.maintenance_window_auto_upgrade.duration
+      day_of_week  = var.maintenance_window_auto_upgrade.day_of_week
+      day_of_month = var.maintenance_window_auto_upgrade.day_of_month
+      week_index   = var.maintenance_window_auto_upgrade.week_index
+      start_time   = var.maintenance_window_auto_upgrade.start_time
+      utc_offset   = var.maintenance_window_auto_upgrade.utc_offset
+      start_date   = var.maintenance_window_auto_upgrade.start_date
+      not_allowed {
+        start = var.maintenance_window_auto_upgrade.not_allowed.start
+        end   = var.maintenance_window_auto_upgrade.not_allowed.end
+      }
     }
   }
 
   dynamic "maintenance_window_node_os" {
     for_each = var.maintenance_window_node_os != null ? [1] : []
     content {
-      frequency   = var.maintenance_window_node_os.frequency
-      interval    = var.maintenance_window_node_os.interval
-      duration    = var.maintenance_window_node_os.duration
-      day_of_week = var.maintenance_window_node_os.day_of_week
-      start_time  = var.maintenance_window_node_os.start_time
-      utc_offset  = var.maintenance_window_node_os.utc_offset
+      frequency    = var.maintenance_window_node_os.frequency
+      interval     = var.maintenance_window_node_os.interval
+      duration     = var.maintenance_window_node_os.duration
+      day_of_week  = var.maintenance_window_node_os.day_of_week
+      day_of_month = var.maintenance_window_node_os.day_of_month
+      week_index   = var.maintenance_window_node_os.week_index
+      start_time   = var.maintenance_window_node_os.start_time
+      utc_offset   = var.maintenance_window_node_os.utc_offset
+      start_date   = var.maintenance_window_node_os.start_date
+      not_allowed {
+        start = var.maintenance_window_node_os.not_allowed.start
+        end   = var.maintenance_window_node_os.not_allowed.end
+      }
     }
   }
 

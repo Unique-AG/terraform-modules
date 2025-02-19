@@ -397,11 +397,11 @@ variable "maintenance_window_auto_upgrade" {
     interval     = optional(number, 2)
     duration     = optional(number, 6)
     day_of_week  = optional(string, "Saturday")
-    day_of_month = optional(number)
-    week_index   = optional(string)
+    day_of_month = optional(number, null)
+    week_index   = optional(string, null)
     start_time   = optional(string, "18:00")
     utc_offset   = optional(string, "+00:00")
-    start_date   = optional(string)
+    start_date   = optional(string, null)
     not_allowed = optional(list(object({
       start = string
       end   = string
@@ -431,27 +431,31 @@ variable "maintenance_window_auto_upgrade" {
   validation {
     condition = var.maintenance_window_auto_upgrade == null ? true : (
       var.maintenance_window_auto_upgrade.frequency != "Weekly" ||
-      (var.maintenance_window_auto_upgrade.day_of_week != null &&
-      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_auto_upgrade.day_of_week))
+      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_auto_upgrade.day_of_week)
     )
-    error_message = "When frequency is Weekly, day_of_week must be specified and be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
+    error_message = "When frequency is Weekly, day_of_week must be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
   }
   validation {
     condition = var.maintenance_window_auto_upgrade == null ? true : (
       var.maintenance_window_auto_upgrade.frequency != "AbsoluteMonthly" ||
-      (var.maintenance_window_auto_upgrade.day_of_month != null &&
-        var.maintenance_window_auto_upgrade.day_of_month >= 0 &&
-      var.maintenance_window_auto_upgrade.day_of_month <= 31)
+      (
+        var.maintenance_window_auto_upgrade.day_of_month == null ? false : (
+          var.maintenance_window_auto_upgrade.day_of_month >= 0 &&
+          var.maintenance_window_auto_upgrade.day_of_month <= 31
+        )
+      )
     )
-    error_message = "When frequency is AbsoluteMonthly, day_of_month must be specified and be between 0 and 31"
+    error_message = "When frequency is AbsoluteMonthly, day_of_month must be between 0 and 31"
   }
   validation {
     condition = var.maintenance_window_auto_upgrade == null ? true : (
       var.maintenance_window_auto_upgrade.frequency != "RelativeMonthly" ||
-      (var.maintenance_window_auto_upgrade.week_index != null &&
-      contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_auto_upgrade.week_index))
+      (
+        var.maintenance_window_auto_upgrade.week_index == null ? false :
+        contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_auto_upgrade.week_index)
+      )
     )
-    error_message = "When frequency is RelativeMonthly, week_index must be specified and be one of: First, Second, Third, Fourth, Last"
+    error_message = "When frequency is RelativeMonthly, week_index must be one of: First, Second, Third, Fourth, Last"
   }
   validation {
     condition = var.maintenance_window_auto_upgrade == null ? true : (
@@ -476,11 +480,11 @@ variable "maintenance_window_node_os" {
     interval     = optional(number, 1)
     duration     = optional(number, 6)
     day_of_week  = optional(string, "Sunday")
-    day_of_month = optional(number)
-    week_index   = optional(string)
+    day_of_month = optional(number, null)
+    week_index   = optional(string, null)
     start_time   = optional(string, "00:00")
     utc_offset   = optional(string, "+00:00")
-    start_date   = optional(string)
+    start_date   = optional(string, null)
     not_allowed = optional(list(object({
       start = string
       end   = string
@@ -510,27 +514,31 @@ variable "maintenance_window_node_os" {
   validation {
     condition = var.maintenance_window_node_os == null ? true : (
       var.maintenance_window_node_os.frequency != "Weekly" ||
-      (var.maintenance_window_node_os.day_of_week != null &&
-      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_node_os.day_of_week))
+      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_node_os.day_of_week)
     )
-    error_message = "When frequency is Weekly, day_of_week must be specified and be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
+    error_message = "When frequency is Weekly, day_of_week must be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
   }
   validation {
     condition = var.maintenance_window_node_os == null ? true : (
       var.maintenance_window_node_os.frequency != "AbsoluteMonthly" ||
-      (var.maintenance_window_node_os.day_of_month != null &&
-        var.maintenance_window_node_os.day_of_month >= 0 &&
-      var.maintenance_window_node_os.day_of_month <= 31)
+      (
+        var.maintenance_window_node_os.day_of_month == null ? false : (
+          var.maintenance_window_node_os.day_of_month >= 0 &&
+          var.maintenance_window_node_os.day_of_month <= 31
+        )
+      )
     )
-    error_message = "When frequency is AbsoluteMonthly, day_of_month must be specified and be between 0 and 31"
+    error_message = "When frequency is AbsoluteMonthly, day_of_month must be between 0 and 31"
   }
   validation {
     condition = var.maintenance_window_node_os == null ? true : (
       var.maintenance_window_node_os.frequency != "RelativeMonthly" ||
-      (var.maintenance_window_node_os.week_index != null &&
-      contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_node_os.week_index))
+      (
+        var.maintenance_window_node_os.week_index == null ? false :
+        contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_node_os.week_index)
+      )
     )
-    error_message = "When frequency is RelativeMonthly, week_index must be specified and be one of: First, Second, Third, Fourth, Last"
+    error_message = "When frequency is RelativeMonthly, week_index must be one of: First, Second, Third, Fourth, Last"
   }
   validation {
     condition = var.maintenance_window_node_os == null ? true : (

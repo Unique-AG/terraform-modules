@@ -2,3 +2,4 @@ build
 .tfdocs-config.yml
 .terraform*
 mkdocs
+.vscode/settings.json
