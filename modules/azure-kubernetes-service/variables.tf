@@ -1,3 +1,13 @@
+locals {
+  maintenance_window_validations = {
+    valid_frequencies  = ["Daily", "Weekly", "AbsoluteMonthly", "RelativeMonthly"]
+    valid_days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    valid_week_indexes = ["First", "Second", "Third", "Fourth", "Last"]
+    time_format_regex  = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+    utc_offset_regex   = "^[+-][01][0-9]:[0-5][0-9]$"
+  }
+}
+
 variable "cluster_name" {
   description = "The name of the Kubernetes cluster."
   type        = string
@@ -378,4 +388,173 @@ variable "admin_group_object_ids" {
   description = "The object IDs of the admin groups for the Kubernetes Cluster."
   type        = list(string)
   default     = []
+}
+
+variable "maintenance_window_auto_upgrade" {
+  description = "The maintenance window for automatic upgrades of the Kubernetes cluster."
+  type = object({
+    frequency    = optional(string, "Weekly")
+    interval     = optional(number, 2)
+    duration     = optional(number, 6)
+    day_of_week  = optional(string, "Saturday")
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string, "18:00")
+    utc_offset   = optional(string, "+00:00")
+    start_date   = optional(string)
+    not_allowed = optional(list(object({
+      start = string
+      end   = string
+    })), [])
+  })
+  default = {
+    frequency   = "Weekly"
+    interval    = 2
+    duration    = 6
+    day_of_week = "Saturday"
+    start_time  = "18:00"
+  }
+  nullable = true
+
+  validation {
+    condition     = var.maintenance_window_auto_upgrade == null ? true : contains(local.maintenance_window_validations.valid_frequencies, var.maintenance_window_auto_upgrade.frequency)
+    error_message = "Frequency must be one of: Daily, Weekly, AbsoluteMonthly, RelativeMonthly"
+  }
+  validation {
+    condition     = var.maintenance_window_auto_upgrade == null ? true : var.maintenance_window_auto_upgrade.interval > 0
+    error_message = "Interval must be a positive number"
+  }
+  validation {
+    condition     = var.maintenance_window_auto_upgrade == null ? true : var.maintenance_window_auto_upgrade.duration >= 4 && var.maintenance_window_auto_upgrade.duration <= 24
+    error_message = "Duration must be between 4 and 24 hours"
+  }
+  validation {
+    condition = var.maintenance_window_auto_upgrade == null ? true : (
+      var.maintenance_window_auto_upgrade.frequency != "Weekly" ||
+      (var.maintenance_window_auto_upgrade.day_of_week != null &&
+      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_auto_upgrade.day_of_week))
+    )
+    error_message = "When frequency is Weekly, day_of_week must be specified and be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
+  }
+  validation {
+    condition = var.maintenance_window_auto_upgrade == null ? true : (
+      var.maintenance_window_auto_upgrade.frequency != "AbsoluteMonthly" ||
+      (var.maintenance_window_auto_upgrade.day_of_month != null &&
+        var.maintenance_window_auto_upgrade.day_of_month >= 0 &&
+      var.maintenance_window_auto_upgrade.day_of_month <= 31)
+    )
+    error_message = "When frequency is AbsoluteMonthly, day_of_month must be specified and be between 0 and 31"
+  }
+  validation {
+    condition = var.maintenance_window_auto_upgrade == null ? true : (
+      var.maintenance_window_auto_upgrade.frequency != "RelativeMonthly" ||
+      (var.maintenance_window_auto_upgrade.week_index != null &&
+      contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_auto_upgrade.week_index))
+    )
+    error_message = "When frequency is RelativeMonthly, week_index must be specified and be one of: First, Second, Third, Fourth, Last"
+  }
+  validation {
+    condition = var.maintenance_window_auto_upgrade == null ? true : (
+      var.maintenance_window_auto_upgrade.start_time == null ||
+      can(regex(local.maintenance_window_validations.time_format_regex, var.maintenance_window_auto_upgrade.start_time))
+    )
+    error_message = "start_time must be in HH:mm format"
+  }
+  validation {
+    condition = var.maintenance_window_auto_upgrade == null ? true : (
+      var.maintenance_window_auto_upgrade.utc_offset == null ||
+      can(regex(local.maintenance_window_validations.utc_offset_regex, var.maintenance_window_auto_upgrade.utc_offset))
+    )
+    error_message = "utc_offset must be in +/-HH:mm format"
+  }
+}
+
+variable "maintenance_window_node_os" {
+  description = "The maintenance window for node OS upgrades of the Kubernetes cluster."
+  type = object({
+    frequency    = optional(string, "Weekly")
+    interval     = optional(number, 1)
+    duration     = optional(number, 6)
+    day_of_week  = optional(string, "Sunday")
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string, "00:00")
+    utc_offset   = optional(string, "+00:00")
+    start_date   = optional(string)
+    not_allowed = optional(list(object({
+      start = string
+      end   = string
+    })), [])
+  })
+  default = {
+    frequency   = "Weekly"
+    interval    = 1
+    duration    = 6
+    day_of_week = "Sunday"
+    start_time  = "00:00"
+  }
+  nullable = true
+
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : contains(local.maintenance_window_validations.valid_frequencies, var.maintenance_window_node_os.frequency)
+    error_message = "Frequency must be one of: Daily, Weekly, AbsoluteMonthly, RelativeMonthly"
+  }
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : var.maintenance_window_node_os.interval > 0
+    error_message = "Interval must be a positive number"
+  }
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : var.maintenance_window_node_os.duration >= 4 && var.maintenance_window_node_os.duration <= 24
+    error_message = "Duration must be between 4 and 24 hours"
+  }
+  validation {
+    condition = var.maintenance_window_node_os == null ? true : (
+      var.maintenance_window_node_os.frequency != "Weekly" ||
+      (var.maintenance_window_node_os.day_of_week != null &&
+      contains(local.maintenance_window_validations.valid_days_of_week, var.maintenance_window_node_os.day_of_week))
+    )
+    error_message = "When frequency is Weekly, day_of_week must be specified and be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
+  }
+  validation {
+    condition = var.maintenance_window_node_os == null ? true : (
+      var.maintenance_window_node_os.frequency != "AbsoluteMonthly" ||
+      (var.maintenance_window_node_os.day_of_month != null &&
+        var.maintenance_window_node_os.day_of_month >= 0 &&
+      var.maintenance_window_node_os.day_of_month <= 31)
+    )
+    error_message = "When frequency is AbsoluteMonthly, day_of_month must be specified and be between 0 and 31"
+  }
+  validation {
+    condition = var.maintenance_window_node_os == null ? true : (
+      var.maintenance_window_node_os.frequency != "RelativeMonthly" ||
+      (var.maintenance_window_node_os.week_index != null &&
+      contains(local.maintenance_window_validations.valid_week_indexes, var.maintenance_window_node_os.week_index))
+    )
+    error_message = "When frequency is RelativeMonthly, week_index must be specified and be one of: First, Second, Third, Fourth, Last"
+  }
+  validation {
+    condition = var.maintenance_window_node_os == null ? true : (
+      var.maintenance_window_node_os.start_time == null ||
+      can(regex(local.maintenance_window_validations.time_format_regex, var.maintenance_window_node_os.start_time))
+    )
+    error_message = "start_time must be in HH:mm format"
+  }
+  validation {
+    condition = var.maintenance_window_node_os == null ? true : (
+      var.maintenance_window_node_os.utc_offset == null ||
+      can(regex(local.maintenance_window_validations.utc_offset_regex, var.maintenance_window_node_os.utc_offset))
+    )
+    error_message = "utc_offset must be in +/-HH:mm format"
+  }
+}
+
+variable "node_os_upgrade_channel" {
+  description = "The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None."
+  type        = string
+  default     = "NodeImage"
+
+  validation {
+    condition     = contains(["Unmanaged", "SecurityPatch", "NodeImage", "None"], var.node_os_upgrade_channel)
+    error_message = "node_os_upgrade_channel must be one of: Unmanaged, SecurityPatch, NodeImage, None"
+  }
 }
