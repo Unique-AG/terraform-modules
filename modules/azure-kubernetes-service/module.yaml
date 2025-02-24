@@ -6,5 +6,3 @@ version: 2.1.0
 changes:
   - kind: added
     description: "Added maintenance_window_auto_upgrade and maintenance_window_node_os options as well as node_os_upgrade_channel variable"
-  - kind: changed
-    description: "Specifying temporary_name_for_rotation for node pools other than the default one is mendatory now"
