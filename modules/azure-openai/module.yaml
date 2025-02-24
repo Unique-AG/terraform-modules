@@ -6,5 +6,3 @@ version: 2.1.0
 changes:
   - kind: added
     description: "Added support for customer managed key and network ACLs"
-  - kind: fixed
-    description: "Revert changes of the previous version"
