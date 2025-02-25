@@ -80,15 +80,6 @@ variable "max_surge" {
   }
 }
 
-variable "max_pods" {
-  description = "The maximum number of pods per node."
-  type        = number
-  validation {
-    condition     = var.max_pods >= 30
-    error_message = "The maximum number pods per node must be at least 30."
-  }
-}
-
 variable "api_server_authorized_ip_ranges" {
   description = "The IP ranges that are allowed to access the Kubernetes API server."
   type        = list(string)
@@ -231,6 +222,7 @@ variable "node_pool_settings" {
     node_count                  = number
     min_count                   = number
     max_count                   = number
+    max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "Ubuntu")
     os_type                     = optional(string, "Linux")
