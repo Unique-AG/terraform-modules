@@ -222,6 +222,7 @@ variable "node_pool_settings" {
     node_count                  = number
     min_count                   = number
     max_count                   = number
+    max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "Ubuntu")
     os_type                     = optional(string, "Linux")

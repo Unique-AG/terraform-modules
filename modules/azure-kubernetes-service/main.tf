@@ -140,6 +140,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   auto_scaling_enabled        = each.value.auto_scaling_enabled
   min_count                   = each.value.min_count
   max_count                   = each.value.max_count
+  max_pods                    = each.value.max_pods
   os_disk_size_gb             = each.value.os_disk_size_gb
   mode                        = each.value.mode
   node_labels                 = each.value.node_labels

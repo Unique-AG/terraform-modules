@@ -2,7 +2,7 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 2.0.0
+version: 2.0.1
 changes:
   - kind: changed
-    description: "Specifying temporary_name_for_rotation for node pools other than the default one is mendatory now"
+    description: "Add max_pods per node in the node pools"
