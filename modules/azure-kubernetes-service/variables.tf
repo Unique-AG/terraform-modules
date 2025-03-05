@@ -219,7 +219,7 @@ variable "log_table_plan" {
 variable "node_pool_settings" {
   type = map(object({
     vm_size                     = string
-    node_count                  = number
+    node_count                  = optional(number)
     min_count                   = number
     max_count                   = number
     os_disk_size_gb             = number
