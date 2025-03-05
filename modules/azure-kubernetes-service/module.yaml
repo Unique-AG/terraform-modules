@@ -1,6 +1,8 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
+# Next major release open changes:
+# - node_pool_settings.node_count should be removed
 version: 2.0.1
 changes:
   - kind: changed
