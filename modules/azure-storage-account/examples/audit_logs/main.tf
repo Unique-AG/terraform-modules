@@ -48,13 +48,11 @@ resource "azurerm_role_assignment" "kv_sens_storage_account_audit_logs_key_servi
 module "sa" {
   source = "../.."
 
-  container_deleted_retain_days = 7
-  deleted_retain_days           = 7
-  depends_on                    = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
-  is_nfs_mountable              = true
-  location                      = "switzerlandnorth"
-  name                          = "my-storage-account"
-  resource_group_name           = "my-resource-group"
+  depends_on          = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
+  is_nfs_mountable    = true
+  location            = "switzerlandnorth"
+  name                = "my-storage-account"
+  resource_group_name = "my-resource-group"
 
   containers = {
     # service-one is only an example, list the necessary containers here for all services of which you want to store audit logs
@@ -87,10 +85,7 @@ module "sa" {
     blob_to_cold_after_last_modified_days    = 2
     blob_to_cool_after_last_modified_days    = 1
     blob_to_deleted_after_last_modified_days = 1825 # 5 years
-    container_deleted_retain_days            = 7
-    deleted_retain_days                      = 7
     enabled                                  = true
-    restorable_days                          = 6
   }
 
   tags = {
