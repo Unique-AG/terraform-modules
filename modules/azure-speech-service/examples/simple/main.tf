@@ -30,13 +30,13 @@ resource "azurerm_subnet" "subnet" {
 
 # Key Vault with RBAC
 resource "azurerm_key_vault" "kv" {
-  name                       = "kv-${random_string.unique.result}"
-  resource_group_name        = azurerm_resource_group.rg.name
-  location                   = azurerm_resource_group.rg.location
-  tenant_id                  = data.azurerm_client_config.current.tenant_id
-  sku_name                   = "standard"
-  purge_protection_enabled   = false
-  enable_rbac_authorization  = true
+  name                      = "kv-${random_string.unique.result}"
+  resource_group_name       = azurerm_resource_group.rg.name
+  location                  = azurerm_resource_group.rg.location
+  tenant_id                 = data.azurerm_client_config.current.tenant_id
+  sku_name                  = "standard"
+  purge_protection_enabled  = false
+  enable_rbac_authorization = true
 }
 
 # RBAC role assignment for Key Vault Administrator
@@ -102,9 +102,9 @@ module "speech_service" {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_port_range         = "*"
+            source_port_range          = "*"
             destination_port_range     = "443"
-            source_address_prefix     = "*"
+            source_address_prefix      = "*"
             destination_address_prefix = "*"
           }
         ]

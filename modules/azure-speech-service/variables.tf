@@ -4,18 +4,18 @@ variable "accounts" {
     account_kind          = optional(string, "SpeechServices")
     account_sku_name      = optional(string, "S0")
     custom_subdomain_name = optional(string)
-    identity             = optional(object({
+    identity = optional(object({
       type         = string
       identity_ids = list(string)
     }))
-    private_endpoint      = optional(object({
+    private_endpoint = optional(object({
       subnet_id = string
-      vnet_id  = string
+      vnet_id   = string
     }))
-    diagnostic_settings  = optional(object({
+    diagnostic_settings = optional(object({
       log_analytics_workspace_id = string
-      enabled_log_categories    = optional(list(string))
-      enabled_metrics          = optional(list(string))
+      enabled_log_categories     = optional(list(string))
+      enabled_metrics            = optional(list(string))
     }))
     network_security_group = optional(object({
       security_rules = optional(list(object({
@@ -24,9 +24,9 @@ variable "accounts" {
         direction                  = string
         access                     = string
         protocol                   = string
-        source_port_range         = optional(string)
-        destination_port_range    = optional(string)
-        source_address_prefix     = optional(string)
+        source_port_range          = optional(string)
+        destination_port_range     = optional(string)
+        source_address_prefix      = optional(string)
         destination_address_prefix = optional(string)
       })))
     }))
