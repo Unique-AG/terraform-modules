@@ -1,11 +1,5 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version: 2.0.0
-changes:
-  - kind: fixed
-    description: "Explicitly state the version requirements for all providers"
-  - kind: added
-    description: "Include names of created secrets in the outputs"
-  - kind: added
-    description: "Explicit type definition for variables"
+version:  2.0.0
+

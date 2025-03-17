@@ -63,10 +63,7 @@ variable "resource_group_name" {
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource"
-  validation {
-    condition     = length(keys(var.tags)) > 0
-    error_message = "At least one tag must be defined"
-  }
+  default     = null
 }
 
 variable "key_vault_id" {
