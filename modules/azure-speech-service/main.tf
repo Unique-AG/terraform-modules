@@ -37,14 +37,6 @@ resource "azurerm_private_endpoint" "pe" {
   }
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "pdz_link" {
-  for_each              = { for k, v in var.accounts : k => v if try(v.private_endpoint != null, false) }
-  name                  = "${var.speech_service_name}-${each.key}-link"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = "privatelink.cognitiveservices.azure.com"
-  virtual_network_id    = each.value.private_endpoint.vnet_id
-}
-
 resource "azurerm_monitor_diagnostic_setting" "diag" {
   for_each                   = var.accounts
   name                       = "${var.speech_service_name}-${each.key}-diag"
