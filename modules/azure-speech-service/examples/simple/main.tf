@@ -65,6 +65,12 @@ resource "azurerm_user_assigned_identity" "example" {
   location            = azurerm_resource_group.rg.location
 }
 
+# Create Private DNS Zone for Speech Service
+resource "azurerm_private_dns_zone" "private_dns_zone" {
+  name                = "privatelink.cognitiveservices.azure.com"
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
 # Update the module to use the created resources
 module "speech_service" {
   source              = "../.."
@@ -84,8 +90,9 @@ module "speech_service" {
       }
 
       private_endpoint = {
-        subnet_id = azurerm_subnet.subnet.id
-        vnet_id   = azurerm_virtual_network.vnet.id
+        subnet_id           = azurerm_subnet.subnet.id
+        vnet_id             = azurerm_virtual_network.vnet.id
+        private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
       }
 
       diagnostic_settings = {

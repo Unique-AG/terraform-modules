@@ -9,8 +9,9 @@ variable "accounts" {
       identity_ids = list(string)
     }))
     private_endpoint = optional(object({
-      subnet_id = string
-      vnet_id   = string
+      subnet_id           = string
+      vnet_id             = string
+      private_dns_zone_id = string
     }))
     diagnostic_settings = optional(object({
       log_analytics_workspace_id = string
@@ -63,6 +64,12 @@ variable "resource_group_name" {
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource"
+  default     = null
+}
+
+variable "private_dns_zone_id" {
+  type        = string
+  description = "The ID of the Private DNS Zone for the Speech Service"
   default     = null
 }
 

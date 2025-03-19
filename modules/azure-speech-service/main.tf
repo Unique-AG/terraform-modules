@@ -33,24 +33,16 @@ resource "azurerm_private_endpoint" "pe" {
 
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.pdz[0].id]
+    private_dns_zone_ids = [each.value.private_endpoint.private_dns_zone_id]
   }
 }
 
-resource "azurerm_private_dns_zone" "pdz" {
-  count               = length([for k, v in var.accounts : k if try(v.private_endpoint != null, false)]) > 0 ? 1 : 0
-  name                = "privatelink.cognitiveservices.azure.com"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
 resource "azurerm_private_dns_zone_virtual_network_link" "pdz_link" {
-  count                 = length([for k, v in var.accounts : k if try(v.private_endpoint != null, false)]) > 0 ? 1 : 0
-  name                  = "${var.speech_service_name}-link"
+  for_each              = { for k, v in var.accounts : k => v if try(v.private_endpoint != null, false) }
+  name                  = "${var.speech_service_name}-${each.key}-link"
   resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.pdz[0].name
-  virtual_network_id    = one([for k, v in var.accounts : v.private_endpoint.vnet_id if try(v.private_endpoint != null, false)])
-  tags                  = var.tags
+  private_dns_zone_name = each.value.private_endpoint.private_dns_zone_name
+  virtual_network_id    = each.value.private_endpoint.vnet_id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "diag" {
