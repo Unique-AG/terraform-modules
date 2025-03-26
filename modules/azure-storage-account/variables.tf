@@ -1,4 +1,3 @@
-
 variable "name" {
   description = "Name of the storage account."
   type        = string
@@ -169,4 +168,125 @@ variable "connection_settings" {
   })
   default  = null
   nullable = true
+}
+
+variable "private_endpoint" {
+  description = "Configuration for private endpoint"
+  type = object({
+    subnet_id                       = string
+    private_dns_zone_id             = string
+    resource_group_name             = string
+    location                        = optional(string)
+    private_service_connection_name = optional(string)
+    is_manual_connection            = optional(bool, false)
+    subresource_names               = optional(list(string), ["blob"])
+    tags                            = optional(map(string), {})
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.private_endpoint == null ? true : alltrue([
+      for subresource in var.private_endpoint.subresource_names : contains(
+        ["blob", "table", "queue", "file", "web", "dfs"], subresource
+      )
+    ])
+    error_message = "Storage account private endpoint subresource_names must be one or more of: blob, table, queue, file, web, dfs"
+  }
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.private_endpoint.subnet_id))
+    )
+    error_message = "The subnet_id must be a valid Azure resource ID for a subnet"
+  }
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
+    )
+    error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}
+
+variable "network_security_group" {
+  description = "Configuration for network security group. Set to null to skip NSG creation."
+  type = object({
+    name                = optional(string)
+    location            = optional(string)
+    resource_group_name = optional(string)
+    tags                = optional(map(string), {})
+    security_rules = optional(list(object({
+      name                         = string
+      priority                     = number
+      direction                    = string
+      access                       = string
+      protocol                     = string
+      source_port_range            = optional(string)
+      source_port_ranges           = optional(list(string))
+      destination_port_range       = optional(string)
+      destination_port_ranges      = optional(list(string))
+      source_address_prefix        = optional(string)
+      source_address_prefixes      = optional(list(string))
+      destination_address_prefix   = optional(string)
+      destination_address_prefixes = optional(list(string))
+    })), [])
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : contains(
+        ["Inbound", "Outbound"], rule.direction
+      )
+    ])
+    error_message = "Security rule direction must be either 'Inbound' or 'Outbound'"
+  }
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : contains(
+        ["Allow", "Deny"], rule.access
+      )
+    ])
+    error_message = "Security rule access must be either 'Allow' or 'Deny'"
+  }
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : (
+        (rule.source_port_range != null && rule.source_port_ranges == null) ||
+        (rule.source_port_range == null && rule.source_port_ranges != null) ||
+        (rule.source_port_range == null && rule.source_port_ranges == null)
+      )
+    ])
+    error_message = "source_port_range and source_port_ranges are mutually exclusive. Specify only one of them."
+  }
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : (
+        (rule.destination_port_range != null && rule.destination_port_ranges == null) ||
+        (rule.destination_port_range == null && rule.destination_port_ranges != null) ||
+        (rule.destination_port_range == null && rule.destination_port_ranges == null)
+      )
+    ])
+    error_message = "destination_port_range and destination_port_ranges are mutually exclusive. Specify only one of them."
+  }
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : (
+        (rule.source_address_prefix != null && rule.source_address_prefixes == null) ||
+        (rule.source_address_prefix == null && rule.source_address_prefixes != null) ||
+        (rule.source_address_prefix == null && rule.source_address_prefixes == null)
+      )
+    ])
+    error_message = "source_address_prefix and source_address_prefixes are mutually exclusive. Specify only one of them."
+  }
+  validation {
+    condition = var.network_security_group == null ? true : alltrue([
+      for rule in var.network_security_group.security_rules : (
+        (rule.destination_address_prefix != null && rule.destination_address_prefixes == null) ||
+        (rule.destination_address_prefix == null && rule.destination_address_prefixes != null) ||
+        (rule.destination_address_prefix == null && rule.destination_address_prefixes == null)
+      )
+    ])
+    error_message = "destination_address_prefix and destination_address_prefixes are mutually exclusive. Specify only one of them."
+  }
 }
