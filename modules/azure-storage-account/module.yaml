@@ -2,7 +2,7 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 2.0.2
+version: 2.1.0
 changes:
-  - kind: changed
-    description: "Required azurerm provider version is now ~> 4.15"
+  - kind: added
+    description: "Added support for private endpoint and network security group"
