@@ -176,7 +176,7 @@ resource "azurerm_private_endpoint" "storage_account_pe" {
   }
 }
 
-resource "azurerm_network_security_group" "storage" {
+resource "azurerm_network_security_group" "storage_account_nsg" {
   count               = var.network_security_group != null ? 1 : 0
   name                = "${var.name}-nsg"
   location            = coalesce(var.network_security_group.location, var.location)

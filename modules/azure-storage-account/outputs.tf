@@ -14,5 +14,5 @@ output "storage_account_id" {
 
 output "network_security_group_id" {
   description = "The ID of the Network Security Group associated with the storage account"
-  value       = try(azurerm_network_security_group.storage[0].id, null)
+  value       = try(azurerm_network_security_group.storage_account_nsg[0].id, null)
 }
