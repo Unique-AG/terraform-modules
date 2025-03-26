@@ -154,3 +154,51 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
   key_vault_id    = var.connection_settings.key_vault_id
   expiration_date = var.connection_settings.expiration_date
 }
+
+resource "azurerm_private_endpoint" "storage_account_pe" {
+  count               = var.private_endpoint != null ? 1 : 0
+  name                = "${var.name}-pe"
+  location            = coalesce(var.private_endpoint.location, var.location)
+  resource_group_name = var.resource_group_name
+  subnet_id           = var.private_endpoint.subnet_id
+  tags                = merge(var.tags, var.private_endpoint.tags)
+
+  private_service_connection {
+    name                           = "${var.name}-psc"
+    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = var.private_endpoint.subresource_names
+  }
+
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [var.private_endpoint.private_dns_zone_id]
+  }
+}
+
+resource "azurerm_network_security_group" "storage" {
+  count               = var.network_security_group != null ? 1 : 0
+  name                = "${var.name}-nsg"
+  location            = coalesce(var.network_security_group.location, var.location)
+  resource_group_name = coalesce(var.network_security_group.resource_group_name, var.resource_group_name)
+  tags                = merge(var.tags, var.network_security_group.tags)
+
+  dynamic "security_rule" {
+    for_each = try(var.network_security_group.security_rules, [])
+    content {
+      name                         = security_rule.value.name
+      priority                     = security_rule.value.priority
+      direction                    = security_rule.value.direction
+      access                       = security_rule.value.access
+      protocol                     = security_rule.value.protocol
+      source_port_range            = security_rule.value.source_port_range
+      source_port_ranges           = security_rule.value.source_port_ranges
+      destination_port_range       = security_rule.value.destination_port_range
+      destination_port_ranges      = security_rule.value.destination_port_ranges
+      source_address_prefix        = security_rule.value.source_address_prefix
+      source_address_prefixes      = security_rule.value.source_address_prefixes
+      destination_address_prefix   = security_rule.value.destination_address_prefix
+      destination_address_prefixes = security_rule.value.destination_address_prefixes
+    }
+  }
+}
