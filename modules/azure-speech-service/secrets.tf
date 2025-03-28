@@ -16,3 +16,10 @@ resource "azurerm_key_vault_secret" "azure_speech_service_endpoint_definitions" 
   value        = jsonencode(local.azure_speech_service_endpoint_definitions)
   key_vault_id = var.key_vault_id
 }
+
+resource "azurerm_key_vault_secret" "resource_id" {
+  count        = length(var.accounts)
+  name         = "${keys(var.accounts)[count.index]}${var.resource_id_secret_name_suffix}"
+  value        = azurerm_cognitive_account.aca[keys(var.accounts)[count.index]].id
+  key_vault_id = var.key_vault_id
+}

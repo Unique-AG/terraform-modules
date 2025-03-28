@@ -100,3 +100,9 @@ variable "user_assigned_identity_ids" {
   description = "values for the user assigned identities"
   default     = null
 }
+
+variable "resource_id_secret_name_suffix" {
+  type        = string
+  description = "Suffix for the resource ID secret name"
+  default     = "-resource-id"
+}

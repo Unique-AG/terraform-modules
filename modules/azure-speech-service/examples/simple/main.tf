@@ -71,6 +71,17 @@ resource "azurerm_private_dns_zone" "private_dns_zone" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
+// ... existing code ...
+
+# Additional RBAC role assignment for Key Vault Secrets User
+resource "azurerm_role_assignment" "kv_secrets_user" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+// ... existing code ...
+
 # Update the module to use the created resources
 module "speech_service" {
   source              = "../.."
