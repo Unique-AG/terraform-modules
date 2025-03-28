@@ -27,3 +27,11 @@ output "cognitive_account_ids" {
   description = "Resource IDs of the Cognitive Services Accounts"
   value       = { for k, v in azurerm_cognitive_account.aca : k => v.id }
 }
+
+output "speech_service_secret_names" {
+  description = "The names of the Key Vault secrets containing the Speech Service resource IDs"
+  value = [
+    for account_key in keys(var.accounts) :
+    "${account_key}${var.resource_id_secret_name_suffix}"
+  ]
+}

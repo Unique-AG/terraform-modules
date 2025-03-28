@@ -68,4 +68,5 @@ No modules.
 | <a name="output_endpoints_secret_name"></a> [endpoints\_secret\_name](#output\_endpoints\_secret\_name) | Name of the secret containing the list of endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
+| <a name="output_speech_service_secret_names"></a> [speech\_service\_secret\_names](#output\_speech\_service\_secret\_names) | The names of the Key Vault secrets containing the Speech Service resource IDs |
 <!-- END_TF_DOCS -->
