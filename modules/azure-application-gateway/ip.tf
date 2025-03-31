@@ -1,5 +1,5 @@
 resource "azurerm_public_ip" "appgw" {
-  count               = var.public_ip_address_id == "" ? 1 : 0
+  count               = var.public_ip_address_id == "" && var.public_ip_enabled ? 1 : 0
   name                = var.ip_name
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name

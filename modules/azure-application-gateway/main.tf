@@ -38,14 +38,17 @@ resource "azurerm_application_gateway" "appgw" {
     port = 80
   }
 
-  frontend_ip_configuration {
-    name                 = local.frontend_ip_config_name
-    public_ip_address_id = var.public_ip_address_id != "" ? var.public_ip_address_id : try(azurerm_public_ip.appgw[0].id, null)
+  dynamic "frontend_ip_configuration" {
+    for_each = var.public_ip_enabled ? [1] : []
+    content {
+      name                 = local.frontend_ip_config_name
+      public_ip_address_id = var.public_ip_address_id != "" ? var.public_ip_address_id : try(azurerm_public_ip.appgw[0].id, null)
+    }
   }
 
   frontend_ip_configuration {
     name                          = local.frontend_ip_private_config_name
-    private_ip_address            = var.private_ip
+    private_ip_address            = var.private_ip # 10.201.3.6
     private_ip_address_allocation = "Static"
     subnet_id                     = var.subnet_appgw
   }
