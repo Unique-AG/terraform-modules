@@ -41,5 +41,11 @@ jobs:
       - name: Examples
         run: ./scripts/examples.sh
 
-      - name: Sec
-        run: ./scripts/trivy.sh
+      - name: Report
+        run: ./scripts/trivy.sh trivy.sarif
+
+      # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
+      - name: Upload Sarif results
+        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 #v3.28.11
+        with:
+          sarif_file: trivy.sarif
