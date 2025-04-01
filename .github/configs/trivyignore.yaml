@@ -1,0 +1,34 @@
+# errors log something like "https://avd.aquasec.com/misconfig/avd-azu-0015", from that you can derive this id
+misconfigurations:
+  - id: AVD-AZU-0013 # https://avd.aquasec.com/misconfig/avd-azu-0013 - Specify Network Acl
+    statement: Example value
+    paths:
+      - modules/azure-storage-account/examples/audit_logs/main.tf
+  - id: AVD-AZU-0014 # https://avd.aquasec.com/misconfig/avd-azu-0014 - Ensure Key Expiry
+    statement: Example value
+    paths:
+      - modules/azure-storage-account/examples/audit_logs/main.tf
+  - id: AVD-AZU-0015 # https://avd.aquasec.com/misconfig/avd-azu-0015 - Content Type For Secret
+    statement: Reported in terraform-modules#47 to be fixed, future secrets must specify type
+    paths:
+      - modules/azure-bing-search/secrets.tf
+      - modules/azure-document-intelligence/secrets.tf
+      - modules/azure-entra-app-registration/secrets.tf
+  - id: AVD-AZU-0016 # https://avd.aquasec.com/misconfig/avd-azu-0016 - No Purge
+    statement: Example value
+    paths:
+      - modules/azure-storage-account/examples/audit_logs/main.tf
+  - id: AVD-AZU-0017 # https://avd.aquasec.com/misconfig/avd-azu-0017 - Ensure Secret Expiry
+    statement: Rotating these values entails complexity that users must consider and handle. Clients enforcing this should use Azure Policy.
+    paths:
+      - modules/azure-bing-search/secrets.tf
+      - modules/azure-document-intelligence/secrets.tf
+      - modules/azure-entra-app-registration/secrets.tf
+  - id: AVD-AZU-0040 # https://avd.aquasec.com/misconfig/avd-azu-0040 - Logging
+    statement: Design decision, users choice
+    paths:
+      - modules/azure-kubernetes-service/main.tf
+  - id: AVD-AZU-0045 # https://avd.aquasec.com/misconfig/avd-azu-0045 - Enable Standard Subscription
+    statement: Design decision, the default is free to avoid unnecessary costs to the user. Clients demanding further findings can choose a paid tier.
+    paths:
+      - modules/azure-defender/main.tf

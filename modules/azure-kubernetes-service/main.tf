@@ -132,24 +132,28 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
-  for_each                    = var.node_pool_settings
-  kubernetes_cluster_id       = azurerm_kubernetes_cluster.cluster.id
-  name                        = each.key
-  vm_size                     = each.value.vm_size
-  temporary_name_for_rotation = lookup(each.value, "temporary_name_for_rotation", "${each.key}repl")
+  for_each              = var.node_pool_settings
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
+
+
   auto_scaling_enabled        = each.value.auto_scaling_enabled
-  min_count                   = each.value.min_count
   max_count                   = each.value.max_count
-  os_disk_size_gb             = each.value.os_disk_size_gb
+  max_pods                    = try(each.value.max_pods, null)
+  min_count                   = each.value.min_count
   mode                        = each.value.mode
+  name                        = each.key
   node_labels                 = each.value.node_labels
-  zones                       = each.value.zones
   node_taints                 = each.value.node_taints
+  os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
+  pod_subnet_id               = try(each.value.subnet_pods_id, null)
+  tags                        = var.tags
+  temporary_name_for_rotation = lookup(each.value, "temporary_name_for_rotation", "${each.key}repl")
+  vm_size                     = each.value.vm_size
+  vnet_subnet_id              = var.subnet_nodes_id
+  zones                       = each.value.zones
+
   upgrade_settings {
     max_surge = each.value.upgrade_settings.max_surge
   }
-
-  tags           = var.tags
-  vnet_subnet_id = var.subnet_nodes_id
 }

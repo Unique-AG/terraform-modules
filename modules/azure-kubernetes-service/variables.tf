@@ -153,11 +153,7 @@ variable "subnet_nodes_id" {
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
-
-  validation {
-    condition     = length(var.tags) > 0
-    error_message = "The tags map must not be empty."
-  }
+  default     = {}
 }
 
 variable "log_analytics_workspace_id" {
@@ -222,6 +218,7 @@ variable "node_pool_settings" {
     node_count                  = optional(number)
     min_count                   = number
     max_count                   = number
+    max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "Ubuntu")
     os_type                     = optional(string, "Linux")
@@ -230,6 +227,7 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
+    subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge = string
@@ -273,6 +271,18 @@ variable "node_pool_settings" {
         max_surge = "10%"
       }
     }
+  }
+  validation {
+    condition = alltrue([
+      for name, pool in var.node_pool_settings : (
+        (pool.subnet_pods_id == null || (pool.subnet_pods_id != null && pool.temporary_name_for_rotation != null)) &&
+        (pool.max_pods == null || (pool.max_pods != null && pool.temporary_name_for_rotation != null)) &&
+        (pool.os_disk_size_gb == null || (pool.os_disk_size_gb != null && pool.temporary_name_for_rotation != null)) &&
+        (pool.vm_size == null || (pool.vm_size != null && pool.temporary_name_for_rotation != null)) &&
+        (length(pool.zones) == 0 || (length(pool.zones) > 0 && pool.temporary_name_for_rotation != null))
+      )
+    ])
+    error_message = "If any of subnet_pods_id, max_pods, os_disk_size_gb, vm_size, or zones are specified for a node pool, temporary_name_for_rotation must also be specified. See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool."
   }
 }
 
