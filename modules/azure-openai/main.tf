@@ -42,6 +42,30 @@ resource "azurerm_cognitive_account" "aca" {
   public_network_access_enabled = each.value.public_network_access_enabled
   local_auth_enabled            = each.value.local_auth_enabled
   custom_subdomain_name         = each.value.custom_subdomain_name
+
+  dynamic "network_acls" {
+    for_each = var.network_acls != null ? [1] : []
+    content {
+      default_action = "Deny"
+      ip_rules       = var.network_acls.ip_rules
+
+      dynamic "virtual_network_rules" {
+        for_each = var.network_acls.subnet_ids
+        content {
+          subnet_id                            = virtual_network_rules.value
+          ignore_missing_vnet_service_endpoint = false
+        }
+      }
+    }
+  }
+
+  dynamic "customer_managed_key" {
+    for_each = var.customer_managed_key != null ? [1] : []
+    content {
+      key_vault_key_id   = var.customer_managed_key.key_vault_key_id
+      identity_client_id = var.customer_managed_key.identity_client_id
+    }
+  }
 }
 
 resource "azurerm_cognitive_deployment" "deployments" {

@@ -69,3 +69,23 @@ variable "endpoint_secret_name_suffix" {
   description = "The suffix of the secret name where the Cognitive Account Endpoint is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
   default     = "-endpoint"
 }
+
+variable "network_acls" {
+  description = "Network ACLs for the Cognitive Account"
+  type = object({
+    subnet_ids = list(string)
+    ip_rules   = list(string)
+  })
+  default  = null
+  nullable = true
+}
+
+variable "customer_managed_key" {
+  description = "Customer managed key for the Cognitive Account"
+  type = object({
+    key_vault_key_id   = string
+    identity_client_id = string
+  })
+  default  = null
+  nullable = true
+}
