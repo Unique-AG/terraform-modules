@@ -8,12 +8,6 @@ misconfigurations:
     statement: Example value
     paths:
       - modules/azure-storage-account/examples/audit_logs/main.tf
-  - id: AVD-AZU-0015 # https://avd.aquasec.com/misconfig/avd-azu-0015 - Content Type For Secret
-    statement: Reported in terraform-modules#47 to be fixed, future secrets must specify type
-    paths:
-      - modules/azure-bing-search/secrets.tf
-      - modules/azure-document-intelligence/secrets.tf
-      - modules/azure-entra-app-registration/secrets.tf
   - id: AVD-AZU-0016 # https://avd.aquasec.com/misconfig/avd-azu-0016 - No Purge
     statement: Example value
     paths:
