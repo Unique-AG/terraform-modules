@@ -148,9 +148,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   os_sku                      = each.value.os_sku
   pod_subnet_id               = try(each.value.subnet_pods_id, null)
   tags                        = var.tags
-  temporary_name_for_rotation = lookup(each.value, "temporary_name_for_rotation", "${each.key}repl")
+  temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
   vm_size                     = each.value.vm_size
-  vnet_subnet_id              = var.subnet_nodes_id
+  vnet_subnet_id              = coalesce(each.valuel.subnet_nodes_id, var.subnet_nodes_id)
   zones                       = each.value.zones
 
   upgrade_settings {
