@@ -141,13 +141,14 @@ variable "kubernetes_default_node_os_disk_size" {
 }
 
 variable "subnet_nodes_id" {
-  description = "The ID of the subnet for nodes."
+  description = "The ID of the subnet for nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
   type        = string
+}
 
-  validation {
-    condition     = length(var.subnet_nodes_id) > 0
-    error_message = "The subnet ID for nodes must not be empty."
-  }
+variable "subnet_pods_id" {
+  description = "The ID of the subnet for pods. For backwards compatibility with earlier releases this can be nullified. It is though recommended to segregate pods and nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
+  type        = string
+  default     = null
 }
 
 variable "tags" {
@@ -213,6 +214,7 @@ variable "log_table_plan" {
 }
 
 variable "node_pool_settings" {
+  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({
     vm_size                     = string
     node_count                  = optional(number)

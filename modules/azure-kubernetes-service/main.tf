@@ -75,6 +75,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
     type                         = "VirtualMachineScaleSets"
     vnet_subnet_id               = var.subnet_nodes_id
+    pod_subnet_id                = coalesce(var.subnet_pods_id, var.subnet_nodes_id) # only defaults to node subnet for backwards compatibility
     zones                        = var.kubernetes_default_node_zones
     tags                         = var.tags
     only_critical_addons_enabled = true

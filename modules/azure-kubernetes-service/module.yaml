@@ -7,3 +7,5 @@ version: 2.1.1
 changes:
   - kind: fixed
     description: "node_pool_settings.subnet_nodes_id allows overriding the default subnet for nodes (subnet_nodes_id)."
+  - kind: fixed
+    description: "subnet_pod_id allows overriding the default subnet for pods in the default node pool."
