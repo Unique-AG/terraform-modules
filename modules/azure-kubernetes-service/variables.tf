@@ -272,18 +272,6 @@ variable "node_pool_settings" {
       }
     }
   }
-  validation {
-    condition = alltrue([
-      for name, pool in var.node_pool_settings : (
-        (pool.subnet_pods_id == null || (pool.subnet_pods_id != null && pool.temporary_name_for_rotation != null)) &&
-        (pool.max_pods == null || (pool.max_pods != null && pool.temporary_name_for_rotation != null)) &&
-        (pool.os_disk_size_gb == null || (pool.os_disk_size_gb != null && pool.temporary_name_for_rotation != null)) &&
-        (pool.vm_size == null || (pool.vm_size != null && pool.temporary_name_for_rotation != null)) &&
-        (length(pool.zones) == 0 || (length(pool.zones) > 0 && pool.temporary_name_for_rotation != null))
-      )
-    ])
-    error_message = "If any of subnet_pods_id, max_pods, os_disk_size_gb, vm_size, or zones are specified for a node pool, temporary_name_for_rotation must also be specified. See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool."
-  }
 }
 
 variable "monitoring_account_name" {
