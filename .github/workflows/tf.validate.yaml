@@ -1,4 +1,4 @@
-name: '[terraform] Lint & Secure'
+name: "[terraform] Lint & Secure"
 on:
   pull_request:
     branches:
@@ -17,29 +17,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: hashicorp/setup-terraform@v3
-      with:
-        fetch-depth: 0
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.10.0
-    - name: Format & Docs
-      run: |
-        ./scripts/tf-docs.sh
-        ./scripts/tf-fmt.sh
-        if [[ $(git diff --stat) != '' ]]; then
-          echo -e '\033[0;31mDocumentation outdated or terraform not formatted, pre-commit hook was not installed or skipped!\033[0m ❌'
-          git diff --color
-          exit 1
-        else
-          echo -e '\033[0;32mDocumentation and Format up to date\033[0m ✔'
-        fi
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.10.0
+      - name: Format & Docs
+        run: |
+          ./scripts/tf-docs.sh
+          ./scripts/tf-fmt.sh
+          if [[ $(git diff --stat) != '' ]]; then
+            echo -e '\033[0;31mDocumentation outdated or terraform not formatted, pre-commit hook was not installed or skipped!\033[0m ❌'
+            git diff --color
+            exit 1
+          else
+            echo -e '\033[0;32mDocumentation and Format up to date\033[0m ✔'
+          fi
 
-    - name: Examples
-      run: ./scripts/examples.sh
+      - name: Examples
+        run: ./scripts/examples.sh
 
-    - name: Sec
-      run: ./scripts/tf-sec.sh
+      - name: Report
+        run: ./scripts/trivy.sh trivy.sarif
+
+      # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
+      - name: Upload Sarif results
+        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 #v3.28.11
+        with:
+          sarif_file: trivy.sarif

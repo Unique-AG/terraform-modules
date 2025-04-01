@@ -153,11 +153,7 @@ variable "subnet_nodes_id" {
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
-
-  validation {
-    condition     = length(var.tags) > 0
-    error_message = "The tags map must not be empty."
-  }
+  default     = {}
 }
 
 variable "log_analytics_workspace_id" {
@@ -222,6 +218,7 @@ variable "node_pool_settings" {
     node_count                  = optional(number)
     min_count                   = number
     max_count                   = number
+    max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "Ubuntu")
     os_type                     = optional(string, "Linux")
@@ -230,6 +227,7 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
+    subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge = string
