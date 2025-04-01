@@ -3,11 +3,7 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # Next major release open changes:
 # - node_pool_settings.node_count should be removed
-version: 2.1.0
+version: 2.1.1
 changes:
-  - kind: added
-    description: "node_pool_settings.subnet_pods_id optionally allows setting a different subnet for pods per pool."
   - kind: fixed
-    description: "node_pool_settings.max_pods can be set."
-  - kind: changed
-    description: "tags are optional."
+    description: "node_pool_settings.subnet_nodes_id allows overriding the default subnet for nodes (subnet_nodes_id)."

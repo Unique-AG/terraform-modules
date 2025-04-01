@@ -227,6 +227,7 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
+    subnet_nodes_id             = optional(string, null)
     subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
