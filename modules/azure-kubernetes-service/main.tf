@@ -22,9 +22,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     network_policy = "azure"
     service_cidr   = var.service_cidr
     dns_service_ip = var.dns_service_ip
-    load_balancer_profile {
-      idle_timeout_in_minutes = 100
-      outbound_ip_address_ids = var.outbound_ip_address_ids
+    outbound_type  = var.outbound_type
+    dynamic "load_balancer_profile" {
+      for_each = var.outbound_type == "loadBalancer" ? [1] : []
+      content {
+        outbound_ip_address_ids = var.outbound_ip_address_ids
+      }
     }
   }
 
@@ -74,8 +77,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     max_count                    = var.kubernetes_default_node_count_max
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
     type                         = "VirtualMachineScaleSets"
-    vnet_subnet_id               = var.subnet_nodes_id
-    pod_subnet_id                = coalesce(var.subnet_pods_id, var.subnet_nodes_id) # only defaults to node subnet for backwards compatibility
+    vnet_subnet_id               = var.kubernetes_default_subnet_nodes_id
+    pod_subnet_id                = coalesce(var.kubernetes_default_subnet_pods_id, var.kubernetes_default_subnet_nodes_id) # only defaults to node subnet for backwards compatibility
     zones                        = var.kubernetes_default_node_zones
     tags                         = var.tags
     only_critical_addons_enabled = true
@@ -147,11 +150,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
-  pod_subnet_id               = try(each.value.subnet_pods_id, null)
+  pod_subnet_id               = try(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.kubernetes_default_subnet_pods_id, var.kubernetes_default_subnet_nodes_id)
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
   vm_size                     = each.value.vm_size
-  vnet_subnet_id              = coalesce(each.value.subnet_nodes_id, var.subnet_nodes_id)
+  vnet_subnet_id              = coalesce(each.value.subnet_nodes_id, var.kubernetes_default_subnet_nodes_id)
   zones                       = each.value.zones
 
   upgrade_settings {
