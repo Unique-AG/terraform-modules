@@ -54,6 +54,7 @@ module "aks" {
       node_taints                 = []
       os_disk_size_gb             = 100
       os_sku                      = "AzureLinux"
+      subnet_nodes_id             = azurerm_subnet.nodes.id
       subnet_pods_id              = azurerm_subnet.pods.id
       temporary_name_for_rotation = "myuserpoolrepl"
       vm_size                     = "Standard_D8s_v5"

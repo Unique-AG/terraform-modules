@@ -140,14 +140,15 @@ variable "kubernetes_default_node_os_disk_size" {
   }
 }
 
-variable "subnet_nodes_id" {
-  description = "The ID of the subnet for nodes."
+variable "default_subnet_nodes_id" {
+  description = "The ID of the subnet for nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
   type        = string
+}
 
-  validation {
-    condition     = length(var.subnet_nodes_id) > 0
-    error_message = "The subnet ID for nodes must not be empty."
-  }
+variable "default_subnet_pods_id" {
+  description = "if not given, uses node subnet for podsThe ID of the subnet for pods. For backwards compatibility with earlier releases this can be nullified. It is though recommended to segregate pods and nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
+  type        = string
+  default     = null
 }
 
 variable "tags" {
@@ -213,6 +214,7 @@ variable "log_table_plan" {
 }
 
 variable "node_pool_settings" {
+  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({
     vm_size                     = string
     node_count                  = optional(number)
@@ -227,6 +229,7 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
+    subnet_nodes_id             = optional(string, null)
     subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
@@ -285,12 +288,13 @@ variable "monitoring_account_name" {
 }
 
 variable "outbound_ip_address_ids" {
-  description = "The IDs of the public IP addresses for outbound traffic."
+  description = "The IDs of the public IP addresses for outbound traffic. Required when outbound_type is 'loadBalancer', ignored when outbound_type is 'userDefinedRouting'."
   type        = list(string)
+  default     = []
 
   validation {
-    condition     = length(var.outbound_ip_address_ids) > 0
-    error_message = "The outbound IP address IDs must not be empty."
+    condition     = var.outbound_type == "loadBalancer" ? length(var.outbound_ip_address_ids) > 0 : true
+    error_message = "outbound_ip_address_ids must be non-empty when outbound_type is 'loadBalancer' instead of 'userDefinedRouting'."
   }
 }
 
@@ -376,4 +380,15 @@ variable "admin_group_object_ids" {
   description = "The object IDs of the admin groups for the Kubernetes Cluster."
   type        = list(string)
   default     = []
+}
+
+variable "outbound_type" {
+  description = "The outbound type for the Kubernetes Cluster. Supports loadBalancer and userDefinedRouting."
+  type        = string
+  default     = "loadBalancer"
+
+  validation {
+    condition     = contains(["loadBalancer", "userDefinedRouting"], var.outbound_type)
+    error_message = "The outbound type must be either loadBalancer or userDefinedRouting."
+  }
 }
