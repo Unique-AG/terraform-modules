@@ -54,8 +54,8 @@ resource "azurerm_storage_account" "storage_account" {
   }
 
   identity {
-    type         = length(var.identity_ids) > 0 ? "SystemAssigned, UserAssigned" : "SystemAssigned"
-    identity_ids = var.identity_ids
+    type = local.uses_cmk || local.self_cmk ? "SystemAssigned, UserAssigned" : (length(var.identity_ids) > 0 ? "SystemAssigned, UserAssigned" : "SystemAssigned")
+    identity_ids = local.uses_cmk || local.self_cmk ? [var.customer_managed_key.user_assigned_identity_id] : var.identity_ids
   }
 
   dynamic "network_rules" {

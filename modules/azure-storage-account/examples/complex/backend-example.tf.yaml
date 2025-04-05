@@ -1,0 +1,15 @@
+terraform {
+  backend "azurerm" {
+    subscription_id      = "00000000-0000-0000-0000-000000000000"
+    resource_group_name  = "rg-tfstate"
+    storage_account_name = "strgacctfstate"
+    container_name       = "tfstate"
+    key                  = "storage-account.tfstate"
+    tenant_id            = "00000000-0000-0000-0000-000000000000"
+    use_oidc             = true
+  }
+}
+provider "azurerm" {
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  features {}
+}

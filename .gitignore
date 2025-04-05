@@ -2,3 +2,4 @@ build
 .tfdocs-config.yml
 .terraform*
 mkdocs
+modules/azure-storage-account/examples/complex/backend.tf
