@@ -39,7 +39,51 @@ You can learn in the [Design principles](../../DESIGN.md) about the `perimeter` 
 - Read [Blob Storage feature support in Azure Storage accounts](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-feature-support-in-storage-accounts) to understand which combinations of values make sense and are supported
 
 ## [Examples](./examples)
+## Running the Complex Example
 
+The complex example demonstrates a storage account with all major features enabled. To run it:
+
+1. Navigate to the example directory:
+   ```bash
+   cd examples/complex
+   ```
+
+2. Configure the backend:
+   - Copy `backend-example.tf.yaml` to `backend.tf`
+   - Replace the placeholder values in `backend.tf` with your Azure storage account details:
+     ```hcl
+     subscription_id      = "your-subscription-id"
+     resource_group_name  = "your-resource-group"
+     storage_account_name = "your-storage-account"
+     container_name       = "your-container"
+     key                  = "your-state-file-key"
+     tenant_id           = "your-tenant-id"
+     ```
+
+3. Initialize Terraform:
+   ```bash
+   terraform init
+   ```
+
+4. Review the planned changes:
+   ```bash
+   terraform plan
+   ```
+
+5. Apply the configuration:
+   ```bash
+   terraform apply
+   ```
+
+The example will create:
+- A storage account with customer-managed key encryption
+- A key vault with RBAC authorization
+- A user-assigned managed identity
+- Network security group and private endpoint
+- Storage containers with lifecycle management
+- Connection string storage in key vault
+
+Note: The example uses random suffixes for resource names to avoid conflicts. You can modify the `random_string.suffix` resource in `dependencies.tf` to use a fixed value if needed.
 ## Backups
 > [!IMPORTANT]
 > A module holding a `azurerm_data_protection_backup_vault` will be provided in an upcoming release.
@@ -130,3 +174,4 @@ No modules.
 - This module as of now is not supporting [`azurerm_key_vault_managed_hardware_security_module` (HSM-backend Key Vaults)](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/key_vault_managed_hardware_security_module).
 - Neither change feed nor versioning are currently supported by this module. If you need these features, please open an issue. They are omitted for brevity and simplicity not because we do not want to support them.
 - Future versions will ship with built-in [`azurerm_storage_container_immutability_policy`](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/storage_container_immutability_policy).
+
