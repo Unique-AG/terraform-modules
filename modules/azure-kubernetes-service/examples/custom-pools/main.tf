@@ -38,11 +38,19 @@ module "aks" {
   resource_group_name     = "my-resource-group"
   resource_group_location = "switzerlandnorth"
 
-  cluster_name            = "my-aks-cluster"
-  node_rg_name            = "my-resource-group-aks-nodes"
-  outbound_ip_address_ids = [azurerm_public_ip.example.id]
-  subnet_nodes_id         = azurerm_subnet.nodes.id
-  tenant_id               = "00000000-0000-0000-0000-000000000000"
+  cluster_name = "my-aks-cluster"
+  node_rg_name = "my-resource-group-aks-nodes"
+  tenant_id    = "00000000-0000-0000-0000-000000000000"
+
+  # Network configuration
+  default_subnet_nodes_id = azurerm_subnet.nodes.id
+  default_subnet_pods_id  = azurerm_subnet.pods.id
+
+  # Outbound configuration
+  network_profile = {
+    outbound_type           = "loadBalancer"
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+  }
 
   node_pool_settings = {
     myuserpool = {
@@ -66,6 +74,5 @@ module "aks" {
         max_surge = "2"
       }
     }
-
   }
 }

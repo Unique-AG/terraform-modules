@@ -9,8 +9,107 @@
 
 ## Networking
 
-The subnets are resolved like so.........
+The AKS module supports various networking configurations to meet different deployment requirements. Here are the key networking features:
 
+### Network Profile
+The cluster supports configurable network profiles through the `network_profile` variable:
+
+```hcl
+network_profile = {
+  network_plugin = "azure"  # or "kubenet"
+  network_policy = "azure"  # or "calico"
+  service_cidr   = "172.20.0.0/16"
+  dns_service_ip = "172.20.0.10"
+  outbound_type  = "loadBalancer"  # or "userDefinedRouting"
+  
+  # Outbound configuration (mutually exclusive options)
+  managed_outbound_ip_count = 1  # Option 1: Number of managed outbound IPs
+  outbound_ip_address_ids   = [] # Option 2: List of existing public IP IDs
+  outbound_ip_prefix_ids    = [] # Option 3: List of existing public IP prefix IDs
+}
+```
+
+#### Network Profile Validation Rules:
+1. When `outbound_type` is set to `"loadBalancer"`, you must specify exactly one of:
+   - `managed_outbound_ip_count`: Number of managed outbound IPs to create
+   - `outbound_ip_address_ids`: List of existing public IP IDs to use
+   - `outbound_ip_prefix_ids`: List of existing public IP prefix IDs to use
+
+2. These outbound configuration options are mutually exclusive - you can only specify one of them.
+
+### Subnet Configuration
+The module supports separate subnets for nodes and pods:
+
+- **Default Node Pool**:
+  - Node subnet: `default_subnet_nodes_id`
+  - Pod subnet: `default_subnet_pods_id` (optional, defaults to node subnet for backwards compatibility)
+
+- **Additional Node Pools**:
+  - Each node pool can have its own subnet configuration through `node_pool_settings`
+  - Supports separate subnets for nodes and pods per pool
+  - Falls back to default subnets if not specified
+
+### Outbound Traffic
+The cluster supports two outbound traffic configurations:
+
+1. **Load Balancer (Default)**:
+   - Uses Azure Load Balancer for outbound traffic
+   - Requires one of the following configurations:
+     ```hcl
+     network_profile = {
+       outbound_type = "loadBalancer"
+       managed_outbound_ip_count = 1  # Option 1: Create new managed IPs
+     }
+     # OR
+     network_profile = {
+       outbound_type = "loadBalancer"
+       outbound_ip_address_ids = ["/subscriptions/.../publicIPs/ip1"]  # Option 2: Use existing IPs
+     }
+     # OR
+     network_profile = {
+       outbound_type = "loadBalancer"
+       outbound_ip_prefix_ids = ["/subscriptions/.../publicIPPrefixes/prefix1"]  # Option 3: Use existing prefixes
+     }
+     ```
+
+2. **User Defined Routing**:
+   - Allows custom routing configuration
+   - Useful for scenarios requiring specific routing rules
+   - Configuration:
+     ```hcl
+     network_profile = {
+       outbound_type = "userDefinedRouting"
+     }
+     ```
+
+### Private Cluster
+The cluster can be deployed as a private cluster with the following options:
+
+- `private_cluster_enabled`: Enable/disable private cluster
+- `private_dns_zone_id`: Specify private DNS zone for the cluster
+- `private_cluster_public_fqdn_enabled`: Control public FQDN visibility
+
+### API Server Access
+Control access to the Kubernetes API server:
+
+- `api_server_authorized_ip_ranges`: Specify allowed IP ranges
+- When using private cluster, this is required for management access
+
+### Network Security
+The module includes several security features:
+
+- Azure Policy integration (`azure_policy_enabled`)
+- Microsoft Defender integration
+- Network policy support (Azure or Calico)
+- Private cluster deployment option
+
+### Best Practices
+1. Use separate subnets for nodes and pods when possible
+2. Enable network policies for enhanced security
+3. Consider private cluster deployment for production workloads
+4. Use user-defined routing when specific routing rules are required
+5. Configure appropriate API server access controls
+6. When using Load Balancer outbound type, carefully choose between managed IPs and existing IPs/prefixes based on your requirements
 
 # Module
 

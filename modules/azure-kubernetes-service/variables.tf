@@ -371,7 +371,7 @@ variable "dns_service_ip" {
 }
 
 variable "kubernetes_default_node_zones" {
-  description = "The zones for the default node pool."
+  description = "The availability zones for the default node pool."
   type        = list(string)
   default     = ["1", "2", "3"]
 }
@@ -382,13 +382,38 @@ variable "admin_group_object_ids" {
   default     = []
 }
 
-variable "outbound_type" {
-  description = "The outbound type for the Kubernetes Cluster. Supports loadBalancer and userDefinedRouting."
-  type        = string
-  default     = "loadBalancer"
+
+
+variable "network_profile" {
+  description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
+  type = object({
+    network_plugin            = optional(string, "azure")
+    network_policy            = optional(string, "azure")
+    service_cidr              = optional(string, "172.20.0.0/16")
+    dns_service_ip            = optional(string, "172.20.0.10")
+    outbound_type             = optional(string, "loadBalancer")
+    managed_outbound_ip_count = optional(number, null)
+    outbound_ip_address_ids   = optional(list(string), null)
+    outbound_ip_prefix_ids    = optional(list(string), null)
+  })
+  default = null
 
   validation {
-    condition     = contains(["loadBalancer", "userDefinedRouting"], var.outbound_type)
-    error_message = "The outbound type must be either loadBalancer or userDefinedRouting."
+    condition = var.network_profile == null ? true : (
+      (var.network_profile.managed_outbound_ip_count != null ? 1 : 0) +
+      (var.network_profile.outbound_ip_address_ids != null ? 1 : 0) +
+      (var.network_profile.outbound_ip_prefix_ids != null ? 1 : 0) <= 1
+    )
+    error_message = "Only one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids can be specified in the network profile."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_type != "loadBalancer" ||
+      var.network_profile.managed_outbound_ip_count != null ||
+      var.network_profile.outbound_ip_address_ids != null ||
+      var.network_profile.outbound_ip_prefix_ids != null
+    )
+    error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
   }
 }

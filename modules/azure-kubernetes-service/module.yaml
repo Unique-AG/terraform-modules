@@ -9,7 +9,16 @@ changes:
     description: "node_pool_settings.subnet_nodes_id allows overriding the default subnet for nodes (subnet_nodes_id)."
   - kind: fixed
     description: "subnet_pod_id allows overriding the default subnet for pods in the default node pool."
-  - kind: changed1
-    description: "yourt change sandro"
   - kind: changed
-    description: "⚠ variables for default networks renamed )sandro descibe="
+    description: "Moved outbound configuration into network_profile block for better organization and validation."
+  - kind: added
+    description: "Added validation rules for network_profile to ensure proper outbound configuration."
+  - kind: changed
+    description: "Renamed subnet variables to be more explicit: subnet_nodes_id -> default_subnet_nodes_id, subnet_pods_id -> default_subnet_pods_id."
+  - kind: fixed
+    description: "Fixed subnet fallback logic in node pools to properly cascade through all available subnet options."
+  - kind: added
+    description: "Added support for managed outbound IPs, existing public IPs, and IP prefixes in network_profile."
+  - kind: changed
+    description: "Updated default values for network_profile to use standard CIDR ranges (172.20.0.0/16)."
+
