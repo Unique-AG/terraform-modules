@@ -73,7 +73,7 @@ The module supports separate subnets for nodes and pods:
 
 - **Default Node Pool**:
   - Node subnet: `default_subnet_nodes_id`
-  - Pod subnet: `default_subnet_pods_id` (optional, defaults to node subnet for backwards compatibility)
+  - Pod subnet: `default_subnet_pods_id` (optional,defaults to node subnet for backwards compatibility)
 
 - **Additional Node Pools**:
   - Each node pool can have its own subnet configuration through `node_pool_settings`
