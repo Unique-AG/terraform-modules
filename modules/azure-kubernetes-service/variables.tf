@@ -381,9 +381,6 @@ variable "admin_group_object_ids" {
   type        = list(string)
   default     = []
 }
-
-
-
 variable "network_profile" {
   description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
   type = object({

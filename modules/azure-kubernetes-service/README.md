@@ -5,7 +5,38 @@
     + Reader of the subscription
     + Contributor of the resource group
 
-## [Examples](./examples)
+## Examples
+
+The module includes two example configurations:
+
+1. **Simple Example** (`./examples/simple/`): Basic AKS cluster with default settings
+2. **Custom Node Pools Example** (`./examples/custom-pools/`): Advanced configuration with multiple node pools
+
+To run an example:
+
+1. Navigate to the example directory:
+   ```bash
+   cd modules/azure-kubernetes-service/examples/simple  # or custom-pools
+   ```
+
+2. Initialize and apply:
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+3. When done:
+   ```bash
+   terraform destroy
+   ```
+
+Remember to update the following variables in the example:
+- `resource_group_name`
+- `tenant_id`
+- `resource_group_location`
+- `cluster_name`
+- `node_rg_name`
 
 ## Networking
 
