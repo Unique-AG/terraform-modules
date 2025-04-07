@@ -287,17 +287,6 @@ variable "monitoring_account_name" {
   }
 }
 
-variable "outbound_ip_address_ids" {
-  description = "The IDs of the public IP addresses for outbound traffic. Required when outbound_type is 'loadBalancer', ignored when outbound_type is 'userDefinedRouting'."
-  type        = list(string)
-  default     = []
-
-  validation {
-    condition     = var.outbound_type == "loadBalancer" ? length(var.outbound_ip_address_ids) > 0 : true
-    error_message = "outbound_ip_address_ids must be non-empty when outbound_type is 'loadBalancer' instead of 'userDefinedRouting'."
-  }
-}
-
 variable "azure_policy_enabled" {
   description = "Specifies whether Azure Policy is enabled for the Kubernetes Cluster."
   type        = bool
