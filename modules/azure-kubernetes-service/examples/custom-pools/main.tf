@@ -48,8 +48,12 @@ module "aks" {
 
   # Outbound configuration
   network_profile = {
-    outbound_type           = "loadBalancer"
-    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+    network_plugin = "azure"
+    network_policy = "azure"
+    outbound_type  = "loadBalancer"
+    load_balancer_profile = {
+      outbound_ip_address_ids = [azurerm_public_ip.example.id]
+    }
   }
 
   node_pool_settings = {
@@ -62,8 +66,8 @@ module "aks" {
       node_taints                 = []
       os_disk_size_gb             = 100
       os_sku                      = "AzureLinux"
-      subnet_nodes_id             = azurerm_subnet.nodes.id
-      subnet_pods_id              = azurerm_subnet.pods.id
+      vnet_subnet_id             = azurerm_subnet.nodes.id
+      pod_subnet_id              = azurerm_subnet.pods.id
       temporary_name_for_rotation = "myuserpoolrepl"
       vm_size                     = "Standard_D8s_v5"
       zones                       = ["1", "2", "3"]
