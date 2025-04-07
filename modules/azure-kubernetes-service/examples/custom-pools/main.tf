@@ -48,12 +48,10 @@ module "aks" {
 
   # Outbound configuration
   network_profile = {
-    network_plugin = "azure"
-    network_policy = "azure"
-    outbound_type  = "loadBalancer"
-    load_balancer_profile = {
-      outbound_ip_address_ids = [azurerm_public_ip.example.id]
-    }
+    network_plugin          = "azure"
+    network_policy          = "azure"
+    outbound_type           = "loadBalancer"
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
   }
 
   node_pool_settings = {
