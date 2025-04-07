@@ -52,7 +52,7 @@ network_profile = {
   service_cidr   = "172.20.0.0/16"
   dns_service_ip = "172.20.0.10"
   outbound_type  = "loadBalancer"  # or "userDefinedRouting"
-  
+
   # Outbound configuration (mutually exclusive options)
   managed_outbound_ip_count = 1  # Option 1: Number of managed outbound IPs
   outbound_ip_address_ids   = [] # Option 2: List of existing public IP IDs
