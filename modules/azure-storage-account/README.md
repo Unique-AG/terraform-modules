@@ -72,7 +72,6 @@ True to the [Design principles](../../DESIGN.md), Network limitations should not
 
 ## Modules
 
-No modules.
 
 ## Resources
 
