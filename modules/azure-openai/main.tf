@@ -65,3 +65,23 @@ resource "azurerm_cognitive_deployment" "deployments" {
     capacity = each.value.sku_capacity
   }
 }
+
+resource "azurerm_private_endpoint" "pe" {
+  for_each            = { for k, v in var.cognitive_accounts : k => v if try(v.private_endpoint != null, false) }
+  name                = "${each.key}-pe"
+  location            = each.value.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = each.value.private_endpoint.subnet_id
+
+  private_service_connection {
+    name                           = "${each.key}-psc"
+    private_connection_resource_id = azurerm_cognitive_account.aca[each.key].id
+    is_manual_connection           = false
+    subresource_names              = ["account"]
+  }
+
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [each.value.private_endpoint.private_dns_zone_id]
+  }
+}

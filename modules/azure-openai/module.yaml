@@ -1,8 +1,7 @@
-
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.0.3
+version: 2.1.0
 changes:
-  - kind: fixed
-    description: "Revert changes of the previous version"
+  - kind: added
+    description: "Private endpoint configuration"
