@@ -53,6 +53,7 @@ No modules.
 | <a name="input_gateway_tier"></a> [gateway\_tier](#input\_gateway\_tier) | The tier of the gateway | `string` | `"Standard_v2"` | no |
 | <a name="input_gw_ip_config_name"></a> [gw\_ip\_config\_name](#input\_gw\_ip\_config\_name) | Name for the gw\_ip\_config | `string` | `null` | no |
 | <a name="input_http_listener_name"></a> [http\_listener\_name](#input\_http\_listener\_name) | Name for the http\_listener | `string` | `null` | no |
+| <a name="input_http_listener_use_private_ip_configuration"></a> [http\_listener\_use\_private\_ip\_configuration](#input\_http\_listener\_use\_private\_ip\_configuration) | Determines whether to use the private IP configuration instead of public IP for the HTTP listener. When set to true, the private frontend IP configuration will be used. | `bool` | `false` | no |
 | <a name="input_ip_name"></a> [ip\_name](#input\_ip\_name) | The name of the public IP address. | `string` | n/a | yes |
 | <a name="input_ip_waf_list"></a> [ip\_waf\_list](#input\_ip\_waf\_list) | List of IP addresses for custom rules | <pre>list(object({<br/>    name = string<br/>    list = list(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace | `string` | `null` | no |
@@ -61,7 +62,7 @@ No modules.
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
 | <a name="input_private_ip"></a> [private\_ip](#input\_private\_ip) | Private IP address for the frontend IP configuration | `string` | n/a | yes |
 | <a name="input_public_ip_address_id"></a> [public\_ip\_address\_id](#input\_public\_ip\_address\_id) | The ID of the public IP address | `string` | `""` | no |
-| <a name="input_public_ip_enabled"></a> [public\_ip\_enabled](#input\_public\_ip\_enabled) | Enable public IP for the Application Gateway | `bool` | `true` | no |
+| <a name="input_public_ip_enabled"></a> [public\_ip\_enabled](#input\_public\_ip\_enabled) | Enable public IP for the Application Gateway. Disabling it requires a Preview feature EnableApplicationGatewayNetworkIsolation to be enabled. https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment | `bool` | `true` | no |
 | <a name="input_request_buffering_enabled"></a> [request\_buffering\_enabled](#input\_request\_buffering\_enabled) | Enable request buffering | `bool` | `true` | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | The location of the resource group. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group. | `string` | n/a | yes |
@@ -79,5 +80,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_appgw_id"></a> [appgw\_id](#output\_appgw\_id) | The ID of the Application Gateway |
-| <a name="output_appgw_ip_address"></a> [appgw\_ip\_address](#output\_appgw\_ip\_address) | The IP address of the Application Gateway |
+| <a name="output_appgw_ip_address"></a> [appgw\_ip\_address](#output\_appgw\_ip\_address) | The IP address of the HTTP listener of the Application Gateway |
 <!-- END_TF_DOCS -->

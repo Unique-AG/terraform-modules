@@ -82,6 +82,16 @@ variable "http_listener_name" {
   default     = null
 }
 
+variable "http_listener_use_private_ip_configuration" {
+  description = "Determines whether to use the private IP configuration instead of public IP for the HTTP listener. When set to true, the private frontend IP configuration will be used."
+  type        = bool
+  default     = false
+  validation {
+    condition     = var.http_listener_use_private_ip_configuration == true || var.public_ip_enabled == true
+    error_message = "The http_listener_use_private_ip_configuration cannot be false if public_ip_enabled is false."
+  }
+}
+
 variable "ip_name" {
   description = "The name of the public IP address."
   type        = string
@@ -144,7 +154,7 @@ variable "public_ip_address_id" {
 }
 
 variable "public_ip_enabled" {
-  description = "Enable public IP for the Application Gateway"
+  description = "Enable public IP for the Application Gateway. Disabling it requires a Preview feature EnableApplicationGatewayNetworkIsolation to be enabled. https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment"
   type        = bool
   default     = true
 }
