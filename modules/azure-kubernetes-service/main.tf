@@ -28,6 +28,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
       dynamic "load_balancer_profile" {
         for_each = var.network_profile.outbound_type == "loadBalancer" ? [1] : []
         content {
+          idle_timeout_in_minutes   = var.network_profile.idle_timeout_in_minutes
           managed_outbound_ip_count = var.network_profile.managed_outbound_ip_count
           outbound_ip_address_ids   = var.network_profile.outbound_ip_address_ids
           outbound_ip_prefix_ids    = var.network_profile.outbound_ip_prefix_ids
