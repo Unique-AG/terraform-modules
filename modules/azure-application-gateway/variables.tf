@@ -82,13 +82,13 @@ variable "http_listener_name" {
   default     = null
 }
 
-variable "http_listener_use_private_ip_configuration" {
+variable "http_listener_private_ip_configuration_enabled" {
   description = "Determines whether to use the private IP configuration instead of public IP for the HTTP listener. When set to true, the private frontend IP configuration will be used."
   type        = bool
   default     = false
   validation {
-    condition     = var.http_listener_use_private_ip_configuration == true || var.public_ip_enabled == true
-    error_message = "The http_listener_use_private_ip_configuration cannot be false if public_ip_enabled is false."
+    condition     = var.http_listener_private_ip_configuration_enabled == true || var.public_ip_enabled == true
+    error_message = "The http_listener_private_ip_configuration_enabled cannot be false if public_ip_enabled is false."
   }
 }
 
