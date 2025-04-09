@@ -4,7 +4,7 @@ variable "accounts" {
     account_kind          = optional(string, "FormRecognizer")
     account_sku_name      = optional(string, "S0")
     custom_subdomain_name = optional(string)
-    private_endpoint      = optional(object({
+    private_endpoint = optional(object({
       private_dns_zone_id = string
       subnet_id           = string
     }))

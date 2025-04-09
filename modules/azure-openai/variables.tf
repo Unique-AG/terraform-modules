@@ -22,11 +22,11 @@ variable "cognitive_accounts" {
     sku_name                      = optional(string, "S0")
     local_auth_enabled            = optional(bool, false)
     public_network_access_enabled = optional(bool, false)
-    private_endpoint              = optional(object({
+    private_endpoint = optional(object({
       subnet_id           = string
       private_dns_zone_id = string
     }))
-    custom_subdomain_name         = string
+    custom_subdomain_name = string
     cognitive_deployments = list(object({
       name                   = string
       model_name             = string
