@@ -5,20 +5,15 @@ sources:
 # - node_pool_settings.node_count should be removed
 version: 3.0.0
 changes:
-  - kind: fixed
-    description: "node_pool_settings.subnet_nodes_id allows overriding the default subnet for nodes (subnet_nodes_id)."
-  - kind: fixed
-    description: "subnet_pod_id allows overriding the default subnet for pods in the default node pool."
   - kind: changed
-    description: "Moved outbound configuration into network_profile block for better organization and validation."
+    description: "⚠️ Renamed subnet variables for clarity: subnet_nodes_id -> default_subnet_nodes_id, subnet_pods_id -> default_subnet_pods_id"
+  - kind: changed
+    description: "⚠️ Moved outbound configuration into network_profile block for better organization"
   - kind: added
-    description: "Added validation rules for network_profile to ensure proper outbound configuration."
+    description: "Enhanced network_profile with validation rules, managed outbound IPs, public IPs, IP prefixes support"
   - kind: changed
-    description: "Renamed subnet variables to be more explicit: subnet_nodes_id -> default_subnet_nodes_id, subnet_pods_id -> default_subnet_pods_id."
+    description: "Updated network_profile default CIDR ranges to 172.20.0.0/16"
   - kind: fixed
-    description: "Fixed subnet fallback logic in node pools to properly cascade through all available subnet options."
+    description: "Improved subnet configuration flexibility: added override options for node pools and pods, enhanced fallback logic"
   - kind: added
-    description: "Added support for managed outbound IPs, existing public IPs, and IP prefixes in network_profile."
-  - kind: changed
-    description: "Updated default values for network_profile to use standard CIDR ranges (172.20.0.0/16)."
-
+    description: "Added segregated_node_and_pod_subnets_enabled flag to control subnet separation between nodes and pods"

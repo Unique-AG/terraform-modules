@@ -83,7 +83,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
     type                         = "VirtualMachineScaleSets"
     vnet_subnet_id               = var.default_subnet_nodes_id
-    pod_subnet_id                = coalesce(var.default_subnet_pods_id, var.default_subnet_nodes_id) # only defaults to node subnet for backwards compatibility
+    pod_subnet_id                = var.segregated_node_and_pod_subnets_enabled ? coalesce(var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
     zones                        = var.kubernetes_default_node_zones
     tags                         = var.tags
     only_critical_addons_enabled = true
@@ -144,7 +144,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   for_each              = var.node_pool_settings
   kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
 
-
   auto_scaling_enabled        = each.value.auto_scaling_enabled
   max_count                   = each.value.max_count
   max_pods                    = try(each.value.max_pods, null)
@@ -155,7 +154,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
-  pod_subnet_id               = try(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id)
+  pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
   vm_size                     = each.value.vm_size

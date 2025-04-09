@@ -141,14 +141,20 @@ variable "kubernetes_default_node_os_disk_size" {
 }
 
 variable "default_subnet_nodes_id" {
-  description = "The ID of the subnet for nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
+  description = "The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node_pool_settings for more granular control."
   type        = string
 }
 
 variable "default_subnet_pods_id" {
-  description = "if not given, uses node subnet for podsThe ID of the subnet for pods. For backwards compatibility with earlier releases this can be nullified. It is though recommended to segregate pods and nodes. Primarily used for the default node pool, supply subnet settings for additional node pools for more granular control."
+  description = "The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node_pool_settings for more granular control."
   type        = string
   default     = null
+}
+
+variable "segregated_node_and_pod_subnets_enabled" {
+  description = "Some legacy or smaller clusters might not want to split nodes and pods into different subnets. Falsifying this will force the module to only use 1 subnet for both nodes and pods. It is not recommended for production use cases."
+  type        = bool
+  default     = true
 }
 
 variable "tags" {
@@ -381,6 +387,7 @@ variable "network_profile" {
     managed_outbound_ip_count = optional(number, null)
     outbound_ip_address_ids   = optional(list(string), null)
     outbound_ip_prefix_ids    = optional(list(string), null)
+    idle_timeout_in_minutes   = optional(number, 30)
   })
   default = null
 
