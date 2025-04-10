@@ -1,7 +1,7 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 2.0.0
+version: 2.0.1
 changes:
-  - kind: added
-    description: "Private endpoint configuration"
+  - kind: fixed
+    description: "Version mismatch due to wrong semver order"
