@@ -17,14 +17,23 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   private_dns_zone_id                 = var.private_dns_zone_id
   automatic_upgrade_channel           = var.automatic_upgrade_channel
 
-  network_profile {
-    network_plugin = "azure"
-    network_policy = "azure"
-    service_cidr   = var.service_cidr
-    dns_service_ip = var.dns_service_ip
-    load_balancer_profile {
-      idle_timeout_in_minutes = 100
-      outbound_ip_address_ids = var.outbound_ip_address_ids
+  dynamic "network_profile" {
+    for_each = var.network_profile != null ? [1] : []
+    content {
+      network_plugin = var.network_profile.network_plugin
+      network_policy = var.network_profile.network_policy
+      service_cidr   = var.network_profile.service_cidr
+      dns_service_ip = var.network_profile.dns_service_ip
+      outbound_type  = var.network_profile.outbound_type
+      dynamic "load_balancer_profile" {
+        for_each = var.network_profile.outbound_type == "loadBalancer" ? [1] : []
+        content {
+          idle_timeout_in_minutes   = var.network_profile.idle_timeout_in_minutes
+          managed_outbound_ip_count = var.network_profile.managed_outbound_ip_count
+          outbound_ip_address_ids   = var.network_profile.outbound_ip_address_ids
+          outbound_ip_prefix_ids    = var.network_profile.outbound_ip_prefix_ids
+        }
+      }
     }
   }
 
@@ -74,7 +83,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     max_count                    = var.kubernetes_default_node_count_max
     os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
     type                         = "VirtualMachineScaleSets"
-    vnet_subnet_id               = var.subnet_nodes_id
+    vnet_subnet_id               = var.default_subnet_nodes_id
+    pod_subnet_id                = var.segregated_node_and_pod_subnets_enabled ? coalesce(var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
     zones                        = var.kubernetes_default_node_zones
     tags                         = var.tags
     only_critical_addons_enabled = true
@@ -135,7 +145,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   for_each              = var.node_pool_settings
   kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
 
-
   auto_scaling_enabled        = each.value.auto_scaling_enabled
   max_count                   = each.value.max_count
   max_pods                    = try(each.value.max_pods, null)
@@ -146,11 +155,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
-  pod_subnet_id               = try(each.value.subnet_pods_id, null)
+  pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   tags                        = var.tags
-  temporary_name_for_rotation = lookup(each.value, "temporary_name_for_rotation", "${each.key}repl")
+  temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
   vm_size                     = each.value.vm_size
-  vnet_subnet_id              = var.subnet_nodes_id
+  vnet_subnet_id              = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
   zones                       = each.value.zones
 
   upgrade_settings {
