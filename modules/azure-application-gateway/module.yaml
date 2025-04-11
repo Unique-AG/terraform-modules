@@ -1,8 +1,15 @@
-
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 2.1.0
+version: 3.0.0
 changes:
+  - kind: breaking
+    description: |
+      Public IP handling has been completely reworked:
+      - Removed: Creation of Public IP within the module
+      - Removed: Support for `public_ip_address_id` variable
+      - Added: Optional `public_ip_resource_group_name` and `public_ip_name` variables to data source public IP
+      - When no Public IP is specified, the module will rely on the Azure preview feature 'EnableApplicationGatewayNetworkIsolation'
+        for private-only deployment (see https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)
   - kind: added
-    description: "Ability to configure whether or not public IP is used on the Application Gateway"
+    description: "Ability to configure the http listener to use the frontend IP configuration with private IP address"
