@@ -39,10 +39,10 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   dynamic "frontend_ip_configuration" {
-    for_each = var.public_ip_enabled ? [1] : []
+    for_each = length(data.azurerm_public_ip.appgw) > 0 ? [1] : []
     content {
       name                 = local.frontend_ip_config_name
-      public_ip_address_id = var.public_ip_address_id != "" ? var.public_ip_address_id : try(azurerm_public_ip.appgw[0].id, null)
+      public_ip_address_id = data.azurerm_public_ip.appgw[0].id
     }
   }
 

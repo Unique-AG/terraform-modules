@@ -86,10 +86,6 @@ variable "http_listener_private_ip_configuration_enabled" {
   description = "Determines whether to use the private IP configuration instead of public IP for the HTTP listener. When set to true, the private frontend IP configuration will be used."
   type        = bool
   default     = false
-  validation {
-    condition     = var.http_listener_private_ip_configuration_enabled == true || var.public_ip_enabled == true
-    error_message = "The http_listener_private_ip_configuration_enabled cannot be false if public_ip_enabled is false."
-  }
 }
 
 variable "ip_name" {
@@ -130,7 +126,7 @@ variable "min_capacity" {
 }
 
 variable "name_prefix" {
-  description = "Prefix for naming resources"
+  description = "Prefix for naming resources if no explicit name is provided"
   type        = string
   validation {
     condition     = length(var.name_prefix) > 0 && length(var.name_prefix) <= 20
@@ -143,20 +139,16 @@ variable "private_ip" {
   type        = string
 }
 
-variable "public_ip_address_id" {
-  description = "The ID of the public IP address"
+variable "public_ip_resource_group_name" {
+  description = "The name of the resource group for the public IP address"
   type        = string
   default     = ""
-  validation {
-    condition     = var.public_ip_address_id == "" || var.public_ip_enabled == true
-    error_message = "The public_ip_address_id cannot be passed if public_ip_enabled is false."
-  }
 }
 
-variable "public_ip_enabled" {
-  description = "Enable public IP for the Application Gateway. Disabling it requires a Preview feature EnableApplicationGatewayNetworkIsolation to be enabled. https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment"
-  type        = bool
-  default     = true
+variable "public_ip_name" {
+  description = "The name of the public IP address"
+  type        = string
+  default     = ""
 }
 
 variable "request_buffering_enabled" {

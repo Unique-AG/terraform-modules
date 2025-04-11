@@ -5,4 +5,4 @@ sources:
 version: 2.1.0
 changes:
   - kind: added
-    description: "Added ability to configure whether or not public IP is used on the Application Gateway"
+    description: "Ability to configure whether or not public IP is used on the Application Gateway"

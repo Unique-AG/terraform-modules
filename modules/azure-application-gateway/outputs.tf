@@ -5,5 +5,5 @@ output "appgw_id" {
 
 output "appgw_ip_address" {
   description = "The IP address of the HTTP listener of the Application Gateway"
-  value       = var.http_listener_private_ip_configuration_enabled ? var.private_ip : try(azurerm_public_ip.appgw[0].ip_address, null) # FIXME: if var.public_ip_address_id is specified, it will return null. It has been always broken
+  value       = var.http_listener_private_ip_configuration_enabled ? var.private_ip : try(data.azurerm_public_ip.appgw[0].ip_address, null)
 }
