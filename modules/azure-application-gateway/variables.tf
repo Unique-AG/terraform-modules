@@ -49,15 +49,6 @@ variable "resource_group_name" {
   }
 }
 
-variable "ip_name" {
-  description = "The name of the public IP address."
-  type        = string
-  validation {
-    condition     = length(var.ip_name) > 0
-    error_message = "The IP name must not be empty."
-  }
-}
-
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
@@ -129,37 +120,15 @@ variable "subnet_appgw" {
   }
 }
 
-variable "private_ip" {
-  description = "Private IP address for the frontend IP configuration"
-  type        = string
-}
-
 variable "log_analytics_workspace_id" {
   description = "The ID of the Log Analytics Workspace"
   type        = string
   default     = null
 }
 
-variable "public_ip_address_id" {
-  description = "The ID of the public IP address"
-  type        = string
-  default     = ""
-}
 
 variable "application_gateway_name" {
   description = "Name for the Gateway"
-  type        = string
-  default     = null
-}
-
-variable "frontend_ip_config_name" {
-  description = "Name for the frontend_ip_config"
-  type        = string
-  default     = null
-}
-
-variable "frontend_ip_private_config_name" {
-  description = "Name for the frontend_ip_private_config"
   type        = string
   default     = null
 }
@@ -221,4 +190,25 @@ variable "request_buffering_enabled" {
     condition     = var.request_buffering_enabled == true || var.gateway_sku != "WAF_v2"
     error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
   }
+}
+
+variable "private_ip_configuration" {
+  description = "Blabla, leveraging this will use Preview, blabla, see Readme #Limitations."
+  nullable    = true
+  type = object({
+    existing_id    = optional(string)
+    name           = optional(string)
+    ip_config_name = optional(string)
+  })
+}
+
+
+variable "public_ip_configuration" {
+  description = "yadiyadi existing yadiyadi private"
+  nullable    = true
+  type = object({
+    existing_id    = optional(string)
+    name           = optional(string)
+    ip_config_name = optional(string)
+  })
 }

@@ -1,15 +1,13 @@
 locals {
-  app_gw_name                     = var.application_gateway_name == null ? "${var.name_prefix}-appgw" : var.application_gateway_name
-  frontend_ip_config_name         = var.frontend_ip_config_name == null ? "${var.name_prefix}-feip" : var.frontend_ip_config_name
-  frontend_ip_private_config_name = var.frontend_ip_private_config_name == null ? "${var.name_prefix}-privatefeip" : var.frontend_ip_private_config_name
-  http_listener_name              = var.http_listener_name == null ? "${var.name_prefix}-httplstn" : var.http_listener_name
-  backend_http_settings_name      = var.backend_http_settings_name == null ? "${var.name_prefix}-be-htst" : var.backend_http_settings_name
-  routing_rule_name               = var.routing_rule_name == null ? "${var.name_prefix}-rqrt" : var.routing_rule_name
-  backend_address_pool_name       = var.backend_address_pool_name == null ? "${var.name_prefix}-beap" : var.backend_address_pool_name
-  frontend_port_name              = var.frontend_port_name == null ? "${var.name_prefix}-feport" : var.frontend_port_name
-  gw_ip_config_name               = var.gw_ip_config_name == null ? "${var.name_prefix}-gwip" : var.gw_ip_config_name
-  agw_diagnostic_name             = var.agw_diagnostic_name == null ? "log-${var.name_prefix}-appgw" : var.agw_diagnostic_name
-  firewall_policy_id              = var.gateway_sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
+  app_gw_name                = var.application_gateway_name == null ? "${var.name_prefix}-appgw" : var.application_gateway_name
+  http_listener_name         = var.http_listener_name == null ? "${var.name_prefix}-httplstn" : var.http_listener_name
+  backend_http_settings_name = var.backend_http_settings_name == null ? "${var.name_prefix}-be-htst" : var.backend_http_settings_name
+  routing_rule_name          = var.routing_rule_name == null ? "${var.name_prefix}-rqrt" : var.routing_rule_name
+  backend_address_pool_name  = var.backend_address_pool_name == null ? "${var.name_prefix}-beap" : var.backend_address_pool_name
+  frontend_port_name         = var.frontend_port_name == null ? "${var.name_prefix}-feport" : var.frontend_port_name
+  gw_ip_config_name          = var.gw_ip_config_name == null ? "${var.name_prefix}-gwip" : var.gw_ip_config_name
+  agw_diagnostic_name        = var.agw_diagnostic_name == null ? "log-${var.name_prefix}-appgw" : var.agw_diagnostic_name
+  firewall_policy_id         = var.gateway_sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
 }
 
 resource "azurerm_application_gateway" "appgw" {
@@ -38,9 +36,12 @@ resource "azurerm_application_gateway" "appgw" {
     port = 80
   }
 
-  frontend_ip_configuration {
-    name                 = local.frontend_ip_config_name
-    public_ip_address_id = var.public_ip_address_id != "" ? var.public_ip_address_id : try(azurerm_public_ip.appgw[0].id, null)
+  dynamic "frontend_ip_configuration" {
+    for_each = var.public_ip_configuration != null ? [1] : []
+    content {
+      name                 = var.public_ip_configuration.name
+      public_ip_address_id = var.public_ip_configuration.existing_id != null ? var.public_ip_configuration.existing_id : azurerm_public_ip.appgw[0].id
+    }
   }
 
   frontend_ip_configuration {
@@ -69,7 +70,7 @@ resource "azurerm_application_gateway" "appgw" {
 
   http_listener {
     name                           = local.http_listener_name
-    frontend_ip_configuration_name = local.frontend_ip_config_name
+    frontend_ip_configuration_name = var.public_ip_configuration != null ? var.public_ip_configuration.ip_config_name : local.private_ip_configuration.ip_config_name
     frontend_port_name             = local.frontend_port_name
     protocol                       = "Http"
   }

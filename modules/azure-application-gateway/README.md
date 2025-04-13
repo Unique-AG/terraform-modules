@@ -80,3 +80,14 @@ No modules.
 | <a name="output_appgw_id"></a> [appgw\_id](#output\_appgw\_id) | The ID of the Application Gateway |
 | <a name="output_appgw_ip_address"></a> [appgw\_ip\_address](#output\_appgw\_ip\_address) | The public IP address of the Application Gateway |
 <!-- END_TF_DOCS -->
+
+## Upgrade Guide
+
+### ~> `3.0.0`
+
+The following variables have moved to accomodate for the …
+
+`x` becomes `y`.
+
+## Limitations
+When using private Ip thing, using preview thing.
