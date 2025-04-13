@@ -8,6 +8,14 @@
 ## [Examples](./examples)
 
 
+## Networking
+
+You can use………………
+
+no public IP (requires preview feature to be active)
+Public IP but private IP config used in http listener
+Public IP and that is used in http listener (was what we "forced" you to have in the module so far)
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
