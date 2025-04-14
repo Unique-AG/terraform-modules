@@ -26,3 +26,7 @@ misconfigurations:
     statement: Design decision, the default is free to avoid unnecessary costs to the user. Clients demanding further findings can choose a paid tier.
     paths:
       - modules/azure-defender/main.tf
+  - id: AVD-AZU-0043 # https://avd.aquasec.com/misconfig/avd-azu-0043 - Set Network Policy in K8s
+    statement: Not used so far in default settings - will be added in https://github.com/Unique-AG/terraform-modules/issues/54
+    paths:
+      - modules/azure-kubernetes-service/main.tf
