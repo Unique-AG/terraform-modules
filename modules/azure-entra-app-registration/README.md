@@ -37,9 +37,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aad-app-secret-display-name"></a> [aad-app-secret-display-name](#input\_aad-app-secret-display-name) | The displayed name in kv | `string` | n/a | yes |
+| <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret will be generated and stored in the keyvault. | <pre>object({<br/>    enabled     = bool<br/>    keyvault_id = optional(string)<br/>    secret_name = optional(string, "entra-app-client-secret")<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_display_name"></a> [display\_name](#input\_display\_name) | The displayed name in Entra | `string` | n/a | yes |
-| <a name="input_keyvault_id"></a> [keyvault\_id](#input\_keyvault\_id) | Keyvault where to store the app credentials | `string` | n/a | yes |
 | <a name="input_maintainers_principal_object_ids"></a> [maintainers\_principal\_object\_ids](#input\_maintainers\_principal\_object\_ids) | The object ids of the user/groups/service\_principal | `list(string)` | n/a | yes |
 | <a name="input_owner_user_object_ids"></a> [owner\_user\_object\_ids](#input\_owner\_user\_object\_ids) | n/a | `list(string)` | `[]` | no |
 | <a name="input_redirect_uris"></a> [redirect\_uris](#input\_redirect\_uris) | Authorized redirects | `list(string)` | `[]` | no |
