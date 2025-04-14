@@ -1,12 +1,16 @@
 # Azure Application Gateway
 
 ## Pre-requisites
+
 - To deploy this module, you have at least the following permissions:
     + Reader of the subscription
     + Contributor of the resource group
 
 ## [Examples](./examples)
 
+## Configuring the HTTP Listener with private IP
+
+By default, the HTTP listener is configured using the public IP configuration. This can be switched to the private IP configuration by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment. Having an Application Gateway provisioned with only private IP is only possible by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)) and not currently supported by this module.
 
 # Module
 
@@ -59,6 +63,7 @@ No modules.
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for autoscaling | `number` | `2` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Minimum capacity for autoscaling | `number` | `1` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
+| <a name="input_private_frontend_enabled"></a> [private\_frontend\_enabled](#input\_private\_frontend\_enabled) | Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration | `bool` | `false` | no |
 | <a name="input_private_ip"></a> [private\_ip](#input\_private\_ip) | Private IP address for the frontend IP configuration | `string` | n/a | yes |
 | <a name="input_public_ip_address_id"></a> [public\_ip\_address\_id](#input\_public\_ip\_address\_id) | The ID of the public IP address | `string` | `""` | no |
 | <a name="input_request_buffering_enabled"></a> [request\_buffering\_enabled](#input\_request\_buffering\_enabled) | Enable request buffering | `bool` | `true` | no |

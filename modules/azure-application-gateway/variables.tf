@@ -222,3 +222,9 @@ variable "request_buffering_enabled" {
     error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
   }
 }
+
+variable "private_frontend_enabled" {
+  description = "Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration"
+  type        = bool
+  default     = false
+}
