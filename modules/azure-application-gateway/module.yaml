@@ -2,7 +2,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 2.0.1
+version: 2.1.0
 changes:
   - kind: added
-    description: "Application Gateway global settings for request and response buffering"
+    description: "Support for configuring http listener to use private frontend IP configuration"

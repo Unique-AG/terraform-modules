@@ -59,6 +59,7 @@ No modules.
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for autoscaling | `number` | `2` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Minimum capacity for autoscaling | `number` | `1` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
+| <a name="input_private_frontend_enabled"></a> [private\_frontend\_enabled](#input\_private\_frontend\_enabled) | Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration | `bool` | `false` | no |
 | <a name="input_private_ip"></a> [private\_ip](#input\_private\_ip) | Private IP address for the frontend IP configuration | `string` | n/a | yes |
 | <a name="input_public_ip_address_id"></a> [public\_ip\_address\_id](#input\_public\_ip\_address\_id) | The ID of the public IP address | `string` | `""` | no |
 | <a name="input_request_buffering_enabled"></a> [request\_buffering\_enabled](#input\_request\_buffering\_enabled) | Enable request buffering | `bool` | `true` | no |
