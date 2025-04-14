@@ -1,12 +1,7 @@
-
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 2.0.0
+version: 2.0.1
 changes:
   - kind: fixed
-    description: "Explicitly state the version requirements for all providers"
-  - kind: added
-    description: "Include names of created secrets in the outputs"
-  - kind: added
-    description: "Explicit type definition for variables"
+    description: "Version mismatch due to wrong semver order"
