@@ -1,6 +1,7 @@
 # Azure Application Gateway
 
 ## Pre-requisites
+
 - To deploy this module, you have at least the following permissions:
     + Reader of the subscription
     + Contributor of the resource group
@@ -8,7 +9,8 @@
 ## [Examples](./examples)
 
 ## Configuring the HTTP Listener with private IP
-By default, the HTTP listener is configured using the public IP. This can be switched to the private IP by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment (possible only by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)).
+
+By default, the HTTP listener is configured using the public IP. This can be switched to the private IP by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment. Having an Application Gateway provisioned with only private IP is only possible by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)) and not currently supported by this module.
 
 # Module
 
