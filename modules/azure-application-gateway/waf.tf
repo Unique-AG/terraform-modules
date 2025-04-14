@@ -8,6 +8,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   name                = var.waf_policy_name
   resource_group_name = var.resource_group_name
   location            = var.resource_group_location
+  tags                = var.tags
 
   policy_settings {
     enabled                     = true
