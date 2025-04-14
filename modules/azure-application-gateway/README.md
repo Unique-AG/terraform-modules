@@ -7,6 +7,8 @@
 
 ## [Examples](./examples)
 
+## Configuring the HTTP Listener with private IP
+By default, the HTTP listener is configured using the public IP. This can be switched to the private IP by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment (possible only by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)).
 
 # Module
 
