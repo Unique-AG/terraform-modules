@@ -1,8 +1,7 @@
-
 name: azure-entra-app-registration
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration
-version: 2.0.0-rc.3
+version: 2.0.0
 changes:
-  - kind: fixed
-    description: "Explicitly state the version requirements for all providers"
+  - kind: changed
+    description: "Client secret generation is now optional in cases where Key Vault output is not needed or desired."
