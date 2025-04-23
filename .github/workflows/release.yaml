@@ -1,10 +1,10 @@
-name: '[terraform] Create Module Release'
+name: "[terraform] Create Module Release"
 
 on:
   workflow_dispatch:
     inputs:
       module:
-        description: 'Module to release'
+        description: "Module to release"
         required: true
         type: choice
         options:
@@ -18,7 +18,7 @@ on:
           - azure-postgresql
           - azure-redis
           - azure-storage-account
-
+          - azure-unique-secrets-bundle
 jobs:
   create-release:
     runs-on: ubuntu-latest

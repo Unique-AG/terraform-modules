@@ -46,6 +46,7 @@ variable "secrets_to_create" {
     rabbitmq_password_chat = object({
       create           = optional(bool, true)
       name             = optional(string, "rabbitmq-password-chat")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 24)
       rotation_counter = optional(number, 0)
@@ -54,6 +55,7 @@ variable "secrets_to_create" {
     zitadel_main_key = object({
       create           = optional(bool, true)
       name             = optional(string, "zitadel-main-key")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 32)
       rotation_counter = optional(number, 0)
@@ -62,6 +64,7 @@ variable "secrets_to_create" {
     zitadel_db_user_password = object({
       create           = optional(bool, true)
       name             = optional(string, "zitadel-db-user-password")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 32)
       rotation_counter = optional(number, 0)
@@ -70,6 +73,7 @@ variable "secrets_to_create" {
     encryption_key_ingestion = object({
       create           = optional(bool, true)
       name             = optional(string, "encryption-key-ingestion")
+      content_type     = optional(string, "text/plain")
       byte_length      = optional(number, 32)
       rotation_counter = optional(number, 0)
       expiration_date  = optional(string, "2099-12-31T23:59:59Z")
@@ -77,6 +81,7 @@ variable "secrets_to_create" {
     encryption_key_node_chat_lxm = object({
       create           = optional(bool, true)
       name             = optional(string, "encryption-key-node-chat-lxm")
+      content_type     = optional(string, "text/plain")
       byte_length      = optional(number, 32)
       rotation_counter = optional(number, 0)
       expiration_date  = optional(string, "2099-12-31T23:59:59Z")
@@ -84,6 +89,7 @@ variable "secrets_to_create" {
     encryption_app_repository = object({
       create           = optional(bool, true)
       name             = optional(string, "encryption-app-repository")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 32)
       rotation_counter = optional(number, 0)
@@ -92,6 +98,7 @@ variable "secrets_to_create" {
     litellm_master_key = object({
       create           = optional(bool, true)
       name             = optional(string, "litellm-master-key")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 32)
       rotation_counter = optional(number, 0)
@@ -100,6 +107,7 @@ variable "secrets_to_create" {
     litellm_salt_key = object({
       create           = optional(bool, true)
       name             = optional(string, "litellm-salt-key")
+      content_type     = optional(string, "text/plain")
       special          = optional(bool, false)
       length           = optional(number, 32)
       rotation_counter = optional(number, 0)
@@ -108,6 +116,7 @@ variable "secrets_to_create" {
     scope_management_encryption_key_1 = object({
       create           = optional(bool, true)
       name             = optional(string, "scope-management-encryption-key-1")
+      content_type     = optional(string, "text/plain")
       byte_length      = optional(number, 32)
       rotation_counter = optional(number, 0)
       expiration_date  = optional(string, "2099-12-31T23:59:59Z")
@@ -115,6 +124,7 @@ variable "secrets_to_create" {
     scope_management_encryption_key_2 = object({
       create           = optional(bool, true)
       name             = optional(string, "scope-management-encryption-key-2")
+      content_type     = optional(string, "text/plain")
       byte_length      = optional(number, 32)
       rotation_counter = optional(number, 0)
       expiration_date  = optional(string, "2099-12-31T23:59:59Z")
