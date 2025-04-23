@@ -52,10 +52,7 @@ variable "resource_group_name" {
 variable "ip_name" {
   description = "The name of the public IP address."
   type        = string
-  validation {
-    condition     = length(var.ip_name) > 0
-    error_message = "The IP name must not be empty."
-  }
+  default     = null
 }
 
 variable "tags" {

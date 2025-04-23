@@ -57,7 +57,7 @@ No modules.
 | <a name="input_gateway_tier"></a> [gateway\_tier](#input\_gateway\_tier) | The tier of the gateway | `string` | `"Standard_v2"` | no |
 | <a name="input_gw_ip_config_name"></a> [gw\_ip\_config\_name](#input\_gw\_ip\_config\_name) | Name for the gw\_ip\_config | `string` | `null` | no |
 | <a name="input_http_listener_name"></a> [http\_listener\_name](#input\_http\_listener\_name) | Name for the http\_listener | `string` | `null` | no |
-| <a name="input_ip_name"></a> [ip\_name](#input\_ip\_name) | The name of the public IP address. | `string` | n/a | yes |
+| <a name="input_ip_name"></a> [ip\_name](#input\_ip\_name) | The name of the public IP address. | `string` | `null` | no |
 | <a name="input_ip_waf_list"></a> [ip\_waf\_list](#input\_ip\_waf\_list) | List of IP addresses for custom rules | <pre>list(object({<br/>    name = string<br/>    list = list(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for autoscaling | `number` | `2` | no |
