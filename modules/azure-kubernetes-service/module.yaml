@@ -3,17 +3,7 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # Next major release open changes:
 # - node_pool_settings.node_count should be removed
-version: 3.0.0
+version: 3.0.1
 changes:
-  - kind: changed
-    description: "⚠️ Renamed subnet variables for clarity: subnet_nodes_id -> default_subnet_nodes_id, subnet_pods_id -> default_subnet_pods_id"
-  - kind: changed
-    description: "⚠️ Moved outbound configuration into network_profile block for better organization"
-  - kind: added
-    description: "Enhanced network_profile with validation rules, managed outbound IPs, public IPs, IP prefixes support"
-  - kind: changed
-    description: "Updated network_profile default CIDR ranges to 172.20.0.0/16"
   - kind: fixed
-    description: "Improved subnet configuration flexibility: added override options for node pools and pods, enhanced fallback logic"
-  - kind: added
-    description: "Added segregated_node_and_pod_subnets_enabled flag to control subnet separation between nodes and pods"
+    description: "When azure_prometheus_grafana_monitor.enabled is false, all monitor resources are not created."
