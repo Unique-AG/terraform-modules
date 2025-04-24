@@ -1,5 +1,8 @@
 # Azure Unique Secrets Bundle
 
+> [!CAUTION]
+> This module is for incubating and experimental. Regular releases are not yet established. If a new version is not available for a Unique release it means that the underlying secrets did not change and you can stay on the older version. The [release notes](https://unique-ch.atlassian.net/wiki/x/GIAlQ) are the source of truth.
+
 > [!TIP]
 > This module is for convenience. You can easily manage all necessary secrets yourself.
 
