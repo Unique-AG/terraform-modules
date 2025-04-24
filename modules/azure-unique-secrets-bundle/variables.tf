@@ -15,21 +15,15 @@ variable "default_secrets_placeholders" {
     expiration_date = optional(string, "2099-12-31T23:59:59Z")
   }))
   default = {
-    "alertmanager-slack-webhook-url" = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "docker-io-pat"                  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "docker-io-username"             = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "github-app-private-key"         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-anthropic-api-key"      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-bedrock-access-key"     = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-bedrock-secret-key"     = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-gemini-api-key"         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-openai-api-key"         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-together-ai-api-key"    = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "litellm-voyage-api-key"         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "quartr-api-creds"               = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "uniqueapp-azurecr-io-password"  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "uniqueapp-azurecr-io-username"  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    "zitadel-scope-mgmt-pat"         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-anthropic-api-key   = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-bedrock-access-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-bedrock-secret-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-gemini-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-openai-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-together-ai-api-key = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-voyage-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    quartr-api-creds            = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    zitadel-scope-mgmt-pat      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
   }
 }
 variable "extra_secrets_placeholders" {
@@ -43,92 +37,24 @@ variable "extra_secrets_placeholders" {
 variable "secrets_to_create" {
   description = "List of secrets that are automatically generated and need to be placed in the sensitive key vault. Increment a counter to rotate the secret."
   type = map(object({
-    rabbitmq_password_chat = object({
-      create           = optional(bool, true)
-      name             = optional(string, "rabbitmq-password-chat")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 24)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    zitadel_main_key = object({
-      create           = optional(bool, true)
-      name             = optional(string, "zitadel-main-key")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    zitadel_db_user_password = object({
-      create           = optional(bool, true)
-      name             = optional(string, "zitadel-db-user-password")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    encryption_key_ingestion = object({
-      create           = optional(bool, true)
-      name             = optional(string, "encryption-key-ingestion")
-      content_type     = optional(string, "text/plain")
-      byte_length      = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    encryption_key_node_chat_lxm = object({
-      create           = optional(bool, true)
-      name             = optional(string, "encryption-key-node-chat-lxm")
-      content_type     = optional(string, "text/plain")
-      byte_length      = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    encryption_app_repository = object({
-      create           = optional(bool, true)
-      name             = optional(string, "encryption-app-repository")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    litellm_master_key = object({
-      create           = optional(bool, true)
-      name             = optional(string, "litellm-master-key")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    litellm_salt_key = object({
-      create           = optional(bool, true)
-      name             = optional(string, "litellm-salt-key")
-      content_type     = optional(string, "text/plain")
-      special          = optional(bool, false)
-      length           = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    scope_management_encryption_key_1 = object({
-      create           = optional(bool, true)
-      name             = optional(string, "scope-management-encryption-key-1")
-      content_type     = optional(string, "text/plain")
-      byte_length      = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
-    scope_management_encryption_key_2 = object({
-      create           = optional(bool, true)
-      name             = optional(string, "scope-management-encryption-key-2")
-      content_type     = optional(string, "text/plain")
-      byte_length      = optional(number, 32)
-      rotation_counter = optional(number, 0)
-      expiration_date  = optional(string, "2099-12-31T23:59:59Z")
-    })
+    create           = optional(bool, true)
+    name             = optional(string)
+    content_type     = optional(string, "text/plain")
+    special          = optional(bool, false)
+    length           = optional(number)
+    rotation_counter = optional(number, 0)
+    expiration_date  = optional(string, "2099-12-31T23:59:59Z")
   }))
-  default = {}
+  default = {
+    encryption_app_repository             = { create = true, name = "encryption-app-repository", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_encryption_key_ingestion          = { create = true, name = "encryption-key-ingestion", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_encryption_key_node_chat_lxm      = { create = true, name = "encryption-key-node-chat-lxm", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_scope_management_encryption_key_1 = { create = true, name = "scope-management-encryption-key-1", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_scope_management_encryption_key_2 = { create = true, name = "scope-management-encryption-key-2", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm_master_key                    = { create = true, name = "litellm-master-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm_salt_key                      = { create = true, name = "litellm-salt-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    rabbitmq_password_chat                = { create = true, name = "rabbitmq-password-chat", content_type = "text/plain", special = false, length = 24, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    zitadel_db_user_password              = { create = true, name = "zitadel-db-user-password", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    zitadel_main_key                      = { create = true, name = "zitadel-main-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+  }
 }

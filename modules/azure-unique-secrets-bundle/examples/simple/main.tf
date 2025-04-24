@@ -10,6 +10,10 @@ resource "azurerm_key_vault" "core" {
   resource_group_name = "rg"
   tenant_id           = "00000000-0000-0000-0000-000000000000"
   sku_name            = "standard"
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+  }
 }
 
 resource "azurerm_key_vault" "sensitive" {
@@ -18,6 +22,10 @@ resource "azurerm_key_vault" "sensitive" {
   resource_group_name = "rg"
   tenant_id           = "00000000-0000-0000-0000-000000000000"
   sku_name            = "standard"
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+  }
 }
 
 module "redis" {
