@@ -28,7 +28,7 @@ resource "azurerm_key_vault" "sensitive" {
   }
 }
 
-module "redis" {
+module "secrets_bundle" {
   source          = "../.."
   kv_id_core      = azurerm_key_vault.core.id
   kv_id_sensitive = azurerm_key_vault.sensitive.id
