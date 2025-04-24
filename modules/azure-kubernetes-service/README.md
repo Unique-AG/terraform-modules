@@ -238,7 +238,9 @@ No modules.
 |------|-------------|
 | <a name="output_agic_identity_client_id"></a> [agic\_identity\_client\_id](#output\_agic\_identity\_client\_id) | The client ID of the identity used by the Application Gateway Ingress Controller. |
 | <a name="output_agic_identity_object_id"></a> [agic\_identity\_object\_id](#output\_agic\_identity\_object\_id) | The object ID of the identity used by the Application Gateway Ingress Controller. |
-| <a name="output_csi_user_assigned_identity_name"></a> [csi\_user\_assigned\_identity\_name](#output\_csi\_user\_assigned\_identity\_name) | The name of the user-assigned identity for the CSI driver. |
+| <a name="output_csi_identity_client_id"></a> [csi\_identity\_client\_id](#output\_csi\_identity\_client\_id) | The client ID of the identity used by the CSI driver. |
+| <a name="output_csi_identity_object_id"></a> [csi\_identity\_object\_id](#output\_csi\_identity\_object\_id) | The object ID of the identity used by the CSI driver. |
+| <a name="output_csi_user_assigned_identity_name"></a> [csi\_user\_assigned\_identity\_name](#output\_csi\_user\_assigned\_identity\_name) | The name of the user-assigned identity for the CSI driver. Prefer using the csi\_identity\_client\_id and csi\_identity\_object\_id outputs as they are more reliable. |
 | <a name="output_kubernetes_cluster_id"></a> [kubernetes\_cluster\_id](#output\_kubernetes\_cluster\_id) | The ID of the Kubernetes cluster. |
 | <a name="output_kubernetes_node_rg_name"></a> [kubernetes\_node\_rg\_name](#output\_kubernetes\_node\_rg\_name) | The name of the node resource group. This name is important as the CSI driver identity is created there. |
 | <a name="output_kublet_identity_client_id"></a> [kublet\_identity\_client\_id](#output\_kublet\_identity\_client\_id) | The client ID of the identity used by the kubelet. |
