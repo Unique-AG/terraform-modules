@@ -22,3 +22,13 @@ output "kublet_identity_object_id" {
   description = "The object ID of the identity used by the kubelet."
   value       = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
 }
+
+output "agic_identity_client_id" {
+  description = "The client ID of the identity used by the Application Gateway Ingress Controller."
+  value       = azurerm_kubernetes_cluster.cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].client_id
+}
+
+output "agic_identity_object_id" {
+  description = "The object ID of the identity used by the Application Gateway Ingress Controller."
+  value       = azurerm_kubernetes_cluster.cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+}
