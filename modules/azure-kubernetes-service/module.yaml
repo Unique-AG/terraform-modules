@@ -7,3 +7,5 @@ version: 3.1.0
 changes:
   - kind: added
     description: "Outputs the created ingress application gateway identity properties as agic_identity_client_id and agic_identity_object_id."
+  - kind: added
+    description: "Outputs the created csi driver identity properties as csi_identity_client_id and csi_identity_object_id."
