@@ -44,14 +44,24 @@ resource "azurerm_monitor_diagnostic_setting" "diag" {
   log_analytics_workspace_id = try(each.value.diagnostic_settings.log_analytics_workspace_id, null)
 
   dynamic "enabled_log" {
-    for_each = try(each.value.diagnostic_settings != null ? each.value.diagnostic_settings.enabled_log_categories : [], ["Audit", "RequestResponse", "Trace"])
+    for_each = try(
+      each.value.diagnostic_settings != null && each.value.diagnostic_settings.enabled_log_categories != null ?
+      each.value.diagnostic_settings.enabled_log_categories :
+      [],
+      []
+    )
     content {
       category = enabled_log.value
     }
   }
 
   dynamic "metric" {
-    for_each = try(each.value.diagnostic_settings != null ? each.value.diagnostic_settings.enabled_metrics : [], ["AllMetrics"])
+    for_each = try(
+      each.value.diagnostic_settings != null && each.value.diagnostic_settings.enabled_metrics != null ?
+      each.value.diagnostic_settings.enabled_metrics :
+      [],
+      []
+    )
     content {
       category = metric.value
       enabled  = true
