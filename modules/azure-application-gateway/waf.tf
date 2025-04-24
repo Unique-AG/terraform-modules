@@ -86,7 +86,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
         operator           = "IPMatch"
         negation_condition = true
-        match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.this.ip_address}"])
+        match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.appgw[0].ip_address}"])
       }
 
       action = "Block"
