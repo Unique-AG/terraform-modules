@@ -1,6 +1,7 @@
 locals {
   is_waf_v2              = var.gateway_sku == "WAF_v2" ? 1 : 0
   allow_https_challenges = local.is_waf_v2 == 1 && length(var.ip_waf_list) > 0 ? [1] : []
+  public_ip_address      = var.public_ip_address_id == "" ? try(azurerm_public_ip.appgw[0].ip_address, null) : null
 }
 
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
@@ -86,7 +87,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
         operator           = "IPMatch"
         negation_condition = true
-        match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.appgw[0].ip_address}"])
+        match_values       = compact(concat(custom_rules.value.list, local.public_ip_address != null ? [local.public_ip_address] : []))
       }
 
       action = "Block"
