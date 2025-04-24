@@ -85,7 +85,7 @@ resource "random_id" "hex_scope_management_encryption_key_2" {
   byte_length = 32
 }
 resource "azurerm_key_vault_secret" "hex_scope_management_encryption_key_2" {
-  count           = var.secrets_to_create.hex_scope_management_encryption_key_2.create ? 2 : 0
+  count           = var.secrets_to_create.hex_scope_management_encryption_key_2.create ? 1 : 0
   name            = var.secrets_to_create.hex_scope_management_encryption_key_2.name
   value           = random_id.hex_scope_management_encryption_key_2.hex
   content_type    = var.secrets_to_create.hex_scope_management_encryption_key_2.content_type
