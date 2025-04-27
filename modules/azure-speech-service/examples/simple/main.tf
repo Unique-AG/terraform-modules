@@ -30,13 +30,14 @@ resource "azurerm_subnet" "subnet" {
 
 # Key Vault with RBAC
 resource "azurerm_key_vault" "kv" {
-  name                      = "kv-${random_string.unique.result}"
-  resource_group_name       = azurerm_resource_group.rg.name
-  location                  = azurerm_resource_group.rg.location
-  tenant_id                 = data.azurerm_client_config.current.tenant_id
-  sku_name                  = "standard"
-  purge_protection_enabled  = true
-  enable_rbac_authorization = true
+  name                       = "kv-${random_string.unique.result}"
+  resource_group_name        = azurerm_resource_group.rg.name
+  location                   = azurerm_resource_group.rg.location
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  purge_protection_enabled   = true
+  soft_delete_retention_days = 7
+  enable_rbac_authorization  = true
 
   # Add network ACL rules to restrict access
   network_acls {
