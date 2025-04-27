@@ -46,6 +46,20 @@ resource "azurerm_role_assignment" "kv_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+# RBAC role assignment for Key Vault Secrets User
+resource "azurerm_role_assignment" "kv_secrets_user" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# RBAC role assignment for Key Vault Secrets Officer
+resource "azurerm_role_assignment" "kv_secrets_officer" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
 # Log Analytics Workspace
 resource "azurerm_log_analytics_workspace" "law" {
   name                = "workspace1"
@@ -71,17 +85,6 @@ resource "azurerm_private_dns_zone" "private_dns_zone" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-// ... existing code ...
-
-# Additional RBAC role assignment for Key Vault Secrets User
-resource "azurerm_role_assignment" "kv_secrets_user" {
-  scope                = azurerm_key_vault.kv.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = data.azurerm_client_config.current.object_id
-}
-
-// ... existing code ...
-
 # Update the module to use the created resources
 module "speech_service" {
   source              = "../.."
@@ -95,38 +98,37 @@ module "speech_service" {
       custom_subdomain_name = "my-speech-service-switzerlandnorth"
 
       # Optional identity configuration
-      identity = {
-        type         = "UserAssigned"
-        identity_ids = [azurerm_user_assigned_identity.example.id]
-      }
+      # identity = {
+      #   type         = "UserAssigned"
+      #   identity_ids = [azurerm_user_assigned_identity.example.id]
+      # }
 
-      private_endpoint = {
-        subnet_id           = azurerm_subnet.subnet.id
-        vnet_id             = azurerm_virtual_network.vnet.id
-        private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
-      }
+      # private_endpoint = {
+      #   subnet_id           = azurerm_subnet.subnet.id
+      #   vnet_id             = azurerm_virtual_network.vnet.id
+      #   private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
+      # }
 
       diagnostic_settings = {
         log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
-        enabled_log_categories     = ["Audit", "RequestResponse"]
-        enabled_metrics            = ["AllMetrics"]
+        enabled_log_categories     = ["Audit"]
       }
 
-      network_security_group = {
-        security_rules = [
-          {
-            name                       = "AllowToSpeech"
-            priority                   = 100
-            direction                  = "Inbound"
-            access                     = "Allow"
-            protocol                   = "Tcp"
-            source_port_range          = "*"
-            destination_port_range     = "443"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
-          }
-        ]
-      }
+      # network_security_group = {
+      #   security_rules = [
+      #     {
+      #       name                       = "AllowToSpeech"
+      #       priority                   = 100
+      #       direction                  = "Inbound"
+      #       access                     = "Allow"
+      #       protocol                   = "Tcp"
+      #       source_port_range          = "*"
+      #       destination_port_range     = "443"
+      #       source_address_prefix      = "*"
+      #       destination_address_prefix = "*"
+      #     }
+      #   ]
+      # }
 
       workload_identity = {
         principal_id         = data.azurerm_client_config.current.object_id

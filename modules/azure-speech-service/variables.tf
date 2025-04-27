@@ -15,8 +15,8 @@ variable "accounts" {
     }))
     diagnostic_settings = optional(object({
       log_analytics_workspace_id = string
-      enabled_log_categories     = optional(list(string))
-      enabled_metrics            = optional(list(string))
+      enabled_log_categories     = optional(list(string), null)
+      enabled_metrics            = optional(list(string), null)
     }))
     network_security_group = optional(object({
       security_rules = optional(list(object({
@@ -37,6 +37,15 @@ variable "accounts" {
     }))
   }))
   description = "values for the cognitive accounts"
+  validation {
+    condition = alltrue([
+      for k, v in var.accounts :
+      try(v.diagnostic_settings == null, true) ||
+      try(v.diagnostic_settings.enabled_metrics == null, true) ||
+      try(length(v.diagnostic_settings.enabled_metrics) > 0, true)
+    ])
+    error_message = "If diagnostic_settings.enabled_metrics is provided, it cannot be an empty list. Either provide specific metrics or omit the field entirely."
+  }
   validation {
     condition     = length(keys(var.accounts)) > 0
     error_message = "At least one cognitive account must be defined"
