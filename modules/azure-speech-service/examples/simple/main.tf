@@ -37,6 +37,14 @@ resource "azurerm_key_vault" "kv" {
   sku_name                  = "standard"
   purge_protection_enabled  = false
   enable_rbac_authorization = true
+
+  # Add network ACL rules to restrict access
+  network_acls {
+    default_action             = "Deny"
+    bypass                     = "AzureServices"
+    ip_rules                   = []
+    virtual_network_subnet_ids = [azurerm_subnet.subnet.id]
+  }
 }
 
 # RBAC role assignment for Key Vault Administrator
