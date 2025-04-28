@@ -1,10 +1,15 @@
 variable "waf_ip_allow_list" {
   # This is intentionally a list of objects to allow potential expansion in the future as the match block allows more settings.
-  description = "List of IP addresses for custom rules"
-  type = list(object({
+  description = "Map of IP addresses for custom rules"
+  type = map(object({
     allow_list = list(string)
   }))
-  default = []
+  default = {}
+
+  validation {
+    condition     = alltrue([for k in keys(var.waf_ip_allow_list) : length(regexall("^[a-zA-Z][a-zA-Z0-9]*$", k)) == 1])
+    error_message = "All keys in the waf_ip_allow_list map must start with a letter and contain only letters (a-z, A-Z) and numbers (0-9)."
+  }
 }
 
 variable "waf_policy_name" {
