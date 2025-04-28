@@ -25,9 +25,9 @@ resource "azurerm_key_vault_secret" "resource_id" {
 }
 
 resource "azurerm_key_vault_secret" "fqdn" {
-  count        = length(var.accounts)
-  name         = "${keys(var.accounts)[count.index]}${var.fqdn_secret_name_suffix}"
-  value        = try(
+  count = length(var.accounts)
+  name  = "${keys(var.accounts)[count.index]}${var.fqdn_secret_name_suffix}"
+  value = try(
     var.accounts[keys(var.accounts)[count.index]].custom_subdomain_name != null ?
     "${var.accounts[keys(var.accounts)[count.index]].custom_subdomain_name}.cognitiveservices.azure.com" :
     azurerm_cognitive_account.aca[keys(var.accounts)[count.index]].endpoint
