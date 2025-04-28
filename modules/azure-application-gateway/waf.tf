@@ -371,7 +371,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     for_each = var.waf_ip_allow_list
     content {
       name      = custom_rules.key
-      priority  = 2 + index(var.waf_ip_allow_list, custom_rules.value)
+      priority  = 2 + index(keys(var.waf_ip_allow_list), custom_rules.key)
       rule_type = "MatchRule"
       action    = "Block"
 
