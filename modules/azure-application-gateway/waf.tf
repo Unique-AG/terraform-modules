@@ -10,6 +10,10 @@ variable "waf_ip_allow_list" {
     condition     = alltrue([for k in keys(var.waf_ip_allow_list) : length(regexall("^[a-zA-Z][a-zA-Z0-9]*$", k)) == 1])
     error_message = "All keys in the waf_ip_allow_list map must start with a letter and contain only letters (a-z, A-Z) and numbers (0-9)."
   }
+  validation {
+    condition     = alltrue([for v in values(var.waf_ip_allow_list) : length(v.allow_list) > 0])
+    error_message = "Each 'allow_list' within the waf_ip_allow_list map must contain at least one IP address or range."
+  }
 }
 
 variable "waf_policy_name" {
