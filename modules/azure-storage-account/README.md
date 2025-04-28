@@ -118,6 +118,7 @@ No modules.
 |------|-------------|
 | <a name="output_storage_account_connection_strings"></a> [storage\_account\_connection\_strings](#output\_storage\_account\_connection\_strings) | Connection strings for the storage account, provided for backward compatibility reasons. It is recommended to use Workload or Managed Identity authentication wherever possible |
 | <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | The ID of the storage account |
+| <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name) | The name of the storage account. Recommended only to be used for data sourcing as the Azure RM provider recommends using the ID instead for managing state. |
 <!-- END_TF_DOCS -->
 
 ## Limitations
