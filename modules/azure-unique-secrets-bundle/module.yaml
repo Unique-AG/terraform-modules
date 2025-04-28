@@ -1,0 +1,7 @@
+name: azure-unique-secrets-bundle
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
+version: 2025.16-rc.1
+changes:
+  - kind: added
+    description: "Secrets bundle for Azure."
