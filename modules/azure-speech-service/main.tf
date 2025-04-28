@@ -38,7 +38,7 @@ resource "azurerm_private_endpoint" "pe" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "diag" {
-  for_each                   = var.accounts
+  for_each                   = { for k, v in var.accounts : k => v if try(v.diagnostic_settings != null, false) }
   name                       = "${var.speech_service_name}-${each.key}-diag"
   target_resource_id         = azurerm_cognitive_account.aca[each.key].id
   log_analytics_workspace_id = try(each.value.diagnostic_settings.log_analytics_workspace_id, null)

@@ -35,3 +35,11 @@ output "speech_service_secret_names" {
     "${account_key}${var.resource_id_secret_name_suffix}"
   ]
 }
+
+output "fqdn_secret_names" {
+  description = "The names of the Key Vault secrets containing the Speech Service FQDNs"
+  value       = [
+    for account_key in keys(var.accounts) :
+    "${account_key}${var.fqdn_secret_name_suffix}"
+  ]
+}

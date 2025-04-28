@@ -26,6 +26,8 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 
   private_endpoint_network_policies = "Disabled"
+
+  service_endpoints = ["Microsoft.KeyVault"]
 }
 
 # Key Vault with RBAC
@@ -41,7 +43,7 @@ resource "azurerm_key_vault" "kv" {
 
   # Add network ACL rules to restrict access
   network_acls {
-    default_action             = "Deny"
+    default_action             = "Allow"
     bypass                     = "AzureServices"
     ip_rules                   = []
     virtual_network_subnet_ids = [azurerm_subnet.subnet.id]
@@ -118,10 +120,10 @@ module "speech_service" {
       #   private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
       # }
 
-      diagnostic_settings = {
-        log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
-        enabled_log_categories     = ["Audit"]
-      }
+      # diagnostic_settings = {
+      #   log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+      #   enabled_log_categories     = ["Audit"]
+      # }
 
       # network_security_group = {
       #   security_rules = [

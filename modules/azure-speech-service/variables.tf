@@ -115,3 +115,9 @@ variable "resource_id_secret_name_suffix" {
   description = "Suffix for the resource ID secret name"
   default     = "-resource-id"
 }
+
+variable "fqdn_secret_name_suffix" {
+  type        = string
+  description = "The suffix of the secret name where the FQDN is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
+  default     = "-fqdn"
+}
