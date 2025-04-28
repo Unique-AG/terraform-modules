@@ -1,11 +1,13 @@
 # Azure Redis
 
+> [!WARNING]
+> Azure takes their time to create Redis' caches reaching sometimes up to `module.redis.azurerm_redis_cache.arc: Still creating... [27m20s elapsed]`. Stay calm and wait ⏰
+
 ## Pre-requisites
 - To deploy this module, you have at least the following permissions:
     + Reader of the subscription
 
 ## [Examples](./examples)
-
 
 # Module
 
