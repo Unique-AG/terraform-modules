@@ -3,7 +3,11 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # Next major release open changes:
 # - node_pool_settings.node_count should be removed
-version: 3.0.1
+version: 3.1.0
 changes:
-  - kind: fixed
-    description: "When azure_prometheus_grafana_monitor.enabled is false, all monitor resources are not created."
+  - kind: added
+    description: "Outputs the created ingress application gateway identity properties as agic_identity_client_id and agic_identity_object_id."
+  - kind: added
+    description: "Outputs the created csi driver identity properties as csi_identity_client_id and csi_identity_object_id."
+  - kind: added
+    description: "Docs to list SKUs."
