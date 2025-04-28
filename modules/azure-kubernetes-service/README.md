@@ -5,6 +5,14 @@
     + Reader of the subscription
     + Contributor of the resource group
 
+## SKUs
+The Azure portal is unreliable to list all available SKUS to choose from (especially matching the Availibility Zones).
+```
+az vm list-skus --location <region> --zone --output table
+az vm list-skus --location switzerlandnorth --zone --output table
+```
+Listing the SKUs specifically gives you insights wether your planned SKU is available for each zone.
+
 ## Examples
 
 The module includes two example configurations:
