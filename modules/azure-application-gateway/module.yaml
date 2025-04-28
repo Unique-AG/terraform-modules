@@ -1,9 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 2.1.2
+version: 3.0.0
 changes:
-  - kind: fixed
-    description: "ip_name is now optional as when a public_ip_address_id is provided the name is not needed."
-  - kind: fixed
-    description: "Fixed WAF policy to correctly reference the Application Gateway's public IP resource."
+  - kind: changed
+    description: "⚠️ variable ip_waf_list removed, use waf_ip_allow_list instead."
