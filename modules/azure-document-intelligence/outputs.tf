@@ -23,7 +23,7 @@ output "keys_secret_names" {
   description = "List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled"
   value       = local.create_vault_secrets ? [for k, v in azurerm_key_vault_secret.key : v.name] : null
 }
-output "cognitive_account_resource" {
-  description = "The properties of the Cognitive Services Account."
-  value       = azurerm_cognitive_account.aca
+output "cognitive_account_resources" {
+  description = "Map of Cognitive Service Accounts where keys are the account names."
+  value       = { for name, account in azurerm_cognitive_account.aca : account.name => account }
 }
