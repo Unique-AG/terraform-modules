@@ -47,11 +47,12 @@ jobs:
 
             // Format changes as markdown
             let changeLog = ''
-            changeLog += '### Changes\n\n';
             if (moduleData.changes && moduleData.changes.length > 0) {
-              changeLog = moduleData.changes.map(change =>
+              changeLog += '### Changes\n\n'
+              changeLog += moduleData.changes.map(change =>
                 `- **${change.kind}**: ${change.description}`
               ).join('\n')
+              changeLog += '\n\n'
             }
 
             // Check for compatibility data
@@ -65,8 +66,8 @@ jobs:
               console.log("Formatted compatibility entries:", compatibilityEntries);
 
               if (compatibilityEntries.length > 0) {
-                changeLog += '### Compatibility\n\n';
-                changeLog += compatibilityEntries.join('\n');
+                changeLog += '### Compatibility\n\n'
+                changeLog += compatibilityEntries.join('\n')
               }
             }
 
@@ -77,7 +78,7 @@ jobs:
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_NOTES: ${{ steps.module.outputs.changes }}
+          RELEASE_NOTES: ${{ steps.module.outputs.changes }} # must be passed as ENV else the backticks will get escaped and not shown as code
         run: |
           # Create and push tag
           git tag ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
