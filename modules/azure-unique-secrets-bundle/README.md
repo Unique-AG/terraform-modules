@@ -89,4 +89,4 @@ No modules.
 
 | Module Version | Compatibility |
 |---|---|
-| 1.0.0 | `unique.ai`: `~> 2025.16` |
+| `>1.0.0` | `unique.ai`: `~> 2025.16` |
