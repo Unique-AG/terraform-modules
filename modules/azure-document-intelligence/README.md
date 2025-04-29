@@ -67,3 +67,10 @@ No modules.
 | Module Version | Compatibility |
 |---|---|
 | `> 3.0.0` | `unique.ai`: `~> 2025.16` |
+
+## Upgrading
+
+### ~> `3.0.0`
+
+- removes support for `user_assigned_identity_ids`, property was not actively used as the resource does not perform any action/uses its identity
+- `accounts.[].local_auth_enabled` and `accounts.[].public_network_access_enabled` default to `false`, set them to `true` to allow public access or key authentication (discouraged for secure by default setups)
