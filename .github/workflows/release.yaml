@@ -47,17 +47,24 @@ jobs:
 
             // Format changes as markdown
             let changeLog = ''
-            if (moduleData.changes) {
+            if (moduleData.changes && moduleData.changes.length > 0) {
               changeLog = moduleData.changes.map(change =>
                 `- **${change.kind}**: ${change.description}`
               ).join('\n')
             }
+
+            // Check for compatibility data
             if (moduleData.compatibility) {
-              const compatibilityEntries = Object.entries(moduleData.compatibility).map(([key, value]) =>
-                `- \`${key}${value}\``
-              );
-              changeLog += '**Compatibility:**\n';
-              changeLog += compatibilityEntries.join('\n');
+              const compatibilityEntries = Object.entries(moduleData.compatibility)
+                .map(([key, value]) => `- \`${key}\`: \`${value}\``);
+
+              if (compatibilityEntries.length > 0) {
+                if (changeLog.length > 0) {
+                  changeLog += '\n\n'; 
+                }
+                changeLog += '**Compatibility:**\n';
+                changeLog += compatibilityEntries.join('\n');
+              }
             }
 
             core.setOutput('name', name)
