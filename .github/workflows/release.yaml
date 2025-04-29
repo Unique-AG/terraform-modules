@@ -47,6 +47,7 @@ jobs:
 
             // Format changes as markdown
             let changeLog = ''
+            changeLog += '### Changes\n\n';
             if (moduleData.changes && moduleData.changes.length > 0) {
               changeLog = moduleData.changes.map(change =>
                 `- **${change.kind}**: ${change.description}`
@@ -55,14 +56,16 @@ jobs:
 
             // Check for compatibility data
             if (moduleData.compatibility) {
+              console.log("Raw compatibility data:", JSON.stringify(moduleData.compatibility));
               const compatibilityEntries = Object.entries(moduleData.compatibility)
-                .map(([key, value]) => `- \`${key}\`: \`${value}\``);
+                .map(([key, value]) => {
+                  console.log(`Processing entry - Key: '${key}', Value: '${value}', Type of Key: ${typeof key}, Type of Value: ${typeof value}`);
+                  return `- \`${key}\`: \`${value}\``;
+                });
+              console.log("Formatted compatibility entries:", compatibilityEntries);
 
               if (compatibilityEntries.length > 0) {
-                if (changeLog.length > 0) {
-                  changeLog += '\n\n'; 
-                }
-                changeLog += '**Compatibility:**\n';
+                changeLog += '### Compatibility\n\n';
                 changeLog += compatibilityEntries.join('\n');
               }
             }
