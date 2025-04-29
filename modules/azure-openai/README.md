@@ -54,6 +54,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_cognitive_account_endpoints"></a> [cognitive\_account\_endpoints](#output\_cognitive\_account\_endpoints) | The endpoints used to connect to the Cognitive Service Account. |
+| <a name="output_cognitive_account_resources"></a> [cognitive\_account\_resources](#output\_cognitive\_account\_resources) | Map of Cognitive Service Accounts where keys are the account names. |
 | <a name="output_endpoints_secret_names"></a> [endpoints\_secret\_names](#output\_endpoints\_secret\_names) | List of secret names containing the endpoints for each Cognitive Service Account. Returns null if Key Vault integration is disabled. |
 | <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of secret names containing the access keys for each Cognitive Service Account. Returns null if Key Vault integration is disabled. |
 | <a name="output_model_version_endpoint_secret_name"></a> [model\_version\_endpoint\_secret\_name](#output\_model\_version\_endpoint\_secret\_name) | Name of the secret containing the model version endpoint definitions. Returns null if Key Vault integration is disabled. |

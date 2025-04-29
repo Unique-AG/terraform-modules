@@ -56,6 +56,7 @@ No modules.
 |------|-------------|
 | <a name="output_azure_document_intelligence_endpoint_definitions"></a> [azure\_document\_intelligence\_endpoint\_definitions](#output\_azure\_document\_intelligence\_endpoint\_definitions) | Object containing list of objects containing endpoint definitions with name, endpoint and location |
 | <a name="output_azure_document_intelligence_endpoints"></a> [azure\_document\_intelligence\_endpoints](#output\_azure\_document\_intelligence\_endpoints) | Object containing list of endpoints |
+| <a name="output_cognitive_account_resource"></a> [cognitive\_account\_resource](#output\_cognitive\_account\_resource) | The properties of the Cognitive Services Account. |
 | <a name="output_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#output\_endpoint\_definitions\_secret\_name) | Name of the secret containing the list of objects containing endpoint definitions with name, endpoint and location (content of `azure_document_intelligence_endpoint_definitions` output). Returns null if Key Vault integration is disabled |
 | <a name="output_endpoints_secret_name"></a> [endpoints\_secret\_name](#output\_endpoints\_secret\_name) | Name of the secret containing the list of endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled |

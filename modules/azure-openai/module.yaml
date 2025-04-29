@@ -1,7 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.1.0
+version: 2.1.1
+compatibility:
+  unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Private endpoint configuration"
+    description: "Outputs the cognitive services accounts properties for data sourcing."
