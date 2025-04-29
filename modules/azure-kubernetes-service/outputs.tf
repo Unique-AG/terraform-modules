@@ -42,3 +42,8 @@ output "csi_identity_object_id" {
   description = "The object ID of the identity used by the CSI driver."
   value       = azurerm_kubernetes_cluster.cluster.key_vault_secrets_provider[0].secret_identity[0].object_id
 }
+
+output "cluster_resource" {
+  description = "The properties of the Kubernetes cluster."
+  value       = azurerm_kubernetes_cluster.cluster
+}
