@@ -62,3 +62,9 @@ No modules.
 | <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
 <!-- END_TF_DOCS -->
+
+## Compatibility
+
+| Module Version | Compatibility |
+|---|---|
+| `> 3.0.0` | `unique.ai`: `~> 2025.16` |
