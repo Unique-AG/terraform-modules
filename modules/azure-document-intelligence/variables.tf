@@ -1,9 +1,11 @@
 variable "accounts" {
   type = map(object({
-    location              = string
-    account_kind          = optional(string, "FormRecognizer")
-    account_sku_name      = optional(string, "S0")
-    custom_subdomain_name = optional(string)
+    location                      = string
+    account_kind                  = optional(string, "FormRecognizer")
+    account_sku_name              = optional(string, "S0")
+    custom_subdomain_name         = optional(string)
+    local_auth_enabled            = optional(bool, false)
+    public_network_access_enabled = optional(bool, false)
     private_endpoint = optional(object({
       private_dns_zone_id = string
       subnet_id           = string

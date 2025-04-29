@@ -1,12 +1,14 @@
 resource "azurerm_cognitive_account" "aca" {
-  for_each              = var.accounts
-  name                  = "${var.doc_intelligence_name}-${each.key}"
-  location              = each.value.location
-  resource_group_name   = var.resource_group_name
-  kind                  = each.value.account_kind
-  sku_name              = each.value.account_sku_name
-  tags                  = var.tags
-  custom_subdomain_name = each.value.custom_subdomain_name
+  for_each                      = var.accounts
+  name                          = "${var.doc_intelligence_name}-${each.key}"
+  location                      = each.value.location
+  resource_group_name           = var.resource_group_name
+  kind                          = each.value.account_kind
+  sku_name                      = each.value.account_sku_name
+  tags                          = var.tags
+  public_network_access_enabled = each.value.public_network_access_enabled
+  local_auth_enabled            = each.value.local_auth_enabled
+  custom_subdomain_name         = each.value.custom_subdomain_name
   dynamic "identity" {
     for_each = var.user_assigned_identity_ids
     content {
