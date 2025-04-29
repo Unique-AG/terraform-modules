@@ -18,6 +18,7 @@ resource "azurerm_storage_account" "storage_account" {
   # secure by default
   allow_nested_items_to_be_public = false
   https_traffic_only_enabled      = true
+  public_network_access_enabled   = var.private_endpoint == null # later versions might need a more complex check
   min_tls_version                 = var.min_tls_version
 
   # enable mounting account as disk

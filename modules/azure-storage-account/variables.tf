@@ -176,7 +176,6 @@ variable "private_endpoint" {
   type = object({
     subnet_id           = string
     private_dns_zone_id = string
-    resource_group_name = string
     location            = optional(string)
     subresource_names   = optional(list(string), ["blob"])
     tags                = optional(map(string), {})
