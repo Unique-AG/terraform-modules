@@ -77,6 +77,7 @@ jobs:
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ steps.module.outputs.changes }}
         run: |
           # Create and push tag
           git tag ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
@@ -86,5 +87,5 @@ jobs:
           gh release create \
             ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }} \
             --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
-            --notes "${{ steps.module.outputs.changes }}" \
+            --notes "$RELEASE_NOTES" \
             --target ${{ github.sha }}
