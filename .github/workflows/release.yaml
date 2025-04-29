@@ -47,10 +47,28 @@ jobs:
 
             // Format changes as markdown
             let changeLog = ''
-            if (moduleData.changes) {
-              changeLog = moduleData.changes.map(change =>
+            if (moduleData.changes && moduleData.changes.length > 0) {
+              changeLog += '### Changes\n\n'
+              changeLog += moduleData.changes.map(change =>
                 `- **${change.kind}**: ${change.description}`
               ).join('\n')
+              changeLog += '\n\n'
+            }
+
+            // Check for compatibility data
+            if (moduleData.compatibility) {
+              console.log("Raw compatibility data:", JSON.stringify(moduleData.compatibility));
+              const compatibilityEntries = Object.entries(moduleData.compatibility)
+                .map(([key, value]) => {
+                  console.log(`Processing entry - Key: '${key}', Value: '${value}', Type of Key: ${typeof key}, Type of Value: ${typeof value}`);
+                  return `- \`${key}\`: \`${value}\``;
+                });
+              console.log("Formatted compatibility entries:", compatibilityEntries);
+
+              if (compatibilityEntries.length > 0) {
+                changeLog += '### Compatibility\n\n'
+                changeLog += compatibilityEntries.join('\n')
+              }
             }
 
             core.setOutput('name', name)
@@ -60,6 +78,7 @@ jobs:
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ steps.module.outputs.changes }} # must be passed as ENV else the backticks will get escaped and not shown as code
         run: |
           # Create and push tag
           git tag ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
@@ -69,5 +88,5 @@ jobs:
           gh release create \
             ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }} \
             --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
-            --notes "${{ steps.module.outputs.changes }}" \
+            --notes "$RELEASE_NOTES" \
             --target ${{ github.sha }}

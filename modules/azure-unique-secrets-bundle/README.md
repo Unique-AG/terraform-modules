@@ -23,7 +23,6 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 
 # Module
 
-
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -85,3 +84,9 @@ No modules.
 |------|-------------|
 | <a name="output_manual_secrets_created"></a> [manual\_secrets\_created](#output\_manual\_secrets\_created) | List of names of secrets created in the core key vault. |
 <!-- END_TF_DOCS -->
+
+## Compatibility
+
+| Module Version | Compatibility |
+|---|---|
+| `> 1.0.0` | `unique.ai`: `~> 2025.16` |
