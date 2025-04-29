@@ -9,13 +9,6 @@ resource "azurerm_cognitive_account" "aca" {
   public_network_access_enabled = each.value.public_network_access_enabled
   local_auth_enabled            = each.value.local_auth_enabled
   custom_subdomain_name         = each.value.custom_subdomain_name
-  dynamic "identity" {
-    for_each = var.user_assigned_identity_ids
-    content {
-      type         = "UserAssigned"
-      identity_ids = [identity.value]
-    }
-  }
 }
 
 locals {
