@@ -52,6 +52,13 @@ jobs:
                 `- **${change.kind}**: ${change.description}`
               ).join('\n')
             }
+            if (moduleData.compatibility) {
+              const compatibilityEntries = Object.entries(moduleData.compatibility).map(([key, value]) =>
+                `- \`${key}${value}\``
+              );
+              changeLog += '**Compatibility:**\n';
+              changeLog += compatibilityEntries.join('\n');
+            }
 
             core.setOutput('name', name)
             core.setOutput('version', version)
