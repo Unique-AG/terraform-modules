@@ -6,4 +6,6 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
+    description: "user_assigned_identity_ids is removed, the resource does not leverage any identity"
+  - kind: changed
     description: "⚠️ accounts.[].local_auth_enabled and accounts.[].public_network_access_enabled default to false #secureByDefault"
