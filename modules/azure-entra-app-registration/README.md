@@ -28,11 +28,13 @@ No modules.
 | [azuread_app_role_assignment.infrastructure_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_app_role_assignment.maintainers](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_app_role_assignment.system_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
+| [azuread_app_role_assignment.user](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_application.this](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application) | resource |
 | [azuread_application_app_role.application_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_app_role.infrastructure_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_app_role.maintainers](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_app_role.system_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
+| [azuread_application_app_role.user](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_password.aad_app_password](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_password) | resource |
 | [azuread_service_principal.this](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/service_principal) | resource |
 | [azurerm_key_vault_secret.aad_app_gitops_client_id](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -41,6 +43,7 @@ No modules.
 | [random_uuid.infrastructure_support](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 | [random_uuid.maintainers](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 | [random_uuid.system_support](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
+| [random_uuid.user](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 
 ## Inputs
 
@@ -56,6 +59,7 @@ No modules.
 | <a name="input_required_resource_access_list"></a> [required\_resource\_access\_list](#input\_required\_resource\_access\_list) | A map of resource\_app\_ids with their access configurations. | <pre>map(list(object({<br/>    id   = string<br/>    type = string<br/>  })))</pre> | <pre>{<br/>  "00000003-0000-0000-c000-000000000000": [<br/>    {<br/>      "id": "14dad69e-099b-42c9-810b-d002981feec1",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "37f7f235-527c-4136-accd-4a02d197296e",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0",<br/>      "type": "Scope"<br/>    }<br/>  ]<br/>}</pre> | no |
 | <a name="input_role_assignments_required"></a> [role\_assignments\_required](#input\_role\_assignments\_required) | Whether role assignments are required to be able to use the app. Least privilege principle encourages true. | `bool` | `true` | no |
 | <a name="input_system_support_object_ids"></a> [system\_support\_object\_ids](#input\_system\_support\_object\_ids) | The object ids of the user/groups that should be able to support the system or core of the platform. Roles trickle down so this role includes application support. | `list(string)` | `[]` | no |
+| <a name="input_user_object_ids"></a> [user\_object\_ids](#input\_user\_object\_ids) | The object ids of the user/groups that should be able to just use the application/login. | `list(string)` | `[]` | no |
 
 ## Outputs
 
@@ -92,6 +96,7 @@ Version `3.0.0` introduces significant changes to how application roles and perm
 
       display_name = "My Application"
     - maintainers_principal_object_ids = ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]
+    + user_object_ids                = ["00000000-0000-0000-0000-000000000002"]
     + application_support_object_ids = ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]
     + # Optionally add system_support_object_ids = [...]
     + # Optionally add infrastructure_support_object_ids = [...]
@@ -110,6 +115,7 @@ Version `3.0.0` introduces significant changes to how application roles and perm
 
 *   A new boolean variable `role_assignments_required` has been added. It defaults to `true`.
 *   When `true`, users must be assigned one of the defined app roles (`application_support`, `system_support`, or `infrastructure_support`) to successfully sign in to the application. This enforces the principle of least privilege.
+*   If you'd like users to just be able to login, use `user_object_ids`.
 *   **Action Required:** If your application does *not* require users to have specific roles assigned for login, explicitly set `role_assignments_required = false`.
 
 #### Minor Changes

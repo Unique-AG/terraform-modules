@@ -1,4 +1,5 @@
 resource "random_uuid" "maintainers" {}
+resource "random_uuid" "user" {}
 resource "random_uuid" "application_support" {}
 resource "random_uuid" "system_support" {}
 resource "random_uuid" "infrastructure_support" {}
@@ -6,6 +7,23 @@ resource "random_uuid" "infrastructure_support" {}
 resource "azuread_service_principal" "this" {
   client_id                    = azuread_application.this.client_id
   app_role_assignment_required = var.role_assignments_required
+}
+
+resource "azuread_application_app_role" "user" {
+  application_id = azuread_application.this.id
+  role_id        = random_uuid.user.id
+
+  allowed_member_types = ["User"]
+  description          = "User, allows to use the application or login without any additional permissions."
+  display_name         = "User"
+  value                = "user"
+}
+
+resource "azuread_app_role_assignment" "user" {
+  for_each            = setunion(var.user_object_ids, var.application_support_object_ids, var.system_support_object_ids, var.infrastructure_support_object_ids)
+  app_role_id         = azuread_application_app_role.user.role_id
+  principal_object_id = each.value
+  resource_object_id  = azuread_service_principal.this.object_id
 }
 
 resource "azuread_application_app_role" "application_support" {

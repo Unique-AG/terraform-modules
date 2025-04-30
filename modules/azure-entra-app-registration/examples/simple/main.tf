@@ -10,5 +10,6 @@ module "entra_app" {
     enabled = false
   }
   display_name                   = "example-app"
+  user_object_ids                = ["00000000-0000-0000-0000-000000000002"]
   application_support_object_ids = ["00000000-0000-0000-0000-000000000001"]
 }

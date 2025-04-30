@@ -9,7 +9,7 @@ changes:
   - kind: changed
     description: "Updated URLs (`privacy_statement_url`, `terms_of_service_url`, `homepage_url`) from unique.ch to unique.ai."
   - kind: added
-    description: "⚠️ Introduced granular, hierarchical support roles: `application_support`, `system_support`, and `infrastructure_support` with corresponding input variables."
+    description: "⚠️ Introduced granular, hierarchical support roles: `user`, `application_support`, `system_support`, and `infrastructure_support` with corresponding input variables."
   - kind: added
     description: "⚠️ Added `role_assignments_required` variable to control if app role assignment is mandatory for usage (defaults to true)."
   - kind: changed

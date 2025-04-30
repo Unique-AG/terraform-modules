@@ -65,6 +65,12 @@ variable "required_resource_access_list" {
   }
 }
 
+variable "user_object_ids" {
+  type        = list(string)
+  description = "The object ids of the user/groups that should be able to just use the application/login."
+  default     = []
+}
+
 variable "application_support_object_ids" {
   type        = list(string)
   description = "The object ids of the user/groups that should be able to support the application."
