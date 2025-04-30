@@ -1,13 +1,13 @@
 resource "azuread_application" "this" {
   display_name          = var.display_name
   sign_in_audience      = "AzureADMyOrg"
-  privacy_statement_url = "https://www.unique.ch/privacy"
-  terms_of_service_url  = "https://www.unique.ch/terms"
+  privacy_statement_url = "https://www.unique.ai/privacy"
+  terms_of_service_url  = "https://www.unique.ai/terms"
 
   owners = var.owner_user_object_ids
 
   web {
-    homepage_url = "https://www.unique.ch"
+    homepage_url = "https://www.unique.ai"
     implicit_grant {
       access_token_issuance_enabled = true
       id_token_issuance_enabled     = true

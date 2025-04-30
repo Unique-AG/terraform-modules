@@ -1,6 +1,6 @@
 variable "display_name" {
   type        = string
-  description = "The displayed name in Entra"
+  description = "The displayed name in Entra ID."
 }
 
 variable "client_secret_generation_config" {
@@ -65,7 +65,26 @@ variable "required_resource_access_list" {
   }
 }
 
-variable "maintainers_principal_object_ids" {
+variable "application_support_object_ids" {
   type        = list(string)
-  description = "The object ids of the user/groups/service_principal "
+  description = "The object ids of the user/groups that should be able to support the application."
+  default     = []
+}
+
+variable "system_support_object_ids" {
+  type        = list(string)
+  description = "The object ids of the user/groups that should be able to support the system or core of the platform. Roles trickle down so this role includes application support."
+  default     = []
+}
+
+variable "infrastructure_support_object_ids" {
+  type        = list(string)
+  description = "The object ids of the user/groups that should be able to support the infrastructure of the platform. Roles trickle down so this role includes both system and application support."
+  default     = []
+}
+
+variable "role_assignments_required" {
+  type        = bool
+  description = "Whether role assignments are required to be able to use the app. Least privilege principle encourages true."
+  default     = true
 }
