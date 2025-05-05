@@ -24,26 +24,16 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azuread_app_role_assignment.application_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
-| [azuread_app_role_assignment.infrastructure_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_app_role_assignment.maintainers](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
-| [azuread_app_role_assignment.system_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
-| [azuread_app_role_assignment.user](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
+| [azuread_app_role_assignment.standard](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_application.this](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application) | resource |
-| [azuread_application_app_role.application_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
-| [azuread_application_app_role.infrastructure_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_app_role.maintainers](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
-| [azuread_application_app_role.system_support](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
-| [azuread_application_app_role.user](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
+| [azuread_application_app_role.standard](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_password.aad_app_password](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_password) | resource |
 | [azuread_service_principal.this](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/service_principal) | resource |
 | [azurerm_key_vault_secret.aad_app_gitops_client_id](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.aad_app_gitops_client_secret](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
-| [random_uuid.application_support](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
-| [random_uuid.infrastructure_support](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 | [random_uuid.maintainers](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
-| [random_uuid.system_support](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
-| [random_uuid.user](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
 
 ## Inputs
 
@@ -52,14 +42,18 @@ No modules.
 | <a name="input_application_support_object_ids"></a> [application\_support\_object\_ids](#input\_application\_support\_object\_ids) | The object ids of the user/groups that should be able to support the application. | `list(string)` | `[]` | no |
 | <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret will be generated and stored in the keyvault. | <pre>object({<br/>    enabled     = bool<br/>    keyvault_id = optional(string)<br/>    secret_name = optional(string, "entra-app-client-secret")<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_display_name"></a> [display\_name](#input\_display\_name) | The displayed name in Entra ID. | `string` | n/a | yes |
+| <a name="input_homepage_url"></a> [homepage\_url](#input\_homepage\_url) | The homepage url of the app. | `string` | `"https://www.unique.ai"` | no |
 | <a name="input_infrastructure_support_object_ids"></a> [infrastructure\_support\_object\_ids](#input\_infrastructure\_support\_object\_ids) | The object ids of the user/groups that should be able to support the infrastructure of the platform. Roles trickle down so this role includes both system and application support. | `list(string)` | `[]` | no |
 | <a name="input_owner_user_object_ids"></a> [owner\_user\_object\_ids](#input\_owner\_user\_object\_ids) | n/a | `list(string)` | `[]` | no |
+| <a name="input_privacy_statement_url"></a> [privacy\_statement\_url](#input\_privacy\_statement\_url) | The privacy statement url of the app. | `string` | `"https://www.unique.ai/privacy"` | no |
 | <a name="input_redirect_uris"></a> [redirect\_uris](#input\_redirect\_uris) | Authorized redirects | `list(string)` | `[]` | no |
 | <a name="input_redirect_uris_public_native"></a> [redirect\_uris\_public\_native](#input\_redirect\_uris\_public\_native) | Public client/native (mobile & desktop) redirects | `list(string)` | `[]` | no |
 | <a name="input_required_resource_access_list"></a> [required\_resource\_access\_list](#input\_required\_resource\_access\_list) | A map of resource\_app\_ids with their access configurations. | <pre>map(list(object({<br/>    id   = string<br/>    type = string<br/>  })))</pre> | <pre>{<br/>  "00000003-0000-0000-c000-000000000000": [<br/>    {<br/>      "id": "14dad69e-099b-42c9-810b-d002981feec1",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "37f7f235-527c-4136-accd-4a02d197296e",<br/>      "type": "Scope"<br/>    },<br/>    {<br/>      "id": "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0",<br/>      "type": "Scope"<br/>    }<br/>  ]<br/>}</pre> | no |
 | <a name="input_role_assignments_required"></a> [role\_assignments\_required](#input\_role\_assignments\_required) | Whether role assignments are required to be able to use the app. Least privilege principle encourages true. | `bool` | `true` | no |
+| <a name="input_sign_in_audience"></a> [sign\_in\_audience](#input\_sign\_in\_audience) | The audience of the app. | `string` | `"AzureADMyOrg"` | no |
 | <a name="input_system_support_object_ids"></a> [system\_support\_object\_ids](#input\_system\_support\_object\_ids) | The object ids of the user/groups that should be able to support the system or core of the platform. Roles trickle down so this role includes application support. | `list(string)` | `[]` | no |
-| <a name="input_user_object_ids"></a> [user\_object\_ids](#input\_user\_object\_ids) | The object ids of the user/groups that should be able to just use the application/login. | `list(string)` | `[]` | no |
+| <a name="input_terms_of_service_url"></a> [terms\_of\_service\_url](#input\_terms\_of\_service\_url) | The terms of service url of the app. | `string` | `"https://www.unique.ai/terms"` | no |
+| <a name="input_user_object_ids"></a> [user\_object\_ids](#input\_user\_object\_ids) | The object ids of the user/groups that should be able to just use the application/login. All support profiles will be added to this list. | `list(string)` | `[]` | no |
 
 ## Outputs
 

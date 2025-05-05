@@ -67,7 +67,7 @@ variable "required_resource_access_list" {
 
 variable "user_object_ids" {
   type        = list(string)
-  description = "The object ids of the user/groups that should be able to just use the application/login."
+  description = "The object ids of the user/groups that should be able to just use the application/login. All support profiles will be added to this list."
   default     = []
 }
 
@@ -94,3 +94,28 @@ variable "role_assignments_required" {
   description = "Whether role assignments are required to be able to use the app. Least privilege principle encourages true."
   default     = true
 }
+
+variable "sign_in_audience" {
+  type        = string
+  description = "The audience of the app."
+  default     = "AzureADMyOrg"
+}
+
+variable "privacy_statement_url" {
+  type        = string
+  description = "The privacy statement url of the app."
+  default     = "https://www.unique.ai/privacy"
+}
+
+variable "terms_of_service_url" {
+  type        = string
+  description = "The terms of service url of the app."
+  default     = "https://www.unique.ai/terms"
+}
+
+variable "homepage_url" {
+  type        = string
+  description = "The homepage url of the app."
+  default     = "https://www.unique.ai"
+}
+
