@@ -35,8 +35,8 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.27.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.7.2 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3 |
 
 ## Modules
 
