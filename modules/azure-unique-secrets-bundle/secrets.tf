@@ -10,6 +10,6 @@ resource "azurerm_key_vault_secret" "manual_secret" {
   expiration_date = lookup(each.value, "expiration_date", "2099-12-31T23:59:59Z")
   content_type    = lookup(each.value, "content_type", "text/plain")
   lifecycle {
-    ignore_changes = [value, tags]
+    ignore_changes = [value, tags, content_type]
   }
 }
