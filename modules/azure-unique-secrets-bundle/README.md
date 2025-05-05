@@ -17,7 +17,7 @@ Compared to the rest of the modules, this module follows the current Unique Rele
 The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to the lack of security but due to the nature of these secrets. They are configuration as code, inaccessible to humans. While we allow necessary security measures by building in rotation mechanisms we refuse to put unnecessary pressure onto cluster-operators to rotate a secret that is never actually handed out and only needed to communicate between two pods within the cluster.
 
 ## Pre-requisites
-- The executing principal needs at least `Key Vault Secrets Officer` permissions on both Key Vaults
+- The executing principal needs at least `Key Vault Secrets Officer` permissions on both Key Vaults.
 
 ## [Examples](./examples)
 
@@ -49,8 +49,8 @@ No modules.
 | [azurerm_key_vault_secret.encryption_app_repository](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
-| [azurerm_key_vault_secret.hex_scope_management_encryption_key_1](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
-| [azurerm_key_vault_secret.hex_scope_management_encryption_key_2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.hex_encryption_key_scope_management_1](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.hex_encryption_key_scope_management_2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.litellm_master_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.litellm_salt_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.manual_secret](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -59,8 +59,8 @@ No modules.
 | [azurerm_key_vault_secret.zitadel_main_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [random_id.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [random_id.hex_encryption_key_node_chat_lxm](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
-| [random_id.hex_scope_management_encryption_key_1](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
-| [random_id.hex_scope_management_encryption_key_2](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [random_id.hex_encryption_key_scope_management_1](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [random_id.hex_encryption_key_scope_management_2](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [random_password.encryption_key_app_repository](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.litellm_master_key](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.litellm_salt_key](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |

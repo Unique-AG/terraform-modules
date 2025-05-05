@@ -61,17 +61,17 @@ resource "azurerm_key_vault_secret" "encryption_key_ingestion" {
 # @type random_id#hex
 # @note Has two keys to rotate zero downtime
 # ---
-resource "random_id" "hex_scope_management_encryption_key_1" {
-  keepers     = { version = var.secrets_to_create.hex_scope_management_encryption_key_1.rotation_counter }
+resource "random_id" "hex_encryption_key_scope_management_1" {
+  keepers     = { version = var.secrets_to_create.hex_encryption_key_scope_management_1.rotation_counter }
   byte_length = 32
 }
-resource "azurerm_key_vault_secret" "hex_scope_management_encryption_key_1" {
-  count           = var.secrets_to_create.hex_scope_management_encryption_key_1.create ? 1 : 0
-  name            = var.secrets_to_create.hex_scope_management_encryption_key_1.name
-  value           = random_id.hex_scope_management_encryption_key_1.hex
-  content_type    = var.secrets_to_create.hex_scope_management_encryption_key_1.content_type
+resource "azurerm_key_vault_secret" "hex_encryption_key_scope_management_1" {
+  count           = var.secrets_to_create.hex_encryption_key_scope_management_1.create ? 1 : 0
+  name            = var.secrets_to_create.hex_encryption_key_scope_management_1.name
+  value           = random_id.hex_encryption_key_scope_management_1.hex
+  content_type    = var.secrets_to_create.hex_encryption_key_scope_management_1.content_type
   key_vault_id    = var.kv_id_sensitive
-  expiration_date = var.secrets_to_create.hex_scope_management_encryption_key_1.expiration_date
+  expiration_date = var.secrets_to_create.hex_encryption_key_scope_management_1.expiration_date
 }
 
 # ---
@@ -80,17 +80,17 @@ resource "azurerm_key_vault_secret" "hex_scope_management_encryption_key_1" {
 # @type random_id#hex
 # @note Has two keys to rotate zero downtime
 # ---
-resource "random_id" "hex_scope_management_encryption_key_2" {
-  keepers     = { version = var.secrets_to_create.hex_scope_management_encryption_key_2.rotation_counter }
+resource "random_id" "hex_encryption_key_scope_management_2" {
+  keepers     = { version = var.secrets_to_create.hex_encryption_key_scope_management_2.rotation_counter }
   byte_length = 32
 }
-resource "azurerm_key_vault_secret" "hex_scope_management_encryption_key_2" {
-  count           = var.secrets_to_create.hex_scope_management_encryption_key_2.create ? 1 : 0
-  name            = var.secrets_to_create.hex_scope_management_encryption_key_2.name
-  value           = random_id.hex_scope_management_encryption_key_2.hex
-  content_type    = var.secrets_to_create.hex_scope_management_encryption_key_2.content_type
+resource "azurerm_key_vault_secret" "hex_encryption_key_scope_management_2" {
+  count           = var.secrets_to_create.hex_encryption_key_scope_management_2.create ? 1 : 0
+  name            = var.secrets_to_create.hex_encryption_key_scope_management_2.name
+  value           = random_id.hex_encryption_key_scope_management_2.hex
+  content_type    = var.secrets_to_create.hex_encryption_key_scope_management_2.content_type
   key_vault_id    = var.kv_id_sensitive
-  expiration_date = var.secrets_to_create.hex_scope_management_encryption_key_2.expiration_date
+  expiration_date = var.secrets_to_create.hex_encryption_key_scope_management_2.expiration_date
 }
 
 # ---
