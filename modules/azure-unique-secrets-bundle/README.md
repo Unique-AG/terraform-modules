@@ -17,7 +17,7 @@ Compared to the rest of the modules, this module follows the current Unique Rele
 The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to the lack of security but due to the nature of these secrets. They are configuration as code, inaccessible to humans. While we allow necessary security measures by building in rotation mechanisms we refuse to put unnecessary pressure onto cluster-operators to rotate a secret that is never actually handed out and only needed to communicate between two pods within the cluster.
 
 ## Pre-requisites
-- The executing principal needs at least `Key Vault Secrets Officer` permissions on both Key Vaults
+- The executing principal needs at least `Key Vault Secrets Officer` permissions on both Key Vaults.
 
 ## [Examples](./examples)
 
