@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 1.0.0
+version: 1.0.1
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: added
-    description: "Secrets bundle for Azure."
+  - kind: fixed
+    description: "content_type of manual secrets is now ignored."
