@@ -49,8 +49,8 @@ variable "secrets_to_create" {
     encryption_app_repository             = { create = true, name = "encryption-app-repository", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     hex_encryption_key_ingestion          = { create = true, name = "encryption-key-ingestion", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     hex_encryption_key_node_chat_lxm      = { create = true, name = "encryption-key-node-chat-lxm", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
-    hex_scope_management_encryption_key_1 = { create = true, name = "scope-management-encryption-key-1", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
-    hex_scope_management_encryption_key_2 = { create = true, name = "scope-management-encryption-key-2", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_encryption_key_scope_management_1 = { create = true, name = "encryption-key-scope-management-1", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    hex_encryption_key_scope_management_2 = { create = true, name = "encryption-key-scope-management-2", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     litellm_master_key                    = { create = true, name = "litellm-master-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     litellm_salt_key                      = { create = true, name = "litellm-salt-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     rabbitmq_password_chat                = { create = true, name = "rabbitmq-password-chat", content_type = "text/plain", special = false, length = 24, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
