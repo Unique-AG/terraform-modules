@@ -5,7 +5,7 @@ locals {
   app_support_users    = setunion(var.application_support_object_ids, local.system_support_users)
   all_users            = setunion(var.user_object_ids, local.app_support_users)
 
-  # Define standard app roles attributes
+  # Define app roles attributes
   app_roles_map = {
     # the UUIDs are manually created via a tool like https://www.uuidgenerator.net/version4
     # reason: the loop is way easier to control and read this way than to use random_uuid
@@ -59,8 +59,8 @@ resource "azuread_service_principal" "this" {
   app_role_assignment_required = var.role_assignments_required
 }
 
-# Create standard app roles using for_each
-resource "azuread_application_app_role" "standard" {
+# Create app roles using for_each
+resource "azuread_application_app_role" "managed_roles" {
   for_each       = local.app_roles_map
   application_id = azuread_application.this.id
   role_id        = each.value.role_id
@@ -71,12 +71,12 @@ resource "azuread_application_app_role" "standard" {
   value                = each.value.value
 }
 
-# Create standard app role assignments using for_each
-resource "azuread_app_role_assignment" "standard" {
+# Create app role assignments using for_each
+resource "azuread_app_role_assignment" "managed_roles" {
   # Create a unique key for each role-principal pair
   for_each = { for assignment in local.flattened_assignments : "${assignment.role_name}:${assignment.principal_id}" => assignment }
 
-  app_role_id         = azuread_application_app_role.standard[each.value.role_name].role_id
+  app_role_id         = azuread_application_app_role.managed_roles[each.value.role_name].role_id
   principal_object_id = each.value.principal_id
   resource_object_id  = azuread_service_principal.this.object_id
 }
