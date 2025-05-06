@@ -1,7 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.0.0
+version: 3.0.1
 changes:
-  - kind: changed
-    description: "⚠️ variable ip_waf_list removed, use waf_ip_allow_list instead."
+  - kind: fixed
+    description: "Fixes the waf_ip_allow_list to accept a list of IP addresses or ranges as having multiple ip lists does not work."
