@@ -1,19 +1,7 @@
 variable "waf_ip_allow_list" {
-  # This is intentionally a list of objects to allow potential expansion in the future as the match block allows more settings.
-  description = "Map of IP addresses for custom rules"
-  type = map(object({
-    allow_list = list(string)
-  }))
-  default = {}
-
-  validation {
-    condition     = alltrue([for k in keys(var.waf_ip_allow_list) : length(regexall("^[a-zA-Z][a-zA-Z0-9]*$", k)) == 1])
-    error_message = "All keys in the waf_ip_allow_list map must start with a letter and contain only letters (a-z, A-Z) and numbers (0-9)."
-  }
-  validation {
-    condition     = alltrue([for v in values(var.waf_ip_allow_list) : length(v.allow_list) > 0])
-    error_message = "Each 'allow_list' within the waf_ip_allow_list map must contain at least one IP address or range."
-  }
+  description = "List of IP addresses or ranges which are allowed to pass the WAF."
+  type        = list(string)
+  default     = []
 }
 
 variable "waf_policy_name" {
@@ -372,10 +360,10 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # Block unwanted IP addresses
   dynamic "custom_rules" {
-    for_each = var.waf_ip_allow_list
+    for_each = length(var.waf_ip_allow_list) > 0 ? [1] : []
     content {
-      name      = custom_rules.key
-      priority  = 2 + index(keys(var.waf_ip_allow_list), custom_rules.key)
+      name      = "BlockUnwantedIPs"
+      priority  = 2
       rule_type = "MatchRule"
       action    = "Block"
 
@@ -385,7 +373,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
         operator           = "IPMatch"
         negation_condition = true
-        match_values       = compact(concat(custom_rules.value.allow_list, local.public_ip_address != null ? [local.public_ip_address] : []))
+        match_values       = compact(concat(var.waf_ip_allow_list, local.public_ip_address != null ? [local.public_ip_address] : []))
       }
     }
   }

@@ -32,12 +32,5 @@ module "application_gateway" {
     environment = "example"
   }
 
-  waf_ip_allow_list = {
-    "ExampleIps1" = {
-      allow_list = ["1.2.3.4", "5.6.7.8"]
-    }
-    "ExampleCompanyRange" = {
-      allow_list = ["1.2.3.4/22"]
-    }
-  }
+  waf_ip_allow_list = ["1.2.3.4", "5.6.7.8", "1.2.3.4/22"]
 }
