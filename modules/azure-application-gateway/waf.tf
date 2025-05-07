@@ -282,6 +282,29 @@ variable "waf_policy_managed_rule_settings" {
   ] }]
 }
 
+variable "waf_policy_request_body_check" {
+  description = "Enable request body check"
+  type        = bool
+  default     = true
+}
+
+variable "waf_policy_file_upload_limit_in_mb" {
+  description = "File upload limit in MB"
+  type        = number
+  default     = 100
+}
+
+variable "waf_policy_max_request_body_size_in_kb" {
+  description = "Max request body size in KB"
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.waf_policy_max_request_body_size_in_kb <= 2000
+    error_message = "The max request body size must be less than or equal to 2000."
+  }
+}
+
 
 locals {
   is_waf_v2              = var.gateway_sku == "WAF_v2" ? 1 : 0
@@ -298,9 +321,9 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   policy_settings {
     enabled                     = true
     mode                        = var.gateway_mode
-    request_body_check          = true
-    file_upload_limit_in_mb     = 100
-    max_request_body_size_in_kb = 1024
+    request_body_check          = var.waf_policy_request_body_check
+    file_upload_limit_in_mb     = var.waf_policy_file_upload_limit_in_mb
+    max_request_body_size_in_kb = var.waf_policy_max_request_body_size_in_kb
   }
 
   managed_rules {
