@@ -1,0 +1,9 @@
+name: azure-unique-secrets-bundle
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
+version: 2.0.0
+compatibility:
+  unique.ai: ~> 2025.16
+changes:
+  - kind: fixed
+    description: "⚠️ consistent key naming."

@@ -1,9 +1,7 @@
 name: azure-redis
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-redis
-version: 2.0.0-rc.2
+version: 2.0.0
 changes:
-  - kind: changed
-    description: "Require azurerm provider version ~> 4.15"
   - kind: added
-    description: "Include names of created secrets in the outputs"
+    description: "Private endpoint configuration"

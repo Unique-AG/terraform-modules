@@ -52,10 +52,7 @@ variable "resource_group_name" {
 variable "ip_name" {
   description = "The name of the public IP address."
   type        = string
-  validation {
-    condition     = length(var.ip_name) > 0
-    error_message = "The IP name must not be empty."
-  }
+  default     = null
 }
 
 variable "tags" {
@@ -221,4 +218,10 @@ variable "request_buffering_enabled" {
     condition     = var.request_buffering_enabled == true || var.gateway_sku != "WAF_v2"
     error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
   }
+}
+
+variable "private_frontend_enabled" {
+  description = "Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration"
+  type        = bool
+  default     = false
 }

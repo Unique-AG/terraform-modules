@@ -69,7 +69,7 @@ resource "azurerm_application_gateway" "appgw" {
 
   http_listener {
     name                           = local.http_listener_name
-    frontend_ip_configuration_name = local.frontend_ip_config_name
+    frontend_ip_configuration_name = var.private_frontend_enabled ? local.frontend_ip_private_config_name : local.frontend_ip_config_name
     frontend_port_name             = local.frontend_port_name
     protocol                       = "Http"
   }

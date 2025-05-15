@@ -4,7 +4,7 @@
 # SPDX-SnippetCopyrightText: 2024 © Unique AG
 # SPDX-SnippetEnd
 ## Reference: https://github.com/norwoodj/helm-docs
-TF_DOCS_VERSION="0.19.0"
+TF_DOCS_VERSION="0.20.0"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "Repo root: $REPO_ROOT"
 

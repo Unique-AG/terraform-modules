@@ -6,8 +6,8 @@ quality:
 	@echo "Running quality checks..."
 	@./scripts/tf-docs.sh
 	@./scripts/tf-fmt.sh
-	@./scripts/tf-sec.sh
 	@./scripts/examples.sh
+	@./scripts/trivy.sh
 	@echo "Quality checks completed."
 
 examples:
