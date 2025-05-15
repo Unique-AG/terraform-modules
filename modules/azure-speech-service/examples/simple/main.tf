@@ -6,7 +6,7 @@ terraform {
 
 # Resource Group
 resource "azurerm_resource_group" "rg" {
-  name     = "my-resource-group"
+  name     = "speech-service-rg"
   location = "switzerlandnorth"
 }
 
@@ -99,14 +99,14 @@ resource "azurerm_private_dns_zone" "private_dns_zone" {
 # Update the module to use the created resources
 module "speech_service" {
   source              = "../.."
-  speech_service_name = "my-speech-service"
+  speech_service_name = "speech-service"
   key_vault_id        = azurerm_key_vault.kv.id
   accounts = {
     "switzerlandnorth-speech" = {
       location              = azurerm_resource_group.rg.location
       account_kind          = "SpeechServices"
       account_sku_name      = "S0"
-      custom_subdomain_name = "my-speech-service-switzerlandnorth"
+      custom_subdomain_name = "speech-service-switzerlandnorth"
 
       # Optional identity configuration
       # identity = {
