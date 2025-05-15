@@ -17,8 +17,10 @@ on:
           - azure-openai
           - azure-postgresql
           - azure-redis
+          - azure-speech-service
           - azure-storage-account
           - azure-unique-secrets-bundle
+          
 jobs:
   create-release:
     runs-on: ubuntu-latest
