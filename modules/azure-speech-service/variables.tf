@@ -18,19 +18,6 @@ variable "accounts" {
       enabled_log_categories     = optional(list(string), null)
       enabled_metrics            = optional(list(string), null)
     }))
-    network_security_group = optional(object({
-      security_rules = optional(list(object({
-        name                       = string
-        priority                   = number
-        direction                  = string
-        access                     = string
-        protocol                   = string
-        source_port_range          = optional(string)
-        destination_port_range     = optional(string)
-        source_address_prefix      = optional(string)
-        destination_address_prefix = optional(string)
-      })))
-    }))
     workload_identity = optional(object({
       principal_id         = string
       role_definition_name = string

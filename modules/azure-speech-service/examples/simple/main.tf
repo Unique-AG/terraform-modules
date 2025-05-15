@@ -124,23 +124,6 @@ module "speech_service" {
       #   log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
       #   enabled_log_categories     = ["Audit"]
       # }
-
-      # network_security_group = {
-      #   security_rules = [
-      #     {
-      #       name                       = "AllowToSpeech"
-      #       priority                   = 100
-      #       direction                  = "Inbound"
-      #       access                     = "Allow"
-      #       protocol                   = "Tcp"
-      #       source_port_range          = "*"
-      #       destination_port_range     = "443"
-      #       source_address_prefix      = "*"
-      #       destination_address_prefix = "*"
-      #     }
-      #   ]
-      # }
-
       workload_identity = {
         principal_id         = data.azurerm_client_config.current.object_id
         role_definition_name = "Cognitive Services User"
