@@ -18,6 +18,7 @@ on:
           - azure-postgresql
           - azure-redis
           - azure-storage-account
+          - azure-speech-service
 
 jobs:
   create-release:
