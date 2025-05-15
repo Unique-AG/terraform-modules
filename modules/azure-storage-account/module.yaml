@@ -1,8 +1,11 @@
-
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 2.0.2
+version: 2.1.0
+compatibility:
+  unique.ai: ~> 2025.16
 changes:
+  - kind: added
+    description: "Support for Private Endpoint."
   - kind: changed
-    description: "Required azurerm provider version is now ~> 4.15"
+    description: "Mitigate deprecation of storage_account_name on containers."

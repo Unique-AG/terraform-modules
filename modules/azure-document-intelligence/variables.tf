@@ -1,9 +1,15 @@
 variable "accounts" {
   type = map(object({
-    location              = string
-    account_kind          = optional(string, "FormRecognizer")
-    account_sku_name      = optional(string, "S0")
-    custom_subdomain_name = optional(string)
+    location                      = string
+    account_kind                  = optional(string, "FormRecognizer")
+    account_sku_name              = optional(string, "S0")
+    custom_subdomain_name         = optional(string)
+    local_auth_enabled            = optional(bool, false)
+    public_network_access_enabled = optional(bool, false)
+    private_endpoint = optional(object({
+      private_dns_zone_id = string
+      subnet_id           = string
+    }))
   }))
   description = "values for the cognitive accounts"
   validation {
@@ -59,10 +65,4 @@ variable "primary_access_key_secret_name_suffix" {
   type        = string
   description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
   default     = "-key"
-}
-
-variable "user_assigned_identity_ids" {
-  type        = list(string)
-  description = "values for the user assigned identities"
-  default     = null
 }
