@@ -20,11 +20,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   dynamic "network_profile" {
     for_each = var.network_profile != null ? [1] : []
     content {
-      network_plugin = var.network_profile.network_plugin
-      network_policy = var.network_profile.network_policy
-      service_cidr   = var.network_profile.service_cidr
-      dns_service_ip = var.network_profile.dns_service_ip
-      outbound_type  = var.network_profile.outbound_type
+      network_plugin      = var.network_profile.network_plugin
+      network_plugin_mode = var.network_profile.network_plugin_mode
+      network_policy      = var.network_profile.network_policy
+      service_cidr        = var.network_profile.service_cidr
+      dns_service_ip      = var.network_profile.dns_service_ip
+      outbound_type       = var.network_profile.outbound_type
       dynamic "load_balancer_profile" {
         for_each = var.network_profile.outbound_type == "loadBalancer" ? [1] : []
         content {
@@ -106,9 +107,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   dynamic "microsoft_defender" {
-    for_each = var.log_analytics_workspace_id != null ? [1] : []
+    for_each = var.defender_log_analytics_workspace_id != null ? [1] : []
     content {
-      log_analytics_workspace_id = var.log_analytics_workspace_id
+      log_analytics_workspace_id = var.defender_log_analytics_workspace_id
     }
   }
 
@@ -131,13 +132,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
   }
 
-  lifecycle {
-    ignore_changes = [
-      kubernetes_version
-    ]
-  }
   timeouts {
     update = "30m"
+  }
+
+  lifecycle {
+    ignore_changes = [kubernetes_version]
   }
 }
 

@@ -26,14 +26,9 @@ variable "resource_group_name" {
 }
 
 variable "kubernetes_version" {
-  description = "The Kubernetes version to use for the AKS cluster."
+  description = "The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked."
   type        = string
-  default     = "1.30.0"
-
-  validation {
-    condition     = length(var.kubernetes_version) > 0
-    error_message = "The Kubernetes version must not be empty."
-  }
+  default     = null
 }
 
 variable "maintenance_window_day" {
@@ -99,7 +94,7 @@ variable "node_rg_name" {
 variable "kubernetes_default_node_size" {
   description = "The size of the default node pool VMs."
   type        = string
-  default     = "Standard_D2s_v5"
+  default     = "Standard_D2s_v6"
 
   validation {
     condition     = length(var.kubernetes_default_node_size) > 0
@@ -224,11 +219,11 @@ variable "node_pool_settings" {
   type = map(object({
     vm_size                     = string
     node_count                  = optional(number)
-    min_count                   = number
-    max_count                   = number
+    min_count                   = optional(number)
+    max_count                   = optional(number)
     max_pods                    = optional(number)
     os_disk_size_gb             = number
-    os_sku                      = optional(string, "Ubuntu")
+    os_sku                      = optional(string, "AzureLinux")
     os_type                     = optional(string, "Linux")
     node_labels                 = map(string)
     node_taints                 = list(string)
@@ -256,7 +251,7 @@ variable "node_pool_settings" {
       node_taints                 = []
       auto_scaling_enabled        = true
       mode                        = "User"
-      zones                       = ["1", "2", "3"]
+      zones                       = ["1", "3"]
       temporary_name_for_rotation = "stablerepl"
       upgrade_settings = {
         max_surge = "10%"
@@ -274,7 +269,7 @@ variable "node_pool_settings" {
       node_taints                 = ["burst=true:NoSchedule"]
       auto_scaling_enabled        = true
       mode                        = "User"
-      zones                       = ["1", "2", "3"]
+      zones                       = ["1", "3"]
       temporary_name_for_rotation = "burstrepl"
       upgrade_settings = {
         max_surge = "10%"
@@ -368,7 +363,7 @@ variable "dns_service_ip" {
 variable "kubernetes_default_node_zones" {
   description = "The availability zones for the default node pool."
   type        = list(string)
-  default     = ["1", "2", "3"]
+  default     = ["1", "3"]
 }
 
 variable "admin_group_object_ids" {
@@ -376,10 +371,14 @@ variable "admin_group_object_ids" {
   type        = list(string)
   default     = []
 }
+
+//If network_profile is not defined this might lead to unexpected aks behavior.
+
 variable "network_profile" {
   description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
   type = object({
-    network_plugin            = optional(string, "azure")
+    network_plugin            = string
+    network_plugin_mode       = optional(string, null)
     network_policy            = optional(string, "azure")
     service_cidr              = optional(string, "172.20.0.0/16")
     dns_service_ip            = optional(string, "172.20.0.10")
@@ -389,7 +388,9 @@ variable "network_profile" {
     outbound_ip_prefix_ids    = optional(list(string), null)
     idle_timeout_in_minutes   = optional(number, 30)
   })
-  default = null
+  default = {
+    network_plugin = "azure"
+  }
 
   validation {
     condition = var.network_profile == null ? true : (
@@ -409,4 +410,10 @@ variable "network_profile" {
     )
     error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
   }
+}
+
+variable "defender_log_analytics_workspace_id" {
+  description = "The ID of the Log Analytics Workspace for Microsoft Defender"
+  type        = string
+  default     = null
 }
