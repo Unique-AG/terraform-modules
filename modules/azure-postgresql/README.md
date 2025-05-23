@@ -57,7 +57,8 @@ No modules.
 | <a name="input_flex_pg_backup_retention_days"></a> [flex\_pg\_backup\_retention\_days](#input\_flex\_pg\_backup\_retention\_days) | The number of days to retain backups for the PostgreSQL server. | `number` | `7` | no |
 | <a name="input_flex_pg_version"></a> [flex\_pg\_version](#input\_flex\_pg\_version) | The version of the PostgreSQL server. | `string` | `"14"` | no |
 | <a name="input_flex_sku"></a> [flex\_sku](#input\_flex\_sku) | The SKU for the PostgreSQL server. | `string` | `"GP_Standard_D2ds_v5"` | no |
-| <a name="input_flex_storage_mb"></a> [flex\_storage\_mb](#input\_flex\_storage\_mb) | The storage size in MB for the PostgreSQL server. | `number` | `32768` | no |
+| <a name="input_flex_storage_auto_grow_enabled"></a> [flex\_storage\_auto\_grow\_enabled](#input\_flex\_storage\_auto\_grow\_enabled) | Specifies whether the storage auto grow is enabled for the PostgreSQL Flexible Server | `bool` | `false` | no |
+| <a name="input_flex_storage_mb"></a> [flex\_storage\_mb](#input\_flex\_storage\_mb) | The storage size in MB for the PostgreSQL server. | `number` | `131072` | no |
 | <a name="input_host_secret_name"></a> [host\_secret\_name](#input\_host\_secret\_name) | Name of the secret containing the host | `string` | `null` | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where the secrets will be stored | `string` | `null` | no |

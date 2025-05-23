@@ -56,11 +56,17 @@ resource "random_password" "postgres_password" {
   special = false
 }
 
+resource "random_string" "server_name" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
 module "apfs" {
   source              = "../.."
   admin_password      = random_password.postgres_password.result
   administrator_login = random_password.postgres_username.result
-  name                = "my-postgresql-server"
+  name                = "my-postgresql-server-${random_string.server_name.result}"
   resource_group_name = azurerm_resource_group.example.name
   location            = "switzerlandnorth"
   tags = {
