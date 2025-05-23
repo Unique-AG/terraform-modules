@@ -48,7 +48,7 @@ variable "flex_sku" {
 variable "flex_storage_mb" {
   description = "The storage size in MB for the PostgreSQL server."
   type        = number
-  default     = 32768
+  default     = 131072
   validation {
     condition     = var.flex_storage_mb > 0
     error_message = "Storage size must be greater than 0."
@@ -212,4 +212,10 @@ variable "database_connection_string_secret_prefix" {
   description = "Prefix of the secret containing the full connection string. The full name of the secret is this prefix + database name"
   default     = "database-url-"
   type        = string
+}
+
+variable "flex_storage_auto_grow_enabled" {
+  description = "Specifies whether the storage auto grow is enabled for the PostgreSQL Flexible Server"
+  type        = bool
+  default     = false
 }
