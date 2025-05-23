@@ -94,7 +94,7 @@ variable "node_rg_name" {
 variable "kubernetes_default_node_size" {
   description = "The size of the default node pool VMs."
   type        = string
-  default     = "Standard_D2s_v6"
+  default     = "Standard_D2s_v5"
 
   validation {
     condition     = length(var.kubernetes_default_node_size) > 0

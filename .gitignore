@@ -4,5 +4,4 @@ build
 mkdocs
 *.tfstate
 *.tfstate.backup
-modules/azure-speech-service/examples/simple/providers.tf
 *providers.tf
