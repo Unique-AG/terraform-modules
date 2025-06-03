@@ -78,12 +78,12 @@ variable "key_vault_id" {
 variable "endpoint_definitions_secret_name" {
   type        = string
   description = "Name of the secret for the endpoint definitions"
-  default     = "azure-document-intelligence-endpoint-definitions"
+  default     = "azure-speech-service-endpoint-definitions"
 }
 variable "endpoints_secret_name" {
   type        = string
   description = "Name of the secret for the endpoints"
-  default     = "azure-document-intelligence-endpoints"
+  default     = "azure-speech-service-endpoints"
 }
 variable "primary_access_key_secret_name_suffix" {
   type        = string
