@@ -59,6 +59,7 @@ resource "azurerm_monitor_data_collection_rule_association" "monitor_dcr_asc" {
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
+  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
   name                = "${var.cluster_name}-node-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
@@ -101,8 +102,8 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
   tags = var.tags
 }
 
-
 resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
+  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
   name                = "${var.cluster_name}-cluster-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
@@ -145,6 +146,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
+  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
   name                = "${var.cluster_name}-pod-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name

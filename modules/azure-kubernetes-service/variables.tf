@@ -150,24 +150,27 @@ variable "kubernetes_default_node_os_disk_size" {
   }
 }
 
-variable "subnet_nodes_id" {
-  description = "The ID of the subnet for nodes."
+variable "default_subnet_nodes_id" {
+  description = "The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node_pool_settings for more granular control."
   type        = string
+}
 
-  validation {
-    condition     = length(var.subnet_nodes_id) > 0
-    error_message = "The subnet ID for nodes must not be empty."
-  }
+variable "default_subnet_pods_id" {
+  description = "The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node_pool_settings for more granular control."
+  type        = string
+  default     = null
+}
+
+variable "segregated_node_and_pod_subnets_enabled" {
+  description = "Some legacy or smaller clusters might not want to split nodes and pods into different subnets. Falsifying this will force the module to only use 1 subnet for both nodes and pods. It is not recommended for production use cases."
+  type        = bool
+  default     = true
 }
 
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
-
-  validation {
-    condition     = length(var.tags) > 0
-    error_message = "The tags map must not be empty."
-  }
+  default     = {}
 }
 
 variable "log_analytics_workspace_id" {
@@ -227,11 +230,13 @@ variable "log_table_plan" {
 }
 
 variable "node_pool_settings" {
+  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({
     vm_size                     = string
-    node_count                  = number
+    node_count                  = optional(number)
     min_count                   = number
     max_count                   = number
+    max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "Ubuntu")
     os_type                     = optional(string, "Linux")
@@ -240,6 +245,8 @@ variable "node_pool_settings" {
     auto_scaling_enabled        = bool
     mode                        = string
     zones                       = list(string)
+    subnet_nodes_id             = optional(string, null)
+    subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge = string
@@ -293,16 +300,6 @@ variable "monitoring_account_name" {
   validation {
     condition     = length(var.monitoring_account_name) > 0
     error_message = "The monitoring account name must not be empty."
-  }
-}
-
-variable "outbound_ip_address_ids" {
-  description = "The IDs of the public IP addresses for outbound traffic."
-  type        = list(string)
-
-  validation {
-    condition     = length(var.outbound_ip_address_ids) > 0
-    error_message = "The outbound IP address IDs must not be empty."
   }
 }
 
@@ -379,7 +376,7 @@ variable "dns_service_ip" {
 }
 
 variable "kubernetes_default_node_zones" {
-  description = "The zones for the default node pool."
+  description = "The availability zones for the default node pool."
   type        = list(string)
   default     = ["1", "2", "3"]
 }
@@ -388,6 +385,40 @@ variable "admin_group_object_ids" {
   description = "The object IDs of the admin groups for the Kubernetes Cluster."
   type        = list(string)
   default     = []
+}
+variable "network_profile" {
+  description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
+  type = object({
+    network_plugin            = optional(string, "azure")
+    network_policy            = optional(string, "azure")
+    service_cidr              = optional(string, "172.20.0.0/16")
+    dns_service_ip            = optional(string, "172.20.0.10")
+    outbound_type             = optional(string, "loadBalancer")
+    managed_outbound_ip_count = optional(number, null)
+    outbound_ip_address_ids   = optional(list(string), null)
+    outbound_ip_prefix_ids    = optional(list(string), null)
+    idle_timeout_in_minutes   = optional(number, 30)
+  })
+  default = null
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      (var.network_profile.managed_outbound_ip_count != null ? 1 : 0) +
+      (var.network_profile.outbound_ip_address_ids != null ? 1 : 0) +
+      (var.network_profile.outbound_ip_prefix_ids != null ? 1 : 0) <= 1
+    )
+    error_message = "Only one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids can be specified in the network profile."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_type != "loadBalancer" ||
+      var.network_profile.managed_outbound_ip_count != null ||
+      var.network_profile.outbound_ip_address_ids != null ||
+      var.network_profile.outbound_ip_prefix_ids != null
+    )
+    error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
+  }
 }
 
 variable "maintenance_window_auto_upgrade" {

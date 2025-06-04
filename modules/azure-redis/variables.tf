@@ -1,30 +1,29 @@
-
 variable "name" {
-  description = "Name of the storage account."
+  description = "Name of the Redis Cache instance."
   type        = string
   nullable    = false
 }
 
 variable "location" {
-  description = "Location of the resources."
+  description = "Azure region where the Redis Cache will be deployed."
   type        = string
   nullable    = false
 }
 
 variable "resource_group_name" {
-  description = "Name of the resource group to put the resources in."
+  description = "Name of the resource group where the Redis Cache will be deployed."
   type        = string
   nullable    = false
 }
 
 variable "tags" {
-  description = "Tags for the resources."
+  description = "Tags to apply to the Redis Cache resource."
   type        = map(string)
   default     = {}
 }
 
 variable "min_tls_version" {
-  description = "Minimum TLS version supported by the storage account."
+  description = "Minimum TLS version supported by the Redis Cache. Valid values are 1.0, 1.1, and 1.2."
   type        = string
   default     = "1.2"
 }
@@ -75,4 +74,13 @@ variable "port_secret_name" {
   description = "Name of the secret containing the port"
   default     = null
   type        = string
+}
+
+variable "private_endpoint" {
+  description = "Configuration for private endpoint to connect to the Redis Cache. When specified, creates a private endpoint in the specified subnet and links it to the provided private DNS zone."
+  type = object({
+    subnet_id           = string
+    private_dns_zone_id = string
+  })
+  default = null
 }

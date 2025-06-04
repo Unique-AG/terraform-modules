@@ -2,4 +2,7 @@ build
 .tfdocs-config.yml
 .terraform*
 mkdocs
+*.tfstate
+*.tfstate.backup
+modules/azure-speech-service/examples/simple/providers.tf
 .vscode/settings.json
