@@ -8,4 +8,4 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Added maintenance_window_auto_upgrade and maintenance_window_node_os options as well as node_os_upgrade_channel variable"
+    description: "Maintenance_window_auto_upgrade and maintenance_window_node_os options as well as node_os_upgrade_channel variable"
