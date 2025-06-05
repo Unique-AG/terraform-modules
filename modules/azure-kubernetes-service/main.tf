@@ -16,6 +16,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   sku_tier                            = var.sku_tier
   private_dns_zone_id                 = var.private_dns_zone_id
   automatic_upgrade_channel           = var.automatic_upgrade_channel
+  node_os_upgrade_channel             = var.node_os_upgrade_channel
 
   dynamic "network_profile" {
     for_each = var.network_profile != null ? [1] : []
@@ -128,6 +129,44 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     content {
       annotations_allowed = true
       labels_allowed      = true
+    }
+  }
+
+  dynamic "maintenance_window_auto_upgrade" {
+    for_each = var.maintenance_window_auto_upgrade != null ? [1] : []
+    content {
+      frequency    = var.maintenance_window_auto_upgrade.frequency
+      interval     = var.maintenance_window_auto_upgrade.interval
+      duration     = var.maintenance_window_auto_upgrade.duration
+      day_of_week  = var.maintenance_window_auto_upgrade.day_of_week
+      day_of_month = var.maintenance_window_auto_upgrade.day_of_month
+      week_index   = var.maintenance_window_auto_upgrade.week_index
+      start_time   = var.maintenance_window_auto_upgrade.start_time
+      utc_offset   = var.maintenance_window_auto_upgrade.utc_offset
+      start_date   = var.maintenance_window_auto_upgrade.start_date
+      not_allowed {
+        start = var.maintenance_window_auto_upgrade.not_allowed.start
+        end   = var.maintenance_window_auto_upgrade.not_allowed.end
+      }
+    }
+  }
+
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os != null ? [1] : []
+    content {
+      frequency    = var.maintenance_window_node_os.frequency
+      interval     = var.maintenance_window_node_os.interval
+      duration     = var.maintenance_window_node_os.duration
+      day_of_week  = var.maintenance_window_node_os.day_of_week
+      day_of_month = var.maintenance_window_node_os.day_of_month
+      week_index   = var.maintenance_window_node_os.week_index
+      start_time   = var.maintenance_window_node_os.start_time
+      utc_offset   = var.maintenance_window_node_os.utc_offset
+      start_date   = var.maintenance_window_node_os.start_date
+      not_allowed {
+        start = var.maintenance_window_node_os.not_allowed.start
+        end   = var.maintenance_window_node_os.not_allowed.end
+      }
     }
   }
 

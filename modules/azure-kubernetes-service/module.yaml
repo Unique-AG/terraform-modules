@@ -3,9 +3,9 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # Next major release open changes:
 # - node_pool_settings.node_count should be removed
-version: 3.1.1
+version: 3.2.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Outputs the cluster properties for data sourcing."
+    description: "Maintenance_window_auto_upgrade and maintenance_window_node_os options as well as node_os_upgrade_channel variable"
