@@ -91,6 +91,24 @@ module "aks" {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]
   }
+  maintenance_window_auto_upgrade = {
+    frequency   = "Weekly"
+    interval    = 1
+    duration    = 4
+    day_of_week = "Sunday"
+    start_time  = "02:00"
+    utc_offset  = "+01:00"
+  }
+
+  maintenance_window_node_os = {
+    frequency   = "Weekly"
+    interval    = 1
+    duration    = 4
+    day_of_week = "Saturday"
+    start_time  = "01:00"
+    utc_offset  = "+01:00"
+  }
+
   node_pool_settings = {
     stable = {
       subnet_nodes_id                      = azurerm_subnet.stable_nodes.id

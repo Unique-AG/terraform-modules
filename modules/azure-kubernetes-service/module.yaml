@@ -17,3 +17,5 @@ changes:
     description: "Adds conditional output for identity information based on application gateway presence."
   - kind: updated
     description: "Improves variable descriptions and defaults for better clarity and usability."
+  - kind: added
+    description: "Adds maintenance window configuration for auto-upgrade and node OS updates."
