@@ -1,7 +1,7 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 3.1.0
+version: 3.0.3
 compatibility:
   unique.ai: ~> 2025.16
 changes:
