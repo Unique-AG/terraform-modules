@@ -1,9 +1,14 @@
 locals {
   create_vault_secrets = var.key_vault_id != null
+  # Filter accounts that have local_auth_enabled set to true
+  aca_with_local_auth = {
+    for k, v in azurerm_cognitive_account.aca : k => v
+    if try(var.accounts[k].local_auth_enabled, false) == true
+  }
 }
 
 resource "azurerm_key_vault_secret" "key" {
-  for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
+  for_each     = local.create_vault_secrets ? local.aca_with_local_auth : {}
   name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
   value        = each.value.primary_access_key
   key_vault_id = var.key_vault_id
