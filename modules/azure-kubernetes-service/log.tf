@@ -16,14 +16,15 @@ locals {
 }
 
 resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each                = toset(local.basic_log_tables)
+  count                   = var.log_analytics_workspace_id != null ? length(local.basic_log_tables) : 0
   workspace_id            = var.log_analytics_workspace_id
-  name                    = each.value
+  name                    = local.basic_log_tables[count.index]
   plan                    = var.log_table_plan
   total_retention_in_days = var.retention_in_days
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
+  count                          = var.log_analytics_workspace_id != null ? 1 : 0
   name                           = "aks-diagnostic-logs"
   target_resource_id             = azurerm_kubernetes_cluster.cluster.id
   log_analytics_workspace_id     = var.log_analytics_workspace_id
@@ -43,6 +44,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
+  count               = var.log_analytics_workspace_id != null ? 1 : 0
   name                = "${var.cluster_name}-ci-dcr"
   resource_group_name = var.resource_group_name
   location            = var.resource_group_location
@@ -83,7 +85,8 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "ci_dcr_asc" {
+  count                   = var.log_analytics_workspace_id != null ? 1 : 0
   name                    = "${var.cluster_name}-ci-dcr-asc"
   target_resource_id      = azurerm_kubernetes_cluster.cluster.id
-  data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr[0].id
 }

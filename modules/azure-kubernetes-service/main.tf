@@ -1,3 +1,13 @@
+locals {
+  maintenance_window_validations = {
+    valid_frequencies  = ["Daily", "Weekly", "AbsoluteMonthly", "RelativeMonthly"]
+    valid_days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    valid_week_indexes = ["First", "Second", "Third", "Fourth", "Last"]
+    time_format_regex  = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+    utc_offset_regex   = "^[+-]([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+  }
+}
+
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                                = var.cluster_name
   location                            = var.resource_group_location
@@ -16,15 +26,17 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   sku_tier                            = var.sku_tier
   private_dns_zone_id                 = var.private_dns_zone_id
   automatic_upgrade_channel           = var.automatic_upgrade_channel
+  node_os_upgrade_channel             = var.node_os_upgrade_channel
 
   dynamic "network_profile" {
     for_each = var.network_profile != null ? [1] : []
     content {
-      network_plugin = var.network_profile.network_plugin
-      network_policy = var.network_profile.network_policy
-      service_cidr   = var.network_profile.service_cidr
-      dns_service_ip = var.network_profile.dns_service_ip
-      outbound_type  = var.network_profile.outbound_type
+      network_plugin      = var.network_profile.network_plugin
+      network_plugin_mode = var.network_profile.network_plugin_mode
+      network_policy      = var.network_profile.network_policy
+      service_cidr        = var.network_profile.service_cidr
+      dns_service_ip      = var.network_profile.dns_service_ip
+      outbound_type       = var.network_profile.outbound_type
       dynamic "load_balancer_profile" {
         for_each = var.network_profile.outbound_type == "loadBalancer" ? [1] : []
         content {
@@ -63,6 +75,50 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     allowed {
       day   = var.maintenance_window_day
       hours = range(var.maintenance_window_start, var.maintenance_window_end)
+    }
+  }
+
+  dynamic "maintenance_window_auto_upgrade" {
+    for_each = var.maintenance_window_auto_upgrade != null ? [1] : []
+    content {
+      frequency    = var.maintenance_window_auto_upgrade.frequency
+      interval     = var.maintenance_window_auto_upgrade.interval
+      duration     = var.maintenance_window_auto_upgrade.duration
+      day_of_week  = var.maintenance_window_auto_upgrade.day_of_week
+      day_of_month = var.maintenance_window_auto_upgrade.day_of_month
+      week_index   = var.maintenance_window_auto_upgrade.week_index
+      start_time   = var.maintenance_window_auto_upgrade.start_time
+      utc_offset   = var.maintenance_window_auto_upgrade.utc_offset
+      start_date   = var.maintenance_window_auto_upgrade.start_date
+      dynamic "not_allowed" {
+        for_each = var.maintenance_window_auto_upgrade.not_allowed
+        content {
+          start = not_allowed.value.start
+          end   = not_allowed.value.end
+        }
+      }
+    }
+  }
+
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os != null ? [1] : []
+    content {
+      frequency    = var.maintenance_window_node_os.frequency
+      interval     = var.maintenance_window_node_os.interval
+      duration     = var.maintenance_window_node_os.duration
+      day_of_week  = var.maintenance_window_node_os.day_of_week
+      day_of_month = var.maintenance_window_node_os.day_of_month
+      week_index   = var.maintenance_window_node_os.week_index
+      start_time   = var.maintenance_window_node_os.start_time
+      utc_offset   = var.maintenance_window_node_os.utc_offset
+      start_date   = var.maintenance_window_node_os.start_date
+      dynamic "not_allowed" {
+        for_each = var.maintenance_window_node_os.not_allowed
+        content {
+          start = not_allowed.value.start
+          end   = not_allowed.value.end
+        }
+      }
     }
   }
 
@@ -106,9 +162,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   dynamic "microsoft_defender" {
-    for_each = var.log_analytics_workspace_id != null ? [1] : []
+    for_each = var.defender_log_analytics_workspace_id != null ? [1] : []
     content {
-      log_analytics_workspace_id = var.log_analytics_workspace_id
+      log_analytics_workspace_id = var.defender_log_analytics_workspace_id
     }
   }
 
@@ -131,13 +187,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
   }
 
-  lifecycle {
-    ignore_changes = [
-      kubernetes_version
-    ]
-  }
   timeouts {
     update = "30m"
+  }
+
+  lifecycle {
+    ignore_changes = [kubernetes_version]
   }
 }
 
