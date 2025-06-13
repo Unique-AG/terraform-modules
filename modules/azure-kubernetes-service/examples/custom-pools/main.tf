@@ -34,8 +34,8 @@ resource "azurerm_subnet" "pods" {
 
 resource "azurerm_log_analytics_workspace" "aks_law" {
   name                = "aks-log-analytics"
-  location            = azurerm_resource_group.aks_rg.location
-  resource_group_name = azurerm_resource_group.aks_rg.name
+  location            = "switzerlandnorth"
+  resource_group_name = "my-resource-group"
   sku                 = "PerGB2018"
   retention_in_days   = 30
   tags = {
