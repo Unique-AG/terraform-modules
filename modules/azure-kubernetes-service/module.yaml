@@ -19,3 +19,5 @@ changes:
     description: "Improves variable descriptions and defaults for better clarity and usability."
   - kind: added
     description: "Adds maintenance window configuration for auto-upgrade and node OS updates."
+  - kind: changed
+    description: "Makes log analytics workspace a required parameter"
