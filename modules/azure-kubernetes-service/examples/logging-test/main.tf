@@ -11,6 +11,18 @@ resource "azurerm_resource_group" "aks_rg" {
   name     = "aks-rg"
   location = "switzerlandnorth"
 }
+
+resource "azurerm_log_analytics_workspace" "aks_law" {
+  name                = "aks-log-analytics"
+  location            = azurerm_resource_group.aks_rg.location
+  resource_group_name = azurerm_resource_group.aks_rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  tags = {
+    environment = "test"
+  }
+}
+
 resource "azurerm_public_ip" "aks_ingress" {
   name                = "aks-ingress-pip"
   sku                 = "Standard"
@@ -70,14 +82,6 @@ resource "azurerm_subnet" "stable_pods" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "aks_logs" {
-  name                = "aks-logs-workspace"
-  location            = azurerm_resource_group.aks_rg.location
-  resource_group_name = azurerm_resource_group.aks_rg.name
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
-}
-
 module "aks" {
   source              = "../.."
   resource_group_name = azurerm_resource_group.aks_rg.name
@@ -95,27 +99,15 @@ module "aks" {
   kubernetes_default_node_count_min    = 1
   kubernetes_default_node_count_max    = 1
   kubernetes_default_node_os_disk_size = 30
-  log_analytics_workspace_id           = azurerm_log_analytics_workspace.aks_logs.id
+
+  # Enable logging with the Log Analytics Workspace
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.aks_law.id
+  retention_in_days          = 30
+  log_table_plan             = "Basic"
+
   network_profile = {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]
-  }
-  maintenance_window_auto_upgrade = {
-    frequency   = "Weekly"
-    interval    = 1
-    duration    = 4
-    day_of_week = "Sunday"
-    start_time  = "02:00"
-    utc_offset  = "+01:00"
-  }
-
-  maintenance_window_node_os = {
-    frequency   = "Weekly"
-    interval    = 1
-    duration    = 4
-    day_of_week = "Saturday"
-    start_time  = "01:00"
-    utc_offset  = "+01:00"
   }
 
   node_pool_settings = {

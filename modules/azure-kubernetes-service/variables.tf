@@ -161,8 +161,7 @@ variable "tags" {
 variable "log_analytics_workspace_id" {
   description = "The ID of the Log Analytics Workspace."
   type        = string
-  default     = null
-
+  nullable    = false
 }
 
 variable "application_gateway_id" {
