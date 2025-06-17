@@ -4,7 +4,7 @@ variable "accounts" {
     account_kind                  = optional(string, "SpeechServices")
     account_sku_name              = optional(string, "S0")
     custom_subdomain_name         = optional(string)
-    public_network_access_enabled = optional(bool, true)
+    public_network_access_enabled = optional(bool, false)
     identity = optional(object({
       type         = string
       identity_ids = list(string)
