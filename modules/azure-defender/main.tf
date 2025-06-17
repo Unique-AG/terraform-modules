@@ -30,6 +30,10 @@ locals {
     {
       resource_type = "Containers"
       config        = var.containers_defender_settings
+    },
+    {
+      resource_type = "AI"
+      config        = var.ai_defender_settings
     }
   ]
   defender_configs_free_plan     = [for config in local.defender_configs : config if config.config.tier == "Free"]
