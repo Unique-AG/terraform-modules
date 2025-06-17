@@ -169,3 +169,14 @@ variable "containers_defender_settings" {
     ]
   }
 }
+
+variable "ai_defender_settings" {
+  type = object({
+    tier = optional(string, "Standard")
+    extensions = optional(list(object({
+      name                            = string
+      additional_extension_properties = optional(map(string))
+    })), [])
+  })
+  default = {}
+}

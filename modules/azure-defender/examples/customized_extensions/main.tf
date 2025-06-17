@@ -28,4 +28,7 @@ module "defender" {
   virtual_machines_defender_settings = {
     tier = "Free"
   }
+  ai_defender_settings = {
+    tier = "Standard"
+  }
 }

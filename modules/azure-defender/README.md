@@ -31,14 +31,14 @@ Possible values for the `tier` are `Free` or `Standard`.
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.33 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.2.0 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.33 |
 
 ## Modules
 
@@ -56,6 +56,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_ai_defender_settings"></a> [ai\_defender\_settings](#input\_ai\_defender\_settings) | n/a | <pre>object({<br/>    tier = optional(string, "Standard")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_arm_defender_settings"></a> [arm\_defender\_settings](#input\_arm\_defender\_settings) | n/a | <pre>object({<br/>    tier    = optional(string, "Standard")<br/>    subplan = optional(string, "PerSubscription")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_cloud_posture_defender_settings"></a> [cloud\_posture\_defender\_settings](#input\_cloud\_posture\_defender\_settings) | n/a | <pre>object({<br/>    tier = optional(string, "Standard")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | <pre>{<br/>  "extensions": [<br/>    {<br/>      "name": "ContainerRegistriesVulnerabilityAssessments"<br/>    },<br/>    {<br/>      "additional_extension_properties": {<br/>        "ExclusionTags": "[]"<br/>      },<br/>      "name": "AgentlessVmScanning"<br/>    },<br/>    {<br/>      "name": "AgentlessDiscoveryForKubernetes"<br/>    },<br/>    {<br/>      "name": "SensitiveDataDiscovery"<br/>    },<br/>    {<br/>      "name": "EntraPermissionsManagement"<br/>    },<br/>    {<br/>      "name": "ApiPosture"<br/>    }<br/>  ]<br/>}</pre> | no |
 | <a name="input_containers_defender_settings"></a> [containers\_defender\_settings](#input\_containers\_defender\_settings) | n/a | <pre>object({<br/>    tier = optional(string, "Standard")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | <pre>{<br/>  "extensions": [<br/>    {<br/>      "name": "ContainerRegistriesVulnerabilityAssessments"<br/>    },<br/>    {<br/>      "name": "AgentlessDiscoveryForKubernetes"<br/>    },<br/>    {<br/>      "name": "ContainerSensor"<br/>    },<br/>    {<br/>      "additional_extension_properties": {<br/>        "ExclusionTags": "[]"<br/>      },<br/>      "name": "AgentlessVmScanning"<br/>    }<br/>  ]<br/>}</pre> | no |
