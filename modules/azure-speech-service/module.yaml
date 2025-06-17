@@ -1,7 +1,7 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version:  1.0.1
+version:  2.0.0
 changes:
   - kind: fixed
-    description: "The default secret names containing the endpoints and endpoint definitions are now `azure-speech-service-endpoints` and `azure-speech-service-endpoint-definitions`, respectively, in order to avoid collisions with the Document Intelligence module"
+    description: "The public_network_access_enabled parameter is now configurable and defaults to false"

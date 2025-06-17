@@ -103,10 +103,11 @@ module "speech_service" {
   key_vault_id        = azurerm_key_vault.kv.id
   accounts = {
     "switzerlandnorth-speech" = {
-      location              = azurerm_resource_group.rg.location
-      account_kind          = "SpeechServices"
-      account_sku_name      = "S0"
-      custom_subdomain_name = "speech-service-switzerlandnorth"
+      location                      = azurerm_resource_group.rg.location
+      account_kind                  = "SpeechServices"
+      account_sku_name              = "S0"
+      custom_subdomain_name         = "speech-service-switzerlandnorth"
+      public_network_access_enabled = true
 
       # Optional identity configuration
       # identity = {
