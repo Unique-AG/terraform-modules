@@ -15,6 +15,7 @@ variable "default_secrets_placeholders" {
     expiration_date = optional(string, "2099-12-31T23:59:59Z")
   }))
   default = {
+    google-search-api-creds     = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     litellm-anthropic-api-key   = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     litellm-bedrock-access-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     litellm-bedrock-secret-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
