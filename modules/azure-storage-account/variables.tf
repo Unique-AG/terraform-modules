@@ -90,18 +90,6 @@ variable "customer_managed_key" {
   nullable = true
 }
 
-variable "deleted_retain_days" {
-  description = "Number of days to retain deleted blobs."
-  type        = number
-  default     = 7
-}
-
-variable "container_deleted_retain_days" {
-  description = "Number of days to retain deleted containers."
-  type        = number
-  default     = 7
-}
-
 variable "storage_management_policy_default" {
   description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
   type = object({
@@ -202,5 +190,90 @@ variable "private_endpoint" {
       can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
     )
     error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}
+
+variable "shared_access_key_enabled" {
+  description = "Enable shared access key for the storage account."
+  type        = bool
+  default     = false
+}
+
+variable "data_protection_settings" {
+  description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
+  type = object({
+    versioning_enabled                   = optional(bool, true)
+    change_feed_enabled                  = optional(bool, true)
+    blob_soft_delete_retention_days      = optional(number, 7) # 1-365 days
+    container_soft_delete_retention_days = optional(number, 7) # 1-365 days
+    change_feed_retention_days           = optional(number, 7) # 0-146000 days
+    point_in_time_restore_days           = optional(number, 5) # 0-365 days
+  })
+  default = {
+    versioning_enabled                   = true
+    change_feed_enabled                  = true
+    blob_soft_delete_retention_days      = 7
+    container_soft_delete_retention_days = 7
+    change_feed_retention_days           = 7
+    point_in_time_restore_days           = 5
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.blob_soft_delete_retention_days >= 1 &&
+      var.data_protection_settings.blob_soft_delete_retention_days <= 365
+    )
+    error_message = "blob_soft_delete_retention_days must be between 1 and 365 days."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.container_soft_delete_retention_days >= 1 &&
+      var.data_protection_settings.container_soft_delete_retention_days <= 365
+    )
+    error_message = "container_soft_delete_retention_days must be between 1 and 365 days."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.change_feed_retention_days >= 0 &&
+      var.data_protection_settings.change_feed_retention_days <= 146000
+    )
+    error_message = "change_feed_retention_days must be between 0 and 146000 days."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days >= 0 &&
+      var.data_protection_settings.point_in_time_restore_days <= 365
+    )
+    error_message = "point_in_time_restore_days must be between 0 and 365 days."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days > 0 ? (
+        var.data_protection_settings.versioning_enabled &&
+        var.data_protection_settings.change_feed_enabled &&
+        var.data_protection_settings.blob_soft_delete_retention_days > 0
+      ) : true
+    )
+    error_message = "When point_in_time_restore_days is enabled (> 0), all of the following must be true: versioning_enabled=true, change_feed_enabled=true, and blob_soft_delete_retention_days > 0."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days > 0 ?
+      var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days : true
+    )
+    error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days when restore policy is enabled."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days >= 1 ||
+      var.data_protection_settings.point_in_time_restore_days == 0
+    )
+    error_message = "When enabled, point_in_time_restore_days must be at least 1 day."
   }
 }
