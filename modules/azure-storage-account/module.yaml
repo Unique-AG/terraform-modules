@@ -1,11 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 2.1.0
+version: 3.0.0
 compatibility:
-  unique.ai: ~> 2025.16
+  unique.ai: ~> 2025.24
 changes:
   - kind: added
-    description: "Support for Private Endpoint."
-  - kind: changed
-    description: "Mitigate deprecation of storage_account_name on containers."
+    description: "Support for Data Protection and Shared Keys."
