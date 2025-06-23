@@ -20,6 +20,8 @@ resource "azurerm_storage_account" "storage_account" {
   https_traffic_only_enabled      = true
   public_network_access_enabled   = var.private_endpoint == null # later versions might need a more complex check
   min_tls_version                 = var.min_tls_version
+  shared_access_key_enabled       = var.shared_access_key_enabled
+
 
   # enable mounting account as disk
   nfsv3_enabled  = var.is_nfs_mountable
@@ -27,6 +29,10 @@ resource "azurerm_storage_account" "storage_account" {
 
   # enable access from browsers
   blob_properties {
+
+    change_feed_enabled           = var.data_protection_settings.change_feed_enabled
+    change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
+    versioning_enabled            = var.data_protection_settings.versioning_enabled
     dynamic "cors_rule" {
       for_each = var.cors_rules
       content {
@@ -39,17 +45,24 @@ resource "azurerm_storage_account" "storage_account" {
     }
 
     dynamic "container_delete_retention_policy" {
-      for_each = var.container_deleted_retain_days > 0 ? [1] : []
+      for_each = var.data_protection_settings.container_soft_delete_retention_days > 0 ? [1] : []
       content {
-        days = var.container_deleted_retain_days
+        days = var.data_protection_settings.container_soft_delete_retention_days
       }
     }
 
     dynamic "delete_retention_policy" {
-      for_each = var.deleted_retain_days > 0 ? [1] : []
+      for_each = var.data_protection_settings.blob_soft_delete_retention_days > 0 ? [1] : []
       content {
-        days                     = var.deleted_retain_days
+        days                     = var.data_protection_settings.blob_soft_delete_retention_days
         permanent_delete_enabled = false
+      }
+    }
+
+    dynamic "restore_policy" {
+      for_each = var.data_protection_settings.point_in_time_restore_days > 0 ? [1] : []
+      content {
+        days = var.data_protection_settings.point_in_time_restore_days
       }
     }
   }
