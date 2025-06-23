@@ -1,7 +1,6 @@
 terraform {
   backend "local" {
-    path             = "terraform.tfstate"
-    use_azuread_auth = true
+    path = "terraform.tfstate"
   }
 }
 
