@@ -1,7 +1,9 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version:  2.0.0
+version:  3.0.0
+compatibility:
+  unique.ai: ~> 2025.26
 changes:
   - kind: fixed
-    description: "The public_network_access_enabled parameter is now configurable and defaults to false"
+    description: "The private_endpoint now uses the vnet_location parameter instead of cognitive_account.location"
