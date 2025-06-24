@@ -41,7 +41,7 @@ variable "account_kind" {
 
 variable "account_replication_type" {
   description = "Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs."
-  default     = "LRS"
+  default     = "ZRS"
   type        = string
   nullable    = false
 }
@@ -204,18 +204,18 @@ variable "data_protection_settings" {
   type = object({
     versioning_enabled                   = optional(bool, true)
     change_feed_enabled                  = optional(bool, true)
-    blob_soft_delete_retention_days      = optional(number, 7) # 1-365 days
-    container_soft_delete_retention_days = optional(number, 7) # 1-365 days
-    change_feed_retention_days           = optional(number, 7) # 0-146000 days
-    point_in_time_restore_days           = optional(number, 5) # 0-365 days
+    blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
+    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
+    change_feed_retention_days           = optional(number, 7)  # 0-146000 days
+    point_in_time_restore_days           = optional(number, 7)  # 0-365 days
   })
   default = {
     versioning_enabled                   = true
     change_feed_enabled                  = true
-    blob_soft_delete_retention_days      = 7
-    container_soft_delete_retention_days = 7
+    blob_soft_delete_retention_days      = 30
+    container_soft_delete_retention_days = 30
     change_feed_retention_days           = 7
-    point_in_time_restore_days           = 5
+    point_in_time_restore_days           = 7
   }
 
   validation {
@@ -280,6 +280,12 @@ variable "data_protection_settings" {
 
 variable "public_network_access_enabled" {
   description = "Enable public network access for the storage account."
+  type        = bool
+  default     = false
+}
+
+variable "infrastructure_encryption_enabled" {
+  description = "Enable infrastructure encryption for the storage account."
   type        = bool
   default     = false
 }

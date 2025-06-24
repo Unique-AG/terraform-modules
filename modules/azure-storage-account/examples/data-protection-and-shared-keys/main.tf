@@ -84,14 +84,14 @@ module "storage_account_with_data_protection" {
   public_network_access_enabled = true
 
   # Configure comprehensive data protection settings
-  data_protection_settings = {
-    versioning_enabled                   = true
-    change_feed_enabled                  = true
-    blob_soft_delete_retention_days      = 30
-    container_soft_delete_retention_days = 30
-    change_feed_retention_days           = 30
-    point_in_time_restore_days           = 7
-  }
+  # data_protection_settings = {
+  #   versioning_enabled                   = true
+  #   change_feed_enabled                  = true
+  #   blob_soft_delete_retention_days      = 30
+  #   container_soft_delete_retention_days = 30
+  #   change_feed_retention_days           = 30
+  #   point_in_time_restore_days           = 7
+  # }
 
   # Create some containers to test with different access types
   containers = {
@@ -153,7 +153,8 @@ module "storage_account_aggressive_protection" {
   shared_access_key_enabled = false
 
   # Disable public network access for maximum security
-  public_network_access_enabled = false
+  public_network_access_enabled     = false
+  infrastructure_encryption_enabled = true
 
   # Configure private endpoint for secure access
   private_endpoint = {
