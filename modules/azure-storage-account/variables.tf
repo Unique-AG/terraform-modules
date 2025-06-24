@@ -277,3 +277,9 @@ variable "data_protection_settings" {
     error_message = "When enabled, point_in_time_restore_days must be at least 1 day."
   }
 }
+
+variable "public_network_access_enabled" {
+  description = "Enable public network access for the storage account."
+  type        = bool
+  default     = false
+}
