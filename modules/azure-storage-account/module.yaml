@@ -7,3 +7,8 @@ compatibility:
 changes:
   - kind: added
     description: "Support for Data Protection and Shared Keys."
+  - kind: added
+    description: "Support for Infrastructure Encryption."
+  - kind: added
+    description: "Support  for making public access to the storage account configurable."
+  - kind: added
