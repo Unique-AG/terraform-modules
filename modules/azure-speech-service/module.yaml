@@ -4,7 +4,6 @@ sources:
 version:  3.0.0
 compatibility:
   unique.ai: ~> 2025.26
-  terraform: ~> 4.0
 changes:
   - kind: fixed
     description: "The private_endpoint now uses the vnet_location parameter instead of cognitive_account.location"
