@@ -26,11 +26,15 @@ The example shows three different data protection configurations:
 - **Shared Access Keys**: Enabled for demonstration
 
 #### 3. Aggressive Data Protection (`storage_account_aggressive_protection`)
+- **Public Network Access**: Disabled for maximum security
+- **Private Endpoint**: Enabled for secure private network access
 - **Versioning**: Enabled
 - **Change Feed**: Enabled
 - **Soft Delete**: 365-day retention for both blobs and containers
 - **Point-in-Time Restore**: 30-day restore capability
-- **Shared Access Keys**: Enabled for demonstration
+- **Shared Access Keys**: Disabled for enhanced security
+- **Container Access Types**: All private (enforced by public access setting)
+- **Networking**: Virtual Network, Subnet, Private DNS Zone, and Private Endpoint
 
 ## Unique Naming
 
@@ -130,3 +134,29 @@ terraform destroy
 - Consider using different resource groups and locations for production use
 - Data protection settings cannot be modified after storage account creation
 - Point-in-time restore requires specific prerequisites to be enabled
+
+## Networking Resources
+
+This example includes networking resources for private endpoint testing:
+
+### Virtual Network
+- **Name**: `vnet-storage-{random}`
+- **Address Space**: `10.0.0.0/16`
+- **Purpose**: Host private endpoints for secure storage access
+
+### Subnet
+- **Name**: `subnet-private-endpoint`
+- **Address Space**: `10.0.1.0/24`
+- **Private Endpoint Policies**: Enabled
+- **Purpose**: Dedicated subnet for private endpoints
+
+### Private DNS Zone
+- **Name**: `privatelink.blob.core.windows.net`
+- **Purpose**: DNS resolution for private blob storage endpoints
+- **Linked to**: Virtual Network for automatic DNS resolution
+
+### Private Endpoint
+- **Service**: Blob storage
+- **Subnet**: Dedicated private endpoint subnet
+- **DNS**: Integrated with private DNS zone
+- **Security**: Maximum isolation from public internet
