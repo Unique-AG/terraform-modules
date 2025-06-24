@@ -14,7 +14,7 @@ resource "azurerm_resource_group" "rg" {
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet1"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  location            = "swedencentral"
   address_space       = ["10.0.0.0/16"]
 }
 
@@ -115,11 +115,11 @@ module "speech_service" {
       #   identity_ids = [azurerm_user_assigned_identity.example.id]
       # }
 
-      # private_endpoint = {
-      #   subnet_id           = azurerm_subnet.subnet.id
-      #   vnet_id             = azurerm_virtual_network.vnet.id
-      #   private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
-      # }
+      private_endpoint = {
+        subnet_id           = azurerm_subnet.subnet.id
+        vnet_location       = azurerm_virtual_network.vnet.location
+        private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
+      }
 
       # diagnostic_settings = {
       #   log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id

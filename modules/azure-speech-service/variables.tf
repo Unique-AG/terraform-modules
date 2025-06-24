@@ -11,7 +11,7 @@ variable "accounts" {
     }))
     private_endpoint = optional(object({
       subnet_id           = string
-      vnet_id             = string
+      vnet_location       = string
       private_dns_zone_id = string
     }))
     diagnostic_settings = optional(object({
