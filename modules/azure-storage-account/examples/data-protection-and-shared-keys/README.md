@@ -1,32 +1,49 @@
 # Data Protection and Shared Access Keys Example
 
-This example demonstrates how to configure Azure Storage Accounts with various data protection settings and shared access key configurations.
+This example demonstrates how to configure Azure Storage Accounts with various data protection settings, shared access key configurations, and public network access scenarios.
 
 ## Features Demonstrated
 
 ### Shared Access Keys
-- **`shared_access_key_enabled = true`**: All examples enable shared access keys for demonstration purposes
+- **`shared_access_key_enabled = true`**: Most examples enable shared access keys for demonstration purposes
 - **Note**: In production, consider using Azure AD authentication instead of shared access keys for enhanced security
 
+### Public Network Access
+The example demonstrates both public and private network access configurations across the three examples:
+
+#### Public Network Access Examples
+- **`storage_account_with_data_protection`**: Public access enabled with mixed container access types
+- **`storage_account_minimal_protection`**: Public access enabled for basic scenarios
+- **Use Cases**: Public assets, CDN integration, web applications
+
+#### Private Network Access Examples
+- **`storage_account_aggressive_protection`**: Public access disabled for maximum security
+- **Use Cases**: Sensitive data, internal applications, compliance requirements
+
 ### Data Protection Settings
-The example shows three different data protection configurations:
+The example shows three different data protection configurations with network access variations:
 
 #### 1. Comprehensive Data Protection (`storage_account_with_data_protection`)
+- **Public Network Access**: Enabled
 - **Versioning**: Enabled to track all versions of blobs
 - **Change Feed**: Enabled to track all changes to blobs
 - **Soft Delete**: 30-day retention for both blobs and containers
 - **Point-in-Time Restore**: 7-day restore capability
 - **Shared Access Keys**: Enabled for demonstration
+- **Container Access Types**: All private (default behavior)
 
 #### 2. Minimal Data Protection (`storage_account_minimal_protection`)
+- **Public Network Access**: Enabled for basic scenarios
 - **Versioning**: Enabled
 - **Change Feed**: Disabled
 - **Soft Delete**: 7-day retention for both blobs and containers
 - **Point-in-Time Restore**: Disabled
 - **Shared Access Keys**: Enabled for demonstration
+- **Container Access Types**: All private (default behavior)
 
 #### 3. Aggressive Data Protection (`storage_account_aggressive_protection`)
 - **Public Network Access**: Disabled for maximum security
+- **Infrastructure Encryption**: Enabled for enhanced security
 - **Private Endpoint**: Enabled for secure private network access
 - **Versioning**: Enabled
 - **Change Feed**: Enabled
@@ -66,6 +83,19 @@ This example uses the `random` provider to ensure unique resource names:
 - Enables restoration of storage account to a specific point in time
 - Requires versioning, change feed, and blob soft delete to be enabled
 - Retention period must be less than blob soft delete retention
+- Can be the same value as change feed retention (if less than blob soft delete retention)
+
+## Network Access Features Explained
+
+### Public Network Access
+- **Enabled**: Allows internet access to storage account endpoints
+- **Container Access Types**: Can be configured as blob, container, or private
+- **Security**: Requires careful consideration of access controls and data sensitivity
+
+### Private Network Access
+- **Disabled**: Restricts access to private networks only
+- **Enhanced Security**: All containers are effectively private
+- **Use Cases**: Sensitive data, compliance requirements, internal applications
 
 ## Security Considerations
 
@@ -81,11 +111,23 @@ This example uses the `random` provider to ensure unique resource names:
 - If enabled, ensure proper key rotation and access controls
 - The module has `allow_nested_items_to_be_public = false` for enhanced security
 
+### Infrastructure Encryption
+- **Enabled**: Provides additional encryption layer at the infrastructure level
+- **Use Cases**: Enhanced security for critical data
+- **Compliance**: Meets strict regulatory requirements
+
+### Public Network Access
+- **Public Access**: Use only for non-sensitive data that needs internet access
+- **Container Access Types**: Choose appropriate access levels (blob vs container vs private)
+- **Network Rules**: Consider implementing IP restrictions for public access
+- **Monitoring**: Enable logging and monitoring for public access scenarios
+
 ### Data Protection Validation
 The module includes validation rules to ensure:
 - Retention periods are within valid ranges
 - Point-in-time restore requirements are met
 - Logical relationships between settings are maintained
+- Change feed and point-in-time restore can be the same value (if less than blob soft delete retention)
 
 ## Usage
 
@@ -118,6 +160,7 @@ Each storage account will have:
 - Primary and secondary connection strings (shared access keys enabled)
 - Container names and access types
 - Data protection settings applied
+- Public network access status
 
 ## Cleanup
 
@@ -130,10 +173,13 @@ terraform destroy
 
 - This example creates its own resource group with a unique name
 - Storage account names are made unique using random strings
-- All containers use private access type for security
+- Public access examples include private containers (default behavior)
+- Private access examples enforce private containers regardless of access type setting
 - Consider using different resource groups and locations for production use
 - Data protection settings cannot be modified after storage account creation
 - Point-in-time restore requires specific prerequisites to be enabled
+- Public network access should be carefully considered based on data sensitivity
+- Infrastructure encryption provides additional security layer for critical data
 
 ## Networking Resources
 

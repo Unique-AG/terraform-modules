@@ -16,12 +16,12 @@ resource "azurerm_storage_account" "storage_account" {
   tags                     = var.tags
 
   # secure by default
-  allow_nested_items_to_be_public = false
-  https_traffic_only_enabled      = true
-  public_network_access_enabled   = var.public_network_access_enabled
-  min_tls_version                 = var.min_tls_version
-  shared_access_key_enabled       = var.shared_access_key_enabled
-
+  allow_nested_items_to_be_public   = false
+  https_traffic_only_enabled        = true
+  public_network_access_enabled     = var.public_network_access_enabled
+  min_tls_version                   = var.min_tls_version
+  shared_access_key_enabled         = var.shared_access_key_enabled
+  infrastructure_encryption_enabled = var.infrastructure_encryption_enabled
 
   # enable mounting account as disk
   nfsv3_enabled  = var.is_nfs_mountable
