@@ -23,6 +23,7 @@ resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
   total_retention_in_days = var.retention_in_days
 }
 
+
 resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
   name                           = "aks-diagnostic-logs"
   target_resource_id             = azurerm_kubernetes_cluster.cluster.id

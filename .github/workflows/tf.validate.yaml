@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.0
       - name: Generate Documentation
@@ -56,6 +56,6 @@ jobs:
 
       # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
       - name: Upload Sarif results
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 #v3.28.11
+        uses: github/codeql-action/upload-sarif@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 #v3.29.0
         with:
           sarif_file: trivy.sarif

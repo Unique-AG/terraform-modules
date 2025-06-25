@@ -32,11 +32,23 @@ resource "azurerm_subnet" "pods" {
   address_prefixes     = ["10.0.2.0/23"]
 }
 
+resource "azurerm_log_analytics_workspace" "aks_law" {
+  name                = "aks-log-analytics"
+  location            = "switzerlandnorth"
+  resource_group_name = "my-resource-group"
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  tags = {
+    environment = "test"
+  }
+}
+
 module "aks" {
   source = "../.."
 
-  resource_group_name     = "my-resource-group"
-  resource_group_location = "switzerlandnorth"
+  resource_group_name        = "my-resource-group"
+  resource_group_location    = "switzerlandnorth"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.aks_law.id
 
   cluster_name = "my-aks-cluster"
   node_rg_name = "my-resource-group-aks-nodes"

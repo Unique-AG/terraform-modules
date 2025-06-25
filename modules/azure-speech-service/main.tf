@@ -1,12 +1,13 @@
 resource "azurerm_cognitive_account" "aca" {
-  for_each              = var.accounts
-  name                  = "${var.speech_service_name}-${each.key}"
-  location              = each.value.location
-  resource_group_name   = var.resource_group_name
-  kind                  = each.value.account_kind
-  sku_name              = each.value.account_sku_name
-  tags                  = var.tags
-  custom_subdomain_name = each.value.custom_subdomain_name
+  for_each                      = var.accounts
+  name                          = "${var.speech_service_name}-${each.key}"
+  location                      = each.value.location
+  resource_group_name           = var.resource_group_name
+  kind                          = each.value.account_kind
+  sku_name                      = each.value.account_sku_name
+  tags                          = var.tags
+  custom_subdomain_name         = each.value.custom_subdomain_name
+  public_network_access_enabled = each.value.public_network_access_enabled
 
   dynamic "identity" {
     for_each = each.value.identity != null ? [1] : []
@@ -20,7 +21,7 @@ resource "azurerm_cognitive_account" "aca" {
 resource "azurerm_private_endpoint" "pe" {
   for_each            = { for k, v in var.accounts : k => v if try(v.private_endpoint != null, false) }
   name                = "${var.speech_service_name}-${each.key}-pe"
-  location            = each.value.location
+  location            = each.value.private_endpoint.vnet_location
   resource_group_name = var.resource_group_name
   subnet_id           = each.value.private_endpoint.subnet_id
 
