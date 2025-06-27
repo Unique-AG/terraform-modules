@@ -10,5 +10,16 @@ changes:
   - kind: added
     description: "Support for Infrastructure Encryption."
   - kind: added
-    description: "Support  for making public access to the storage account configurable."
+    description: "Support for making public access to the storage account configurable."
   - kind: added
+    description: "Support for Azure Data Protection Backup Vault, Backup Policy, and Backup Instance."
+  - kind: changed
+    description: "Default replication type is now 'ZRS' instead of 'LRS'."
+  - kind: changed
+    description: "Data protection features now consolidated under 'data_protection_settings' variable (soft delete, versioning, change feed, point-in-time restore)."
+  - kind: removed
+    description: "Deprecated variables 'deleted_retain_days' and 'container_deleted_retain_days'."
+  - kind: added
+    description: "New outputs for backup_vault_id, backup_vault_name, backup_policy_id, backup_instance_id."
+  - kind: changed
+    description: "Refactored storage management policy defaults; now supports more flexible lifecycle management."
