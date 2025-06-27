@@ -1,4 +1,3 @@
-
 variable "name" {
   description = "Name of the storage account."
   type        = string
@@ -86,27 +85,24 @@ variable "customer_managed_key" {
     key_version               = optional(string, null)
     user_assigned_identity_id = string
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "storage_management_policy_default" {
   description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
   type = object({
-    enabled                                  = optional(bool, true)
     blob_to_cool_after_last_modified_days    = optional(number, 10)
     blob_to_cold_after_last_modified_days    = optional(number, 50)
-    blob_to_archive_after_last_modified_days = optional(number, 100)
-    blob_to_deleted_after_last_modified_days = optional(number, 730)
+    blob_to_archive_after_last_modified_days = optional(number, null)
+    blob_to_deleted_after_last_modified_days = optional(number, null)
   })
   default = {
-    enabled                                  = true
     blob_to_cool_after_last_modified_days    = 10
     blob_to_cold_after_last_modified_days    = 50
-    blob_to_archive_after_last_modified_days = 100
-    blob_to_deleted_after_last_modified_days = 730
+    blob_to_archive_after_last_modified_days = null
+    blob_to_deleted_after_last_modified_days = null
   }
-  nullable = false
 }
 
 variable "containers" {
@@ -128,8 +124,8 @@ variable "network_rules" {
       endpoint_tenant_id   = string
     }))
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "self_cmk" {
@@ -143,8 +139,8 @@ variable "self_cmk" {
     user_assigned_identity_id = string
 
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "connection_settings" {
@@ -155,8 +151,8 @@ variable "connection_settings" {
     key_vault_id        = string
     expiration_date     = optional(string, "2099-12-31T23:59:59Z")
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "private_endpoint" {
@@ -168,8 +164,8 @@ variable "private_endpoint" {
     subresource_names   = optional(list(string), ["blob"])
     tags                = optional(map(string), {})
   })
-  default  = null
-  nullable = true
+  default = null
+
 
   validation {
     condition = var.private_endpoint == null ? true : alltrue([
@@ -203,78 +199,35 @@ variable "data_protection_settings" {
   description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
   type = object({
     versioning_enabled                   = optional(bool, true)
-    change_feed_enabled                  = optional(bool, true)
     blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
     container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     change_feed_retention_days           = optional(number, 7)  # 0-146000 days
-    point_in_time_restore_days           = optional(number, 7)  # 0-365 days
+    point_in_time_restore_days           = optional(number, 7)
   })
   default = {
     versioning_enabled                   = true
-    change_feed_enabled                  = true
     blob_soft_delete_retention_days      = 30
     container_soft_delete_retention_days = 30
     change_feed_retention_days           = 7
     point_in_time_restore_days           = 7
   }
-
+  #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#restore_policy-1
   validation {
     condition = (
-      var.data_protection_settings.blob_soft_delete_retention_days >= 1 &&
-      var.data_protection_settings.blob_soft_delete_retention_days <= 365
+      var.data_protection_settings.point_in_time_restore_days == -1 ||
+      (var.data_protection_settings.versioning_enabled == true &&
+        var.data_protection_settings.change_feed_retention_days > 0 &&
+      var.data_protection_settings.blob_soft_delete_retention_days > 0)
     )
-    error_message = "blob_soft_delete_retention_days must be between 1 and 365 days."
+    error_message = "When point_in_time_restore_days is set, versioning_enabled must be true, change_feed_retention_days must be greater than 0, and blob_soft_delete_retention_days must be greater than 0."
   }
 
   validation {
     condition = (
-      var.data_protection_settings.container_soft_delete_retention_days >= 1 &&
-      var.data_protection_settings.container_soft_delete_retention_days <= 365
+      var.data_protection_settings.point_in_time_restore_days == -1 ||
+      var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days
     )
-    error_message = "container_soft_delete_retention_days must be between 1 and 365 days."
-  }
-
-  validation {
-    condition = (
-      var.data_protection_settings.change_feed_retention_days >= 0 &&
-      var.data_protection_settings.change_feed_retention_days <= 146000
-    )
-    error_message = "change_feed_retention_days must be between 0 and 146000 days."
-  }
-
-  validation {
-    condition = (
-      var.data_protection_settings.point_in_time_restore_days >= 0 &&
-      var.data_protection_settings.point_in_time_restore_days <= 365
-    )
-    error_message = "point_in_time_restore_days must be between 0 and 365 days."
-  }
-
-  validation {
-    condition = (
-      var.data_protection_settings.point_in_time_restore_days > 0 ? (
-        var.data_protection_settings.versioning_enabled &&
-        var.data_protection_settings.change_feed_enabled &&
-        var.data_protection_settings.blob_soft_delete_retention_days > 0
-      ) : true
-    )
-    error_message = "When point_in_time_restore_days is enabled (> 0), all of the following must be true: versioning_enabled=true, change_feed_enabled=true, and blob_soft_delete_retention_days > 0."
-  }
-
-  validation {
-    condition = (
-      var.data_protection_settings.point_in_time_restore_days > 0 ?
-      var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days : true
-    )
-    error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days when restore policy is enabled."
-  }
-
-  validation {
-    condition = (
-      var.data_protection_settings.point_in_time_restore_days >= 1 ||
-      var.data_protection_settings.point_in_time_restore_days == 0
-    )
-    error_message = "When enabled, point_in_time_restore_days must be at least 1 day."
+    error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days, or set to -1 to disable."
   }
 }
 
@@ -288,4 +241,70 @@ variable "infrastructure_encryption_enabled" {
   description = "Enable infrastructure encryption for the storage account."
   type        = bool
   default     = false
+}
+
+variable "backup_vault" {
+  description = "Configuration for Azure Data Protection Backup Vault. If provided, creates a backup vault and configures backup for the storage account."
+  type = object({
+    name                         = optional(string, "storage-backup-vault")
+    location                     = optional(string)
+    resource_group_name          = optional(string)
+    datastore_type               = optional(string, "VaultStore")
+    redundancy                   = optional(string, "ZoneRedundant")
+    cross_region_restore_enabled = optional(bool, false)
+    identity = optional(object({
+      type = string
+    }), { type = "SystemAssigned" })
+    retention_duration_in_days = optional(number, 14)
+    immutability               = optional(string, "Disabled")
+    soft_delete                = optional(string, "On")
+    tags                       = optional(map(string), {})
+  })
+
+  default = {
+    name = "storage-backup-vault"
+  }
+}
+
+variable "backup_policy" {
+  description = "Configuration for the backup policy when backup_vault is enabled."
+  type = object({
+    name                                   = optional(string, "default-blob-backup-policy")
+    operational_default_retention_duration = optional(string, "P2W")
+    vault_default_retention_duration       = optional(string)
+    backup_repeating_time_intervals        = optional(list(string), null)
+    time_zone                              = optional(string)
+    retention_rules = optional(list(object({
+      name     = string
+      priority = number
+      criteria = object({
+        absolute_criteria      = optional(string)
+        days_of_month          = optional(list(number))
+        days_of_week           = optional(list(string))
+        months_of_year         = optional(list(string))
+        scheduled_backup_times = optional(list(string))
+        weeks_of_month         = optional(list(string))
+      })
+      life_cycle = object({
+        data_store_type = optional(string, "VaultStore")
+        duration        = string
+      })
+    })), [])
+    tags = optional(map(string), {})
+  })
+  default = {
+  }
+}
+
+variable "backup_instance" {
+  description = "Configuration for the backup instance when backup_vault is enabled."
+  type = object({
+    name                            = optional(string, "default-blob-backup-instance")
+    storage_account_container_names = optional(list(string))
+    tags                            = optional(map(string), {})
+  })
+  default = {
+    name = "default-blob-backup-instance"
+    tags = {}
+  }
 }
