@@ -30,7 +30,7 @@ resource "azurerm_storage_account" "storage_account" {
   # enable access from browsers
   blob_properties {
 
-    change_feed_enabled           = var.data_protection_settings.change_feed_enabled
+    change_feed_enabled           = var.data_protection_settings.change_feed_retention_days > 0
     change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
     versioning_enabled            = var.data_protection_settings.versioning_enabled
     dynamic "cors_rule" {
@@ -58,7 +58,6 @@ resource "azurerm_storage_account" "storage_account" {
         permanent_delete_enabled = false
       }
     }
-
     dynamic "restore_policy" {
       for_each = var.data_protection_settings.point_in_time_restore_days > 0 ? [1] : []
       content {
@@ -135,7 +134,7 @@ resource "azurerm_storage_account_customer_managed_key" "cmk" {
 }
 
 resource "azurerm_storage_management_policy" "default" {
-  count              = var.storage_management_policy_default.enabled == true ? 1 : 0
+  count              = var.storage_management_policy_default != null ? 1 : 0
   storage_account_id = azurerm_storage_account.storage_account.id
 
   rule {
@@ -188,4 +187,87 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
   value           = azurerm_storage_account.storage_account.secondary_connection_string
   key_vault_id    = var.connection_settings.key_vault_id
   expiration_date = var.connection_settings.expiration_date
+}
+
+# Data Protection Backup Vault
+resource "azurerm_data_protection_backup_vault" "backup_vault" {
+  count                        = var.backup_vault != null ? 1 : 0
+  name                         = var.backup_vault.name
+  location                     = coalesce(var.backup_vault.location, var.location)
+  resource_group_name          = coalesce(var.backup_vault.resource_group_name, var.resource_group_name)
+  datastore_type               = var.backup_vault.datastore_type
+  redundancy                   = var.backup_vault.redundancy
+  cross_region_restore_enabled = var.backup_vault.redundancy == "GeoRedundant" ? var.backup_vault.cross_region_restore_enabled : null
+  retention_duration_in_days   = var.backup_vault.retention_duration_in_days
+  immutability                 = var.backup_vault.immutability
+  soft_delete                  = var.backup_vault.soft_delete
+  tags                         = merge(var.tags, var.backup_vault.tags)
+
+  dynamic "identity" {
+    for_each = var.backup_vault.identity != null ? [var.backup_vault.identity] : []
+    content {
+      type = identity.value.type
+    }
+  }
+}
+
+# Role assignment for backup vault to access storage account
+resource "azurerm_role_assignment" "backup_vault_storage_access" {
+  count                = var.backup_vault != null ? 1 : 0
+  scope                = azurerm_storage_account.storage_account.id
+  role_definition_name = "Storage Account Backup Contributor"
+  principal_id         = azurerm_data_protection_backup_vault.backup_vault[0].identity[0].principal_id
+
+  depends_on = [
+    azurerm_data_protection_backup_vault.backup_vault,
+    azurerm_storage_account.storage_account
+  ]
+}
+
+# Backup Policy for Blob Storage
+resource "azurerm_data_protection_backup_policy_blob_storage" "backup_policy" {
+  count    = var.backup_vault != null ? 1 : 0
+  name     = var.backup_policy.name
+  vault_id = azurerm_data_protection_backup_vault.backup_vault[0].id
+
+  operational_default_retention_duration = var.backup_policy.operational_default_retention_duration
+  vault_default_retention_duration       = var.backup_policy.vault_default_retention_duration
+  backup_repeating_time_intervals        = var.backup_policy.backup_repeating_time_intervals
+  time_zone                              = var.backup_policy.time_zone
+
+  dynamic "retention_rule" {
+    for_each = var.backup_policy.retention_rules
+    content {
+      name     = retention_rule.value.name
+      priority = retention_rule.value.priority
+
+      criteria {
+        absolute_criteria      = retention_rule.value.criteria.absolute_criteria
+        days_of_month          = retention_rule.value.criteria.days_of_month
+        days_of_week           = retention_rule.value.criteria.days_of_week
+        months_of_year         = retention_rule.value.criteria.months_of_year
+        scheduled_backup_times = retention_rule.value.criteria.scheduled_backup_times
+        weeks_of_month         = retention_rule.value.criteria.weeks_of_month
+      }
+
+      life_cycle {
+        data_store_type = retention_rule.value.life_cycle.data_store_type
+        duration        = retention_rule.value.life_cycle.duration
+      }
+    }
+  }
+}
+
+# Backup Instance for Blob Storage
+resource "azurerm_data_protection_backup_instance_blob_storage" "backup_instance" {
+  count                           = var.backup_vault != null ? 1 : 0
+  name                            = var.backup_instance.name
+  vault_id                        = azurerm_data_protection_backup_vault.backup_vault[0].id
+  location                        = var.location
+  storage_account_id              = azurerm_storage_account.storage_account.id
+  backup_policy_id                = azurerm_data_protection_backup_policy_blob_storage.backup_policy[0].id
+  storage_account_container_names = var.backup_instance.storage_account_container_names
+  depends_on = [
+    azurerm_data_protection_backup_policy_blob_storage.backup_policy
+  ]
 }
