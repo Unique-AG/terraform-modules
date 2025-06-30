@@ -264,6 +264,38 @@ variable "backup_vault" {
   default = {
     name = "storage-backup-vault"
   }
+
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "ArchiveStore", "OperationalStore", "SnapshotStore", "VaultStore"
+    ], var.backup_vault.datastore_type)
+    error_message = "datastore_type must be one of: ArchiveStore, OperationalStore, SnapshotStore, VaultStore."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "GeoRedundant", "LocallyRedundant", "ZoneRedundant"
+    ], var.backup_vault.redundancy)
+    error_message = "redundancy must be one of: GeoRedundant, LocallyRedundant, ZoneRedundant."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : (
+      var.backup_vault.retention_duration_in_days == null ||
+      (var.backup_vault.retention_duration_in_days >= 14 && var.backup_vault.retention_duration_in_days <= 180)
+    )
+    error_message = "retention_duration_in_days must be between 14 and 180 if set."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "Disabled", "Locked", "Unlocked"
+    ], var.backup_vault.immutability)
+    error_message = "immutability must be one of: Disabled, Locked, Unlocked."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "AlwaysOn", "Off", "On"
+    ], var.backup_vault.soft_delete)
+    error_message = "soft_delete must be one of: AlwaysOn, Off, On."
+  }
 }
 
 variable "backup_policy" {
@@ -293,6 +325,31 @@ variable "backup_policy" {
     tags = optional(map(string), {})
   })
   default = {
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.retention_rules == null ||
+      length(var.backup_policy.retention_rules) == 0 ||
+      var.backup_policy.vault_default_retention_duration != null
+    )
+    error_message = "Setting retention_rule also requires setting vault_default_retention_duration."
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.vault_default_retention_duration == null ||
+      var.backup_policy.backup_repeating_time_intervals != null
+    )
+    error_message = "Setting vault_default_retention_duration also requires setting backup_repeating_time_intervals."
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.operational_default_retention_duration != null ||
+      var.backup_policy.vault_default_retention_duration != null
+    )
+    error_message = "At least one of operational_default_retention_duration or vault_default_retention_duration must be specified."
   }
 }
 
