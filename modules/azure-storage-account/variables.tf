@@ -1,4 +1,3 @@
-
 variable "name" {
   description = "Name of the storage account."
   type        = string
@@ -41,7 +40,7 @@ variable "account_kind" {
 
 variable "account_replication_type" {
   description = "Type of replication to use for this storage account. Learn more about storage account replication types in the Azure Docs."
-  default     = "LRS"
+  default     = "ZRS"
   type        = string
   nullable    = false
 }
@@ -86,39 +85,24 @@ variable "customer_managed_key" {
     key_version               = optional(string, null)
     user_assigned_identity_id = string
   })
-  default  = null
-  nullable = true
-}
+  default = null
 
-variable "deleted_retain_days" {
-  description = "Number of days to retain deleted blobs."
-  type        = number
-  default     = 7
-}
-
-variable "container_deleted_retain_days" {
-  description = "Number of days to retain deleted containers."
-  type        = number
-  default     = 7
 }
 
 variable "storage_management_policy_default" {
   description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
   type = object({
-    enabled                                  = optional(bool, true)
     blob_to_cool_after_last_modified_days    = optional(number, 10)
     blob_to_cold_after_last_modified_days    = optional(number, 50)
-    blob_to_archive_after_last_modified_days = optional(number, 100)
-    blob_to_deleted_after_last_modified_days = optional(number, 730)
+    blob_to_archive_after_last_modified_days = optional(number, null)
+    blob_to_deleted_after_last_modified_days = optional(number, null)
   })
   default = {
-    enabled                                  = true
     blob_to_cool_after_last_modified_days    = 10
     blob_to_cold_after_last_modified_days    = 50
-    blob_to_archive_after_last_modified_days = 100
-    blob_to_deleted_after_last_modified_days = 730
+    blob_to_archive_after_last_modified_days = null
+    blob_to_deleted_after_last_modified_days = null
   }
-  nullable = false
 }
 
 variable "containers" {
@@ -140,8 +124,8 @@ variable "network_rules" {
       endpoint_tenant_id   = string
     }))
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "self_cmk" {
@@ -155,8 +139,8 @@ variable "self_cmk" {
     user_assigned_identity_id = string
 
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "connection_settings" {
@@ -167,8 +151,8 @@ variable "connection_settings" {
     key_vault_id        = string
     expiration_date     = optional(string, "2099-12-31T23:59:59Z")
   })
-  default  = null
-  nullable = true
+  default = null
+
 }
 
 variable "private_endpoint" {
@@ -180,8 +164,8 @@ variable "private_endpoint" {
     subresource_names   = optional(list(string), ["blob"])
     tags                = optional(map(string), {})
   })
-  default  = null
-  nullable = true
+  default = null
+
 
   validation {
     condition = var.private_endpoint == null ? true : alltrue([
@@ -202,5 +186,182 @@ variable "private_endpoint" {
       can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
     )
     error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}
+
+variable "shared_access_key_enabled" {
+  description = "Enable shared access key for the storage account."
+  type        = bool
+  default     = false
+}
+
+variable "data_protection_settings" {
+  description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
+  type = object({
+    versioning_enabled                   = optional(bool, true)
+    blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
+    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
+    change_feed_retention_days           = optional(number, 7)  # 0-146000 days
+    point_in_time_restore_days           = optional(number, 7)
+  })
+  default = {
+    versioning_enabled                   = true
+    blob_soft_delete_retention_days      = 30
+    container_soft_delete_retention_days = 30
+    change_feed_retention_days           = 7
+    point_in_time_restore_days           = 7
+  }
+  #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#restore_policy-1
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days == -1 ||
+      (var.data_protection_settings.versioning_enabled == true &&
+        var.data_protection_settings.change_feed_retention_days > 0 &&
+      var.data_protection_settings.blob_soft_delete_retention_days > 0)
+    )
+    error_message = "When point_in_time_restore_days is set, versioning_enabled must be true, change_feed_retention_days must be greater than 0, and blob_soft_delete_retention_days must be greater than 0."
+  }
+
+  validation {
+    condition = (
+      var.data_protection_settings.point_in_time_restore_days == -1 ||
+      var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days
+    )
+    error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days, or set to -1 to disable."
+  }
+}
+
+variable "public_network_access_enabled" {
+  description = "Enable public network access for the storage account."
+  type        = bool
+  default     = false
+}
+
+variable "infrastructure_encryption_enabled" {
+  description = "Enable infrastructure encryption for the storage account."
+  type        = bool
+  default     = false
+}
+
+variable "backup_vault" {
+  description = "Configuration for Azure Data Protection Backup Vault. If provided, creates a backup vault and configures backup for the storage account."
+  type = object({
+    name                         = optional(string, "storage-backup-vault")
+    location                     = optional(string)
+    resource_group_name          = optional(string)
+    datastore_type               = optional(string, "VaultStore")
+    redundancy                   = optional(string, "ZoneRedundant")
+    cross_region_restore_enabled = optional(bool, false)
+    identity = optional(object({
+      type = string
+    }), { type = "SystemAssigned" })
+    retention_duration_in_days = optional(number, 14)
+    immutability               = optional(string, "Disabled")
+    soft_delete                = optional(string, "On")
+    tags                       = optional(map(string), {})
+  })
+
+  default = {
+    name = "storage-backup-vault"
+  }
+
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "ArchiveStore", "OperationalStore", "SnapshotStore", "VaultStore"
+    ], var.backup_vault.datastore_type)
+    error_message = "datastore_type must be one of: ArchiveStore, OperationalStore, SnapshotStore, VaultStore."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "GeoRedundant", "LocallyRedundant", "ZoneRedundant"
+    ], var.backup_vault.redundancy)
+    error_message = "redundancy must be one of: GeoRedundant, LocallyRedundant, ZoneRedundant."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : (
+      var.backup_vault.retention_duration_in_days == null ||
+      (var.backup_vault.retention_duration_in_days >= 14 && var.backup_vault.retention_duration_in_days <= 180)
+    )
+    error_message = "retention_duration_in_days must be between 14 and 180 if set."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "Disabled", "Locked", "Unlocked"
+    ], var.backup_vault.immutability)
+    error_message = "immutability must be one of: Disabled, Locked, Unlocked."
+  }
+  validation {
+    condition = var.backup_vault == null ? true : contains([
+      "AlwaysOn", "Off", "On"
+    ], var.backup_vault.soft_delete)
+    error_message = "soft_delete must be one of: AlwaysOn, Off, On."
+  }
+}
+
+variable "backup_policy" {
+  description = "Configuration for the backup policy when backup_vault is enabled."
+  type = object({
+    name                                   = optional(string, "default-blob-backup-policy")
+    operational_default_retention_duration = optional(string, "P2W")
+    vault_default_retention_duration       = optional(string)
+    backup_repeating_time_intervals        = optional(list(string), null)
+    time_zone                              = optional(string)
+    retention_rules = optional(list(object({
+      name     = string
+      priority = number
+      criteria = object({
+        absolute_criteria      = optional(string)
+        days_of_month          = optional(list(number))
+        days_of_week           = optional(list(string))
+        months_of_year         = optional(list(string))
+        scheduled_backup_times = optional(list(string))
+        weeks_of_month         = optional(list(string))
+      })
+      life_cycle = object({
+        data_store_type = optional(string, "VaultStore")
+        duration        = string
+      })
+    })), [])
+    tags = optional(map(string), {})
+  })
+  default = {
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.retention_rules == null ||
+      length(var.backup_policy.retention_rules) == 0 ||
+      var.backup_policy.vault_default_retention_duration != null
+    )
+    error_message = "Setting retention_rule also requires setting vault_default_retention_duration."
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.vault_default_retention_duration == null ||
+      var.backup_policy.backup_repeating_time_intervals != null
+    )
+    error_message = "Setting vault_default_retention_duration also requires setting backup_repeating_time_intervals."
+  }
+
+  validation {
+    condition = (
+      var.backup_policy.operational_default_retention_duration != null ||
+      var.backup_policy.vault_default_retention_duration != null
+    )
+    error_message = "At least one of operational_default_retention_duration or vault_default_retention_duration must be specified."
+  }
+}
+
+variable "backup_instance" {
+  description = "Configuration for the backup instance when backup_vault is enabled."
+  type = object({
+    name                            = optional(string, "default-blob-backup-instance")
+    storage_account_container_names = optional(list(string))
+    tags                            = optional(map(string), {})
+  })
+  default = {
+    name = "default-blob-backup-instance"
+    tags = {}
   }
 }
