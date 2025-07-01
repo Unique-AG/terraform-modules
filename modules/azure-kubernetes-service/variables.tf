@@ -376,9 +376,10 @@ variable "admin_group_object_ids" {
 variable "network_profile" {
   description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
   type = object({
+    network_data_plane        = optional(string)
     network_plugin            = optional(string, "azure")
     network_plugin_mode       = optional(string, null)
-    network_policy            = optional(string, "azure")
+    network_policy            = optional(string)
     service_cidr              = optional(string, "172.20.0.0/16")
     dns_service_ip            = optional(string, "172.20.0.10")
     outbound_type             = optional(string, "loadBalancer")

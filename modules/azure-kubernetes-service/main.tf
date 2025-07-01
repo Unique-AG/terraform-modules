@@ -31,6 +31,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   dynamic "network_profile" {
     for_each = var.network_profile != null ? [1] : []
     content {
+      network_data_plane  = var.network_profile.network_data_plane
       network_plugin      = var.network_profile.network_plugin
       network_plugin_mode = var.network_profile.network_plugin_mode
       network_policy      = var.network_profile.network_policy
