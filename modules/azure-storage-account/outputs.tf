@@ -35,3 +35,8 @@ output "backup_instance_id" {
   description = "The ID of the backup instance"
   value       = var.backup_vault != null ? azurerm_data_protection_backup_instance_blob_storage.backup_instance[0].id : null
 }
+
+output "backup_vault_identity_principal_id" {
+  description = "The principal ID of the backup vault's managed identity. Use this to manually assign the 'Storage Account Backup Contributor' role when enable_backup_role_assignment is false."
+  value       = var.backup_vault != null ? azurerm_data_protection_backup_vault.backup_vault[0].identity[0].principal_id : null
+}
