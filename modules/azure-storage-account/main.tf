@@ -212,7 +212,7 @@ resource "azurerm_data_protection_backup_vault" "backup_vault" {
 
 # Role assignment for backup vault to access storage account
 resource "azurerm_role_assignment" "backup_vault_storage_access" {
-  count                = var.backup_vault != null && var.enable_backup_role_assignment ? 1 : 0
+  count                = var.backup_vault != null && var.backup_role_assignment_enabled ? 1 : 0
   scope                = azurerm_storage_account.storage_account.id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.backup_vault[0].identity[0].principal_id

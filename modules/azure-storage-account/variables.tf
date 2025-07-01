@@ -366,7 +366,7 @@ variable "backup_instance" {
   }
 }
 
-variable "enable_backup_role_assignment" {
+variable "backup_role_assignment_enabled" {
   description = "Whether to create the role assignment for the backup vault to access the storage account. Set to false if you don't have permissions to create role assignments."
   type        = bool
   default     = true
