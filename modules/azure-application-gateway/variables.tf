@@ -231,8 +231,8 @@ variable "file_upload_limit_in_mb" {
   type        = number
   default     = 100
   validation {
-    condition     = var.file_upload_limit_in_mb >= 0
-    error_message = "The file_upload_limit_in_mb must not be empty."
+    condition     = var.file_upload_limit_in_mb > 0
+    error_message = "The file_upload_limit_in_mb must be greater than 0."
   }
 }
 
@@ -241,7 +241,7 @@ variable "max_request_body_size_in_kb" {
   type        = number
   default     = 1024
   validation {
-    condition     = var.max_request_body_size_in_kb >= 0
-    error_message = "The max_request_body_size_in_kb must not be empty."
+    condition     = var.max_request_body_size_in_kb > 0
+    error_message = "The max_request_body_size_in_kb must be greater than 0."
   }
 }
