@@ -225,3 +225,23 @@ variable "private_frontend_enabled" {
   type        = bool
   default     = false
 }
+
+variable "file_upload_limit_in_mb" {
+  description = "The file upload limit in MB"
+  type        = number
+  default     = 100
+  validation {
+    condition     = var.file_upload_limit_in_mb > 0
+    error_message = "The file_upload_limit_in_mb must be greater than 0."
+  }
+}
+
+variable "max_request_body_size_in_kb" {
+  description = "The max request body size in KB"
+  type        = number
+  default     = 1024
+  validation {
+    condition     = var.max_request_body_size_in_kb > 0
+    error_message = "The max_request_body_size_in_kb must be greater than 0."
+  }
+}

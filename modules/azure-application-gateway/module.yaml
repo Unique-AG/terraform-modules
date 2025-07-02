@@ -1,7 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.0.1
+version: 3.1.0
 changes:
-  - kind: fixed
-    description: "Fixes the waf_ip_allow_list to accept a list of IP addresses or ranges as having multiple ip lists does not work."
+  - kind: added
+    description: "file_upload_limit_in_mb and max_request_body_size_in_kb variables to control upload and request size limits"

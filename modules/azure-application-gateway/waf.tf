@@ -299,8 +299,8 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     enabled                     = true
     mode                        = var.gateway_mode
     request_body_check          = true
-    file_upload_limit_in_mb     = 100
-    max_request_body_size_in_kb = 1024
+    file_upload_limit_in_mb     = var.file_upload_limit_in_mb
+    max_request_body_size_in_kb = var.max_request_body_size_in_kb
   }
 
   managed_rules {

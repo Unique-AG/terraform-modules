@@ -49,6 +49,7 @@ No modules.
 | <a name="input_application_gateway_name"></a> [application\_gateway\_name](#input\_application\_gateway\_name) | Name for the Gateway | `string` | `null` | no |
 | <a name="input_backend_address_pool_name"></a> [backend\_address\_pool\_name](#input\_backend\_address\_pool\_name) | Name for the backend\_address\_pool | `string` | `null` | no |
 | <a name="input_backend_http_settings_name"></a> [backend\_http\_settings\_name](#input\_backend\_http\_settings\_name) | Name for the backend\_http\_settings | `string` | `null` | no |
+| <a name="input_file_upload_limit_in_mb"></a> [file\_upload\_limit\_in\_mb](#input\_file\_upload\_limit\_in\_mb) | The file upload limit in MB | `number` | `100` | no |
 | <a name="input_frontend_ip_config_name"></a> [frontend\_ip\_config\_name](#input\_frontend\_ip\_config\_name) | Name for the frontend\_ip\_config | `string` | `null` | no |
 | <a name="input_frontend_ip_private_config_name"></a> [frontend\_ip\_private\_config\_name](#input\_frontend\_ip\_private\_config\_name) | Name for the frontend\_ip\_private\_config | `string` | `null` | no |
 | <a name="input_frontend_port_name"></a> [frontend\_port\_name](#input\_frontend\_port\_name) | Name for the frontend\_port | `string` | `null` | no |
@@ -60,6 +61,7 @@ No modules.
 | <a name="input_ip_name"></a> [ip\_name](#input\_ip\_name) | The name of the public IP address. | `string` | `null` | no |
 | <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for autoscaling | `number` | `2` | no |
+| <a name="input_max_request_body_size_in_kb"></a> [max\_request\_body\_size\_in\_kb](#input\_max\_request\_body\_size\_in\_kb) | The max request body size in KB | `number` | `1024` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Minimum capacity for autoscaling | `number` | `1` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
 | <a name="input_private_frontend_enabled"></a> [private\_frontend\_enabled](#input\_private\_frontend\_enabled) | Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration | `bool` | `false` | no |
