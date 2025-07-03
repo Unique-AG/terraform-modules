@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 2.1.0
+version: 3.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Manual entry for experimental Google Custom Search JSON API."
+    description: "Google Custom Search JSON API Credentials are now stored as flat key not as JSON object."
