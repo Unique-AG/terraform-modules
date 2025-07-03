@@ -377,4 +377,57 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       }
     }
   }
+
+  # Allow Better Uptime Agent on status urls
+  dynamic "custom_rules" {
+    for_each = local.allow_https_challenges
+    content {
+      name      = "AllowBetterUptimeAgentOnStatusUrls"
+      priority  = 2
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = "User-Agent"
+        }
+        operator     = "Equal"
+        match_values = ["Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"]
+        transforms   = ["Lowercase"]
+      }
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator = "Equal"
+        match_values = [
+          "/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser",
+          "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"
+        ]
+        transforms = ["Lowercase"]
+      }
+    }
+  }
+
+  # Allow Ingestion Upload
+  dynamic "custom_rules" {
+    for_each = local.allow_https_challenges
+    content {
+      name      = "AllowIngestionUpload"
+      priority  = 5
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "BeginsWith"
+        match_values = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+        transforms   = ["Lowercase"]
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.1.0
+version: 3.2.0
 changes:
   - kind: added
-    description: "file_upload_limit_in_mb and max_request_body_size_in_kb variables to control upload and request size limits"
+    description: "specific default rules for WAF needed for Unique to work. (Better Uptime Agent & Ingestion Upload)"
