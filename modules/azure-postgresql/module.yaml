@@ -7,7 +7,7 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "auto_grow_enabled variable enabled by default"
+    description: "Support for storage auto_grow_enabled which also defaults to true."
 
 
     
