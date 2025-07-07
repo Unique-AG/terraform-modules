@@ -358,7 +358,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # Block unwanted IP addresses
+  # Block unwanted IP addresses or ranges
   dynamic "custom_rules" {
     for_each = length(var.waf_ip_allow_list) > 0 ? [1] : []
     content {
@@ -378,39 +378,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # Allow Better Uptime Agent on status urls
-  dynamic "custom_rules" {
-    for_each = var.waf_allow_better_uptime_agent != null && var.waf_allow_better_uptime_agent.enabled ? [1] : []
-    content {
-      name      = "AllowBetterUptimeAgentOnStatusUrls"
-      priority  = 3
-      rule_type = "MatchRule"
-      action    = "Allow"
-
-      match_conditions {
-        match_variables {
-          variable_name = "RequestHeaders"
-          selector      = "User-Agent"
-        }
-        operator     = "Equal"
-        match_values = [var.waf_allow_better_uptime_agent.user_agent]
-        transforms   = ["Lowercase"]
-      }
-
-      match_conditions {
-        match_variables {
-          variable_name = "RequestUri"
-        }
-        operator     = "Equal"
-        match_values = var.waf_allow_better_uptime_agent.status_urls
-        transforms   = ["Lowercase"]
-      }
-    }
-  }
-
   # Allow Ingestion Upload
   dynamic "custom_rules" {
-    for_each = local.allow_https_challenges
+    # Unblock Ingestion Upload if the max request body size is greater than 2000KB
+    # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+    # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+    for_each = var.max_request_body_size_in_kb >= 2000 ? [1] : []
     content {
       name      = "AllowIngestionUpload"
       priority  = 5
