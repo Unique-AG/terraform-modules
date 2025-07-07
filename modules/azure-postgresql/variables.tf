@@ -215,7 +215,7 @@ variable "database_connection_string_secret_prefix" {
 }
 
 variable "auto_grow_enabled" {
-  description = "Specifies whether the PostgreSQL Flexible Server should be automatically grow the storage. Defaults to true"
+  description = "Specifies whether the PostgreSQL Flexible Server should be automatically grow the storage."
   type        = string
   default     = true
 }
