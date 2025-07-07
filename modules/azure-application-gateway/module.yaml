@@ -4,4 +4,4 @@ sources:
 version: 3.2.0
 changes:
   - kind: added
-    description: "specific default rules for WAF needed for Unique to work. (Better Uptime Agent & Ingestion Upload)"
+    description: "specific default rules for WAF needed for Unique to work. (Ingestion Upload & optional Better Uptime Agent)"
