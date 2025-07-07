@@ -15,6 +15,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   storage_mb             = var.flex_storage_mb
   tags                   = var.tags
   zone                   = var.zone
+  auto_grow_enabled      = var.auto_grow_enabled
 
   public_network_access_enabled = var.public_network_access_enabled
   backup_retention_days         = var.flex_pg_backup_retention_days
