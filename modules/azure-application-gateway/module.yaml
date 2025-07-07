@@ -3,5 +3,5 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
 version: 3.2.0
 changes:
-  - kind: added
-    description: "specific default rules for WAF needed for Unique to work. (Ingestion Upload & optional Better Uptime Agent)"
+  - kind: fixed
+    description: "error of waf_allow_better_uptime_agent when null"

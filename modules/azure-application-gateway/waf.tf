@@ -380,7 +380,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # Allow Better Uptime Agent on status urls
   dynamic "custom_rules" {
-    for_each = var.waf_allow_better_uptime_agent != null && var.waf_allow_better_uptime_agent.enabled ? [1] : []
+    for_each = var.waf_allow_better_uptime_agent != null ? (var.waf_allow_better_uptime_agent.enabled ? [1] : []) : []
     content {
       name      = "AllowBetterUptimeAgentOnStatusUrls"
       priority  = 3
