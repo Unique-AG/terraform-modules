@@ -378,7 +378,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # Allow Ingestion Upload
+  # Allow large request body sizes for exempted request URIs
   dynamic "custom_rules" {
     for_each = length(var.max_request_body_size_exempted_request_uris) > 0 ? [1] : []
     content {
