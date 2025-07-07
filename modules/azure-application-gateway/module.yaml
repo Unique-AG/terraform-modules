@@ -1,7 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.2.0
+version: 3.2.1
 changes:
   - kind: fixed
     description: "error of waf_allow_better_uptime_agent when null"
