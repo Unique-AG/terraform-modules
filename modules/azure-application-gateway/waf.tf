@@ -380,12 +380,9 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # Allow Ingestion Upload
   dynamic "custom_rules" {
-    # Unblock Ingestion Upload if the max request body size is greater than 2000KB
-    # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
-    # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
-    for_each = var.max_request_body_size_in_kb >= 2000 ? [1] : []
+    for_each = length(var.max_request_body_size_exempted_request_uris) > 0 ? [1] : []
     content {
-      name      = "AllowIngestionUpload"
+      name      = "LargeRequestBodySizePassThrough"
       priority  = 5
       rule_type = "MatchRule"
       action    = "Allow"
@@ -395,7 +392,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
           variable_name = "RequestUri"
         }
         operator     = "BeginsWith"
-        match_values = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+        match_values = var.max_request_body_size_exempted_request_uris
         transforms   = ["Lowercase"]
       }
     }
