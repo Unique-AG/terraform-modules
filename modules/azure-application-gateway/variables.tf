@@ -227,21 +227,34 @@ variable "private_frontend_enabled" {
 }
 
 variable "file_upload_limit_in_mb" {
-  description = "The file upload limit in MB"
+  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy#file_upload_limit_in_mb-1
+  description = "The file upload limit in MB. This is the maximum size of the file that can be uploaded through the application gateway. Revert it to 100 if you want to adhere to the policies defaults."
   type        = number
-  default     = 100
-  validation {
-    condition     = var.file_upload_limit_in_mb > 0
-    error_message = "The file_upload_limit_in_mb must be greater than 0."
-  }
+  default     = 512
 }
 
+/**
+* These two next variables are only needed until Unique AI internally supports multi-part 
+* uploads.
+*/
 variable "max_request_body_size_in_kb" {
-  description = "The max request body size in KB"
+  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy
+  description = "The max request body size in KB. This defaults to the maximum to support as many use cases as possible. Lower it back to its default of 128 if you want to adhere to the policies defaults."
   type        = number
-  default     = 1024
-  validation {
-    condition     = var.max_request_body_size_in_kb > 0
-    error_message = "The max_request_body_size_in_kb must be greater than 0."
-  }
+  default     = 2000
 }
+
+variable "max_request_body_size_exempted_request_uris" {
+  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
+  # Note that this is now a green card to allowlist any URL.
+  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
+  # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+  # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+  description = "The request URIs that are exempted from the max request body size. This is a list of request URIs that are exempted from the max request body size. If the WAF is running in Prevention mode, these URIs will be exempted from the max request body size. This setting has no effect if the WAF is running in Detection mode or the gateway isn't using the WAF_v2 SKU."
+  type        = list(string)
+  default     = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+}
+
+/**
+* The two previous variables are only needed until Unique AI internally supports multi-part * uploads.
+*/

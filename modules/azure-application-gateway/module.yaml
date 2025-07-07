@@ -5,5 +5,7 @@ version: 3.3.0
 changes:
   - kind: changed
     description: "Remove Better Uptime Agent settings as this is the internally chosen monitoring tool."
-  - kind: fixed
-    description: "Base condition for file upload allow-list on max_request_body_size_in_kb and not allow_https_challenges"
+  - kind: changed
+    description: "Set all size defaults to the maximum to support as many use cases as possible. Can be reset by consumers if undesired."
+  - kind: added
+    description: "Routes excluded from the request body size limits can now be configured/overridden/unset."
