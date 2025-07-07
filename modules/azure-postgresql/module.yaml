@@ -2,10 +2,10 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 2.1.0
+version: 2.0.0
 changes:
-  - kind: added
-    description: "auto_grow_enabled variable"
+  - kind: changed
+    description: "auto_grow_enabled variable enabled by default"
 
 
     
