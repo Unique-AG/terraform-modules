@@ -245,3 +245,13 @@ variable "max_request_body_size_in_kb" {
     error_message = "The max_request_body_size_in_kb must be greater than 0."
   }
 }
+
+variable "waf_allow_better_uptime_agent" {
+  description = "Configuration for allowing Better Uptime Agent on status URLs. Set to null to disable the rule."
+  type = object({
+    enabled     = bool
+    user_agent  = string
+    status_urls = list(string)
+  })
+  default = null
+}

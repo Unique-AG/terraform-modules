@@ -377,4 +377,54 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       }
     }
   }
+
+  # Allow Better Uptime Agent on status urls
+  dynamic "custom_rules" {
+    for_each = var.waf_allow_better_uptime_agent != null && var.waf_allow_better_uptime_agent.enabled ? [1] : []
+    content {
+      name      = "AllowBetterUptimeAgentOnStatusUrls"
+      priority  = 3
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = "User-Agent"
+        }
+        operator     = "Equal"
+        match_values = [var.waf_allow_better_uptime_agent.user_agent]
+        transforms   = ["Lowercase"]
+      }
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "Equal"
+        match_values = var.waf_allow_better_uptime_agent.status_urls
+        transforms   = ["Lowercase"]
+      }
+    }
+  }
+
+  # Allow Ingestion Upload
+  dynamic "custom_rules" {
+    for_each = local.allow_https_challenges
+    content {
+      name      = "AllowIngestionUpload"
+      priority  = 5
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "BeginsWith"
+        match_values = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+        transforms   = ["Lowercase"]
+      }
+    }
+  }
 }
