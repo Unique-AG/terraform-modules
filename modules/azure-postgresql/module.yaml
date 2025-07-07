@@ -2,10 +2,12 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 2.0.0-rc.2
+version: 2.0.0
+compatibility:
+  unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "Require Terraform >= 1.5, azurerm ~> 4.15. Do not require hashicorp/random anymore, since it used only for the example usage"
+    description: "Support for storage auto_grow_enabled which also defaults to true."
 
 
     
