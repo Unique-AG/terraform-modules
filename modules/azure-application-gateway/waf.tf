@@ -380,10 +380,10 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # Allow Better Uptime Agent on status urls
   dynamic "custom_rules" {
-    for_each = local.allow_https_challenges
+    for_each = var.waf_allow_better_uptime_agent != null && var.waf_allow_better_uptime_agent.enabled ? [1] : []
     content {
       name      = "AllowBetterUptimeAgentOnStatusUrls"
-      priority  = 2
+      priority  = 3
       rule_type = "MatchRule"
       action    = "Allow"
 
@@ -393,7 +393,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
           selector      = "User-Agent"
         }
         operator     = "Equal"
-        match_values = ["Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"]
+        match_values = [var.waf_allow_better_uptime_agent.user_agent]
         transforms   = ["Lowercase"]
       }
 
@@ -401,12 +401,9 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         match_variables {
           variable_name = "RequestUri"
         }
-        operator = "Equal"
-        match_values = [
-          "/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser",
-          "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"
-        ]
-        transforms = ["Lowercase"]
+        operator     = "Equal"
+        match_values = var.waf_allow_better_uptime_agent.status_urls
+        transforms   = ["Lowercase"]
       }
     }
   }
