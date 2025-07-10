@@ -159,7 +159,7 @@ resource "azurerm_application_gateway" "appgw" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
-  for_each                   = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? [1] : []
+  for_each                   = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? { "diagnostic" = {} } : {}
   name                       = local.agw_diagnostic_name
   target_resource_id         = azurerm_application_gateway.appgw.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
