@@ -1,11 +1,7 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.3.0
+version: 3.3.1
 changes:
-  - kind: changed
-    description: "Remove Better Uptime Agent settings as this is the internally chosen monitoring tool."
-  - kind: changed
-    description: "Set all size defaults to the maximum to support as many use cases as possible. Can be reset by consumers if undesired."
-  - kind: added
-    description: "Routes excluded from the request body size limits can now be configured/overridden/unset."
+  - kind: fixed
+    description: "plan-time dependency issue of log_analytics_workspace_id"

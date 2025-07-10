@@ -159,7 +159,7 @@ resource "azurerm_application_gateway" "appgw" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
-  count                      = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? 1 : 0
+  for_each                   = var.log_analytics_workspace_id != null && var.log_analytics_workspace_id != "" ? [1] : []
   name                       = local.agw_diagnostic_name
   target_resource_id         = azurerm_application_gateway.appgw.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
@@ -168,8 +168,7 @@ resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
     category_group = "allLogs"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
-    enabled  = false
   }
 }
