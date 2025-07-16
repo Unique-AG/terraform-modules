@@ -168,8 +168,4 @@ resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
   enabled_log {
     category_group = "allLogs"
   }
-
-  enabled_metric {
-    category = "AllMetrics"
-  }
 }
