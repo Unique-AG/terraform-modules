@@ -233,6 +233,13 @@ variable "file_upload_limit_in_mb" {
   default     = 512
 }
 
+variable "zones" {
+  description = "Specifies a list of Availability Zones in which this Application Gateway should be located. Changing this forces a new Application Gateway to be created."
+  type        = list(string)
+  default     = null
+  nullable    = true
+}
+
 /**
 * These two next variables are only needed until Unique AI internally supports multi-part 
 * uploads.
