@@ -17,6 +17,7 @@ resource "azurerm_application_gateway" "appgw" {
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
   enable_http2        = true
+  zones               = var.zones
 
   global {
     request_buffering_enabled  = var.request_buffering_enabled
@@ -166,10 +167,5 @@ resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
 
   enabled_log {
     category_group = "allLogs"
-  }
-
-  metric {
-    category = "AllMetrics"
-    enabled  = false
   }
 }
