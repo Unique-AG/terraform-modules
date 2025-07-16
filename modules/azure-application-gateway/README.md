@@ -90,3 +90,19 @@ No modules.
 | <a name="output_appgw_ip_address"></a> [appgw\_ip\_address](#output\_appgw\_ip\_address) | The public IP address of the Application Gateway |
 | <a name="output_appgw_name"></a> [appgw\_name](#output\_appgw\_name) | The name of the Application Gateway |
 <!-- END_TF_DOCS -->
+
+## Remarks
+
+### `3.3.1`
+This version addresses a permanent drift in the AzureRM provider where Microsoft seems to have [silently made all Gateways Zone redudant (changed the API behaviour)](https://github.com/hashicorp/terraform-provider-azurerm/issues/30129).
+
+The permanent drift can be fixed by going to this version and setting `zones` to the drift.
+
+```tf
+module "agw" {
+    …
+    zones = ["1", "2", "3"]
+}
+```
+
+While the upstream fix is not ideal, this solves the permanent recreation of the resource until the underlying issue is addressed.
