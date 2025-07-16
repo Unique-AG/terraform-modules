@@ -6,4 +6,4 @@ changes:
   - kind: fixed
     description: "Deprecation warning for metric#enabled. This is now enabled_metric."
   - kind: fixed
-    description: "Allow setting zones for the application gateway to address https://github.com/hashicorp/terraform-provider-azurerm/issues/30129 where Microsoft seems to have silently enabled zone redundancy for older gateways."
+    description: "Allow setting zones for the application gateway to address https://github.com/hashicorp/terraform-provider-azurerm/issues/30129 where Microsoft seems to have silently enabled zone redundancy for older gateways. See module readme#remarks for more information."
