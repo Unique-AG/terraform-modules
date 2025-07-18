@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 3.0.1
+version: 3.0.2
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: added
-    description: "Support for backup role assignment."
+  - kind: changed
+    description: "Default value for shared_access_key_enabled is now true."
