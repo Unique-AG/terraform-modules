@@ -114,7 +114,6 @@ module "aks" {
     stable = {
       subnet_nodes_id                      = azurerm_subnet.stable_nodes.id
       subnet_pods_id                       = azurerm_subnet.stable_pods.id
-      node_count                           = 1
       kubernetes_default_node_os_disk_size = 30
       node_labels = {
         "app" = "stable"

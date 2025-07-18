@@ -217,7 +217,6 @@ variable "node_pool_settings" {
   description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({
     vm_size                     = string
-    node_count                  = optional(number)
     min_count                   = optional(number)
     max_count                   = optional(number)
     max_pods                    = optional(number)
@@ -376,9 +375,10 @@ variable "admin_group_object_ids" {
 variable "network_profile" {
   description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
   type = object({
+    network_data_plane        = optional(string)
     network_plugin            = optional(string, "azure")
     network_plugin_mode       = optional(string, null)
-    network_policy            = optional(string, "azure")
+    network_policy            = optional(string)
     service_cidr              = optional(string, "172.20.0.0/16")
     dns_service_ip            = optional(string, "172.20.0.10")
     outbound_type             = optional(string, "loadBalancer")
@@ -408,6 +408,27 @@ variable "network_profile" {
       var.network_profile.outbound_ip_prefix_ids != null
     )
     error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_data_plane != "cilium" ||
+      var.network_profile.network_plugin == "azure"
+    )
+    error_message = "When network_data_plane is set to 'cilium', network_plugin must be set to 'azure'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_policy != "azure" ||
+      var.network_profile.network_plugin == "azure"
+    )
+    error_message = "When network_policy is set to 'azure', network_plugin must be set to 'azure'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_policy != "cilium" ||
+      var.network_profile.network_data_plane == "cilium"
+    )
+    error_message = "When network_policy is set to 'cilium', network_data_plane must be set to 'cilium'."
   }
 }
 

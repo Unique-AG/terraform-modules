@@ -223,9 +223,9 @@ No modules.
 | <a name="input_maintenance_window_start"></a> [maintenance\_window\_start](#input\_maintenance\_window\_start) | The start hour of the maintenance window. | `number` | `16` | no |
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
 | <a name="input_monitoring_account_name"></a> [monitoring\_account\_name](#input\_monitoring\_account\_name) | The name of the monitoring account | `string` | `"MonitoringAccount1"` | no |
-| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster. Note: managed\_outbound\_ip\_count, outbound\_ip\_address\_ids, and outbound\_ip\_prefix\_ids are mutually exclusive. | <pre>object({<br/>    network_plugin            = optional(string, "azure")<br/>    network_plugin_mode       = optional(string, null)<br/>    network_policy            = optional(string, "azure")<br/>    service_cidr              = optional(string, "172.20.0.0/16")<br/>    dns_service_ip            = optional(string, "172.20.0.10")<br/>    outbound_type             = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count = optional(number, null)<br/>    outbound_ip_address_ids   = optional(list(string), null)<br/>    outbound_ip_prefix_ids    = optional(list(string), null)<br/>    idle_timeout_in_minutes   = optional(number, 30)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
+| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster. Note: managed\_outbound\_ip\_count, outbound\_ip\_address\_ids, and outbound\_ip\_prefix\_ids are mutually exclusive. | <pre>object({<br/>    network_data_plane        = optional(string)<br/>    network_plugin            = optional(string, "azure")<br/>    network_plugin_mode       = optional(string, null)<br/>    network_policy            = optional(string)<br/>    service_cidr              = optional(string, "172.20.0.0/16")<br/>    dns_service_ip            = optional(string, "172.20.0.10")<br/>    outbound_type             = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count = optional(number, null)<br/>    outbound_ip_address_ids   = optional(list(string), null)<br/>    outbound_ip_prefix_ids    = optional(list(string), null)<br/>    idle_timeout_in_minutes   = optional(number, 30)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
-| <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    node_count                  = optional(number)<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |
+| <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |
 | <a name="input_node_rg_name"></a> [node\_rg\_name](#input\_node\_rg\_name) | The name of the node resource group for the AKS cluster. | `string` | n/a | yes |
 | <a name="input_oidc_issuer_enabled"></a> [oidc\_issuer\_enabled](#input\_oidc\_issuer\_enabled) | The OIDC issuer URL for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | Specifies whether the Kubernetes Cluster is private. | `bool` | `true` | no |
@@ -345,3 +345,64 @@ Version 3.0.0 introduces several breaking changes to improve subnet configuratio
    - Set `segregated_node_and_pod_subnets_enabled = false`
 
 4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
+
+### ~> `4.0.0`
+
+#### Network Profile Changes
+
+The network_policy property of the network_profile is not set by default.
+
+  ```hcl
+
+    # Before
+    network_profile = {
+      idle_timeout_in_minutes = 100
+      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+    }
+
+    # After
+    network_profile = {
+      idle_timeout_in_minutes = 100
+      network_policy = "azure"
+      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+    }
+
+  ```
+
+This allows to [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli), e.g.:
+
+  ```hcl
+
+    network_profile = {
+      idle_timeout_in_minutes = 100
+      network_plugin = "none"
+      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+    }
+
+  ```
+#### Removed node_count from node_pool_settings
+The `node_count` variable in `node_pool_settings` was not used. It has been removed.
+
+
+  ```hcl
+
+    # Before
+    node_pool_settings = {
+      stable = {
+        node_count           = 1
+        auto_scaling_enabled = true
+        vm_size              = "Standard_D2s_v6"
+        ...
+      }
+    }
+
+    # After
+    node_pool_settings = {
+      stable = {
+        auto_scaling_enabled = true
+        vm_size              = "Standard_D2s_v6"
+        ...
+      }
+    }
+
+  ```
