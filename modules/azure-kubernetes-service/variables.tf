@@ -217,7 +217,6 @@ variable "node_pool_settings" {
   description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({
     vm_size                     = string
-    node_count                  = optional(number)
     min_count                   = optional(number)
     max_count                   = optional(number)
     max_pods                    = optional(number)
@@ -409,6 +408,27 @@ variable "network_profile" {
       var.network_profile.outbound_ip_prefix_ids != null
     )
     error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_data_plane != "cilium" ||
+      var.network_profile.network_plugin == "azure"
+    )
+    error_message = "When network_data_plane is set to 'cilium', network_plugin must be set to 'azure'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_policy != "azure" ||
+      var.network_profile.network_plugin == "azure"
+    )
+    error_message = "When network_policy is set to 'azure', network_plugin must be set to 'azure'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.network_policy != "cilium" ||
+      var.network_profile.network_data_plane == "cilium"
+    )
+    error_message = "When network_policy is set to 'cilium', network_data_plane must be set to 'cilium'."
   }
 }
 
