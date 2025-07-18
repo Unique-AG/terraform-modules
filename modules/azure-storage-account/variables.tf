@@ -192,7 +192,7 @@ variable "private_endpoint" {
 variable "shared_access_key_enabled" {
   description = "Enable shared access key for the storage account."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "data_protection_settings" {
