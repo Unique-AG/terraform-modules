@@ -1,13 +1,13 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 4.0.0
+version: 4.0.1
 compatibility:
-  unique.ai: ~> 2025.16
+  unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Possibility to set network_data_plane in network_profile"
-  - kind: changed
-    description: "⚠️ Breaking change: network_policy in network_profile doesn't default to 'azure' anymore"
-  - kind: removed
-    description: "⚠️ Breaking change: Removed node_count from node_pool_settings"
+    description: "Possibility to set alert_configuration"
+  - kind: added
+    description: "Possibility to set prometheus_node_alert_rules, prometheus_cluster_alert_rules, prometheus_pod_alert_rules"
+  - kind: added
+    description: "Possibility to set azure_prometheus_grafana_monitor"

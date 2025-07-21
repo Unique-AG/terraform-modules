@@ -70,7 +70,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
   scopes              = [azurerm_monitor_workspace.monitor_workspace[0].id, azurerm_kubernetes_cluster.cluster.id]
 
   dynamic "rule" {
-    for_each = var.prometheus_node_alert_rules
+    for_each = var.prometheus_node_alert_rules != null ? var.prometheus_node_alert_rules : []
 
     content {
       alert      = rule.value.alert
@@ -79,8 +79,9 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
       for        = rule.value.for
       severity   = rule.value.severity
 
+
       dynamic "action" {
-        for_each = rule.value.action != null ? [rule.value.action] : []
+        for_each = rule.value.action != null ? [rule.value.action] : (var.alert_configuration.email_receiver != null ? [{ action_group_id = azurerm_monitor_action_group.aks_alerts[0].id }] : [])
         content {
           action_group_id = action.value.action_group_id
         }
@@ -114,7 +115,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
   scopes              = [azurerm_monitor_workspace.monitor_workspace[0].id, azurerm_kubernetes_cluster.cluster.id]
 
   dynamic "rule" {
-    for_each = var.prometheus_cluster_alert_rules
+    for_each = var.prometheus_cluster_alert_rules != null ? var.prometheus_cluster_alert_rules : []
 
     content {
       alert      = rule.value.alert
@@ -124,7 +125,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
       severity   = rule.value.severity
 
       dynamic "action" {
-        for_each = rule.value.action != null ? [rule.value.action] : []
+        for_each = rule.value.action != null ? [rule.value.action] : (var.alert_configuration.email_receiver != null ? [{ action_group_id = azurerm_monitor_action_group.aks_alerts[0].id }] : [])
         content {
           action_group_id = action.value.action_group_id
         }
@@ -157,7 +158,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
   scopes              = [azurerm_monitor_workspace.monitor_workspace[0].id, azurerm_kubernetes_cluster.cluster.id]
 
   dynamic "rule" {
-    for_each = var.prometheus_pod_alert_rules
+    for_each = var.prometheus_pod_alert_rules != null ? var.prometheus_pod_alert_rules : []
 
     content {
       alert      = rule.value.alert
@@ -167,7 +168,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
       severity   = rule.value.severity
 
       dynamic "action" {
-        for_each = rule.value.action != null ? [rule.value.action] : []
+        for_each = rule.value.action != null ? [rule.value.action] : (var.alert_configuration.email_receiver != null ? [{ action_group_id = azurerm_monitor_action_group.aks_alerts[0].id }] : [])
         content {
           action_group_id = action.value.action_group_id
         }
@@ -187,3 +188,19 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
   }
   tags = var.tags
 }
+
+resource "azurerm_monitor_action_group" "aks_alerts" {
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.alert_configuration != null ? 1 : 0
+  name                = "${var.cluster_name}-alerts"
+  resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
+  short_name          = var.alert_configuration.action_group != null ? var.alert_configuration.action_group.short_name : "aks-alerts"
+  location            = var.alert_configuration.action_group != null ? var.alert_configuration.action_group.location : "germanywestcentral"
+
+  email_receiver {
+    name                    = var.alert_configuration.email_receiver.name
+    email_address           = var.alert_configuration.email_receiver.email_address
+    use_common_alert_schema = true
+  }
+
+  tags = var.tags
+} 

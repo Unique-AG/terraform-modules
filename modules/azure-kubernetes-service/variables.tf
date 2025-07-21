@@ -181,7 +181,7 @@ variable "azure_prometheus_grafana_monitor" {
   default = {
     enabled                = false
     azure_monitor_location = "westeurope"
-    grafana_major_version  = 10
+    grafana_major_version  = 11
     azure_monitor_rg_name  = "monitor-rg"
   }
 }
@@ -605,4 +605,19 @@ variable "node_os_upgrade_channel" {
     condition     = contains(["Unmanaged", "SecurityPatch", "NodeImage", "None"], var.node_os_upgrade_channel)
     error_message = "node_os_upgrade_channel must be one of: Unmanaged, SecurityPatch, NodeImage, None"
   }
+}
+
+variable "alert_configuration" {
+  description = "Configuration for AKS alerts and monitoring"
+  type = object({
+    email_receiver = optional(object({
+      email_address = string
+      name          = optional(string, "aks-alerts-email")
+    }), null)
+    action_group = optional(object({
+      short_name = optional(string, "aks-alerts")
+      location   = optional(string, "germanywestcentral")
+    }), null)
+  })
+  default = null
 }
