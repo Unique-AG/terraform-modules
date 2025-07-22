@@ -24,6 +24,7 @@ variable "default_secrets_placeholders" {
     litellm-together-ai-api-key = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     litellm-voyage-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     quartr-api-creds            = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    six-api-creds               = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     zitadel-scope-mgmt-pat      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
   }
 }
