@@ -168,9 +168,9 @@ module "aks" {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]
   }
-  prometheus_node_alert_rules = var.prometheus_node_alert_rules
+  prometheus_node_alert_rules    = var.prometheus_node_alert_rules
   prometheus_cluster_alert_rules = var.prometheus_cluster_alert_rules
-  prometheus_pod_alert_rules = var.prometheus_pod_alert_rules
+  prometheus_pod_alert_rules     = var.prometheus_pod_alert_rules
   # Enable Prometheus monitoring
   azure_prometheus_grafana_monitor = {
     enabled                = true
