@@ -59,7 +59,7 @@ resource "azurerm_monitor_data_collection_rule_association" "monitor_dcr_asc" {
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
-  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_node_alert_rules != null && length(var.prometheus_node_alert_rules) > 0 ? 1 : 0
   name                = "${var.cluster_name}-node-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
@@ -104,7 +104,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "node_level_alerts" {
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
-  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_cluster_alert_rules != null && length(var.prometheus_cluster_alert_rules) > 0 ? 1 : 0
   name                = "${var.cluster_name}-cluster-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
@@ -147,7 +147,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "cluster_level_alerts" {
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
-  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_pod_alert_rules != null && length(var.prometheus_pod_alert_rules) > 0 ? 1 : 0
   name                = "${var.cluster_name}-pod-level-alerts"
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
@@ -190,7 +190,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "pod_level_alerts" {
 }
 
 resource "azurerm_monitor_action_group" "aks_alerts" {
-  count               = var.azure_prometheus_grafana_monitor.enabled && var.alert_configuration != null ? 1 : 0
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.alert_configuration != null && var.alert_configuration.email_receiver != null ? 1 : 0
   name                = "${var.cluster_name}-alerts"
   resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
   short_name          = var.alert_configuration.action_group != null ? var.alert_configuration.action_group.short_name : "aks-alerts"

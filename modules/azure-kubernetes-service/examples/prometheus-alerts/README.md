@@ -19,7 +19,7 @@ This example demonstrates how to configure Azure Kubernetes Service (AKS) with P
 
 ### Alert Configuration
 
-The example uses variables for alert configuration, which can be provided via tfvars files or command line:
+The example uses variables for alert configuration, which can be loaded from `prometheus-alerts.tfvars`:
 
 ```hcl
 # In prometheus-alerts.tfvars
@@ -68,6 +68,8 @@ The example provides custom alert rules for different levels:
 #### Cluster Level Alerts
 - **KubeCPUQuotaOvercommit**: Detects CPU overcommitment
 - **KubeMemoryQuotaOvercommit**: Detects memory overcommitment
+- **KubeContainerOOMKilledCount**: Detects containers killed due to OOM
+- **KubeClientErrors**: Detects Kubernetes API client errors
 
 #### Pod Level Alerts
 - **KubePVUsageHigh**: Detects high persistent volume usage
@@ -116,6 +118,10 @@ prometheus_node_alert_rules = [
     expression = "your_promql_expression_here"
     for        = "PT5M"
     severity   = 3
+    alert_resolution = {
+      auto_resolved   = true
+      time_to_resolve = "PT10M"
+    }
     annotations = {
       description = "Your custom alert description"
     }
@@ -150,12 +156,18 @@ You can create multiple tfvars files for different environments:
 
 ```bash
 # Development environment
+cp prometheus-alerts.tfvars prometheus-alerts-dev.tfvars
+# Edit prometheus-alerts-dev.tfvars with dev-specific values
 terraform apply -var-file="prometheus-alerts-dev.tfvars"
 
 # Production environment  
+cp prometheus-alerts.tfvars prometheus-alerts-prod.tfvars
+# Edit prometheus-alerts-prod.tfvars with prod-specific values
 terraform apply -var-file="prometheus-alerts-prod.tfvars"
 
 # Staging environment
+cp prometheus-alerts.tfvars prometheus-alerts-staging.tfvars
+# Edit prometheus-alerts-staging.tfvars with staging-specific values
 terraform apply -var-file="prometheus-alerts-staging.tfvars"
 ```
 
@@ -166,24 +178,41 @@ You can also provide alert configuration directly via command line:
 ```bash
 # With email alerts
 terraform apply \
-  -var='alert_configuration={"email_receiver":{"email_address":"admin@example.com","name":"aks-alerts"},"action_group":{"short_name":"aks-alerts","location":"germanywestcentral"}}' \
-  -var-file="prometheus-alerts.tfvars"
-
-# Without email alerts (only alert rules)
-terraform apply -var-file="prometheus-alerts.tfvars"
+  -var='alert_configuration={"email_receiver":{"email_address":"admin@example.com","name":"aks-alerts"},"action_group":{"short_name":"aks-alerts","location":"germanywestcentral"}}'
 
 # Custom email address
 terraform apply \
-  -var='alert_configuration={"email_receiver":{"email_address":"your-email@domain.com"}}' \
-  -var-file="prometheus-alerts.tfvars"
+  -var='alert_configuration={"email_receiver":{"email_address":"your-email@domain.com"}}'
 ```
+
+## File Structure
+
+```
+prometheus-alerts/
+├── main.tf                           # Main Terraform configuration
+├── providers.tf                      # Provider configuration
+├── prometheus-alerts.tfvars          # Alert rules and configuration
+├── prometheus-alerts.tfvars.example  # Example tfvars file
+├── subscription.auto.tfvars          # Subscription-specific variables
+└── README.md                         # This documentation
+```
+
+## Variables
+
+The example declares the following variables:
+
+- `alert_configuration`: Configuration for AKS alerts and monitoring
+- `prometheus_node_alert_rules`: Node level Prometheus alert rules
+- `prometheus_cluster_alert_rules`: Cluster level Prometheus alert rules
+- `prometheus_pod_alert_rules`: Pod level Prometheus alert rules
+- `subscription_id`: Azure subscription ID
 
 ## Cleanup
 
 To destroy the resources:
 
 ```bash
-terraform destroy
+terraform destroy -var-file="prometheus-alerts.tfvars"
 ```
 
 ## Notes
@@ -191,4 +220,6 @@ terraform destroy
 - The action group location is set to `germanywestcentral` as some regions may not support action groups
 - Alert rules are only created when `azure_prometheus_grafana_monitor.enabled` is `true`
 - Email notifications are only sent when `alert_configuration.email_receiver` is provided
-- All alert rules include auto-resolution settings for better alert management 
+- All alert rules include auto-resolution settings for better alert management
+- The monitor resource group is automatically created in the same location as the AKS cluster
+- Variables are properly declared in `main.tf` to avoid Terraform warnings 

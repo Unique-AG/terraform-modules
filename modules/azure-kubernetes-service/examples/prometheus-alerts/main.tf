@@ -23,6 +23,75 @@ variable "alert_configuration" {
   default = null
 }
 
+# Prometheus alert rule variables
+variable "prometheus_node_alert_rules" {
+  description = "Node level Prometheus alert rules"
+  type = list(object({
+    alert      = string
+    enabled    = bool
+    expression = string
+    for        = optional(string)
+    severity   = number
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    annotations = optional(map(string))
+    labels      = optional(map(string))
+  }))
+  default = null
+}
+
+variable "prometheus_cluster_alert_rules" {
+  description = "Cluster level Prometheus alert rules"
+  type = list(object({
+    alert      = string
+    enabled    = bool
+    expression = string
+    for        = optional(string)
+    severity   = number
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    annotations = optional(map(string))
+    labels      = optional(map(string))
+  }))
+  default = null
+}
+
+variable "prometheus_pod_alert_rules" {
+  description = "Pod level Prometheus alert rules"
+  type = list(object({
+    alert      = string
+    enabled    = bool
+    expression = string
+    for        = optional(string)
+    severity   = number
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    annotations = optional(map(string))
+    labels      = optional(map(string))
+  }))
+  default = null
+}
+
+variable "subscription_id" {
+  description = "Subscription ID"
+  type        = string
+}
+
 resource "azurerm_resource_group" "aks_rg" {
   name     = "aks-prometheus-alerts-rg"
   location = "switzerlandnorth"
@@ -73,7 +142,7 @@ resource "azurerm_log_analytics_workspace" "aks_logs" {
   retention_in_days   = 30
 }
 
-# Prometheus alert rules are defined in prometheus-alerts.tfvars
+# Prometheus alert rules are automatically loaded from prometheus-alerts.auto.tfvars
 # This allows for easy reuse and modification of alert configurations
 
 module "aks" {
@@ -99,18 +168,20 @@ module "aks" {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]
   }
-
+  prometheus_node_alert_rules = var.prometheus_node_alert_rules
+  prometheus_cluster_alert_rules = var.prometheus_cluster_alert_rules
+  prometheus_pod_alert_rules = var.prometheus_pod_alert_rules
   # Enable Prometheus monitoring
   azure_prometheus_grafana_monitor = {
     enabled                = true
     azure_monitor_location = "switzerlandnorth"
-    azure_monitor_rg_name  = "monitor-rg"
+    azure_monitor_rg_name  = "aks-prometheus-alerts-rg"
     grafana_major_version  = 11
   }
 
   # Alert configuration - can be provided via tfvars or command line
   alert_configuration = var.alert_configuration
 
-  # Alert rules are defined in prometheus-alerts.tfvars
-  # To use this example, run: terraform apply -var-file="prometheus-alerts.tfvars"
+  # Alert rules are automatically loaded from prometheus-alerts.auto.tfvars
+  # To use this example, run: terraform apply -var="subscription_id=your-subscription-id"
 } 
