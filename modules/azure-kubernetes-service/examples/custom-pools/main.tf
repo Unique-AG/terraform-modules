@@ -43,6 +43,11 @@ resource "azurerm_log_analytics_workspace" "aks_law" {
   }
 }
 
+resource "azurerm_resource_group" "aks_rg" {
+  name     = "my-resource-group"
+  location = "switzerlandnorth"
+}
+
 module "aks" {
   source = "../.."
 
