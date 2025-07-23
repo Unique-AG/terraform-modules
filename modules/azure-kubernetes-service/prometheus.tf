@@ -16,22 +16,23 @@ resource "azurerm_monitor_data_collection_endpoint" "monitor_dce" {
 
 resource "azurerm_monitor_data_collection_rule" "monitor_dcr" {
   count                       = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
-  name                        = "${var.cluster_name}-monitor-dcr"
+  name                        = "MSProm-${var.azure_prometheus_grafana_monitor.azure_monitor_location}-${var.cluster_name}"
   resource_group_name         = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
   location                    = var.azure_prometheus_grafana_monitor.azure_monitor_location
   data_collection_endpoint_id = azurerm_monitor_data_collection_endpoint.monitor_dce[count.index].id
   kind                        = "Linux"
+  description                 = "DCR for Azure Monitor Metrics Profile (Managed Prometheus)"
 
   destinations {
     monitor_account {
       monitor_account_id = azurerm_monitor_workspace.monitor_workspace[count.index].id
-      name               = var.monitoring_account_name
+      name               = "PrometheusDataCollection"
     }
   }
 
   data_flow {
     streams      = ["Microsoft-PrometheusMetrics"]
-    destinations = [var.monitoring_account_name]
+    destinations = ["PrometheusDataCollection"]
   }
 
   data_sources {
@@ -41,7 +42,6 @@ resource "azurerm_monitor_data_collection_rule" "monitor_dcr" {
     }
   }
 
-  description = "DCR for Azure Monitor Metrics Profile (Managed Prometheus)"
   depends_on = [
     azurerm_monitor_data_collection_endpoint.monitor_dce
   ]
@@ -49,7 +49,7 @@ resource "azurerm_monitor_data_collection_rule" "monitor_dcr" {
 
 resource "azurerm_monitor_data_collection_rule_association" "monitor_dcr_asc" {
   count                   = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
-  name                    = "${var.cluster_name}-monitor-dcr-asc"
+  name                    = "MSProm-${var.azure_prometheus_grafana_monitor.azure_monitor_location}-${var.cluster_name}"
   target_resource_id      = azurerm_kubernetes_cluster.cluster.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.monitor_dcr[count.index].id
   description             = "Association of data collection rule. Deleting this association will break the data collection for this AKS Cluster."
@@ -203,4 +203,75 @@ resource "azurerm_monitor_action_group" "aks_alerts" {
   }
 
   tags = var.tags
-} 
+}
+
+
+resource "azurerm_monitor_alert_prometheus_rule_group" "node_recording_rules_rule_group" {
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_node_recording_rules != null && length(var.prometheus_node_recording_rules) > 0 ? 1 : 0
+  name                = "NodeRecordingRulesRuleGroup-${var.cluster_name}"
+  resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
+  location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
+  cluster_name        = var.cluster_name
+  description         = "Node Recording Rules Rule Group"
+  rule_group_enabled  = true
+  interval            = "PT1M"
+  scopes              = [azurerm_monitor_workspace.monitor_workspace[count.index].id, azurerm_kubernetes_cluster.cluster.id]
+
+  dynamic "rule" {
+    for_each = var.prometheus_node_recording_rules
+
+    content {
+      enabled    = rule.value.enabled
+      record     = rule.value.record
+      expression = rule.value.expression
+      labels     = rule.value.labels
+    }
+  }
+}
+
+resource "azurerm_monitor_alert_prometheus_rule_group" "kubernetes_recording_rules_rule_group" {
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_kubernetes_recording_rules != null && length(var.prometheus_kubernetes_recording_rules) > 0 ? 1 : 0
+  name                = "KubernetesRecordingRulesRuleGroup-${var.cluster_name}"
+  resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
+  location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
+  cluster_name        = var.cluster_name
+  description         = "Kubernetes Recording Rules Rule Group"
+  rule_group_enabled  = true
+  interval            = "PT1M"
+  scopes              = [azurerm_monitor_workspace.monitor_workspace[count.index].id, azurerm_kubernetes_cluster.cluster.id]
+
+  dynamic "rule" {
+    for_each = var.prometheus_kubernetes_recording_rules
+
+    content {
+      enabled    = rule.value.enabled
+      record     = rule.value.record
+      expression = rule.value.expression
+      labels     = rule.value.labels
+    }
+  }
+}
+
+resource "azurerm_monitor_alert_prometheus_rule_group" "ux_recording_rules_rule_group" {
+  count               = var.azure_prometheus_grafana_monitor.enabled && var.prometheus_ux_recording_rules != null && length(var.prometheus_ux_recording_rules) > 0 ? 1 : 0
+  name                = "UXRecordingRulesRuleGroup - ${var.cluster_name}"
+  resource_group_name = var.azure_prometheus_grafana_monitor.azure_monitor_rg_name
+  location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
+  cluster_name        = var.cluster_name
+  description         = "UX recording rules for Linux"
+  rule_group_enabled  = true
+  interval            = "PT1M"
+  scopes              = [azurerm_monitor_workspace.monitor_workspace[count.index].id, azurerm_kubernetes_cluster.cluster.id]
+
+  dynamic "rule" {
+    for_each = var.prometheus_ux_recording_rules
+
+    content {
+      enabled    = rule.value.enabled
+      record     = rule.value.record
+      expression = rule.value.expression
+      labels     = rule.value.labels
+    }
+  }
+}
+

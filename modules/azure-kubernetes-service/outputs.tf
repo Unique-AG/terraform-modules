@@ -47,3 +47,8 @@ output "cluster_resource" {
   description = "The properties of the Kubernetes cluster."
   value       = azurerm_kubernetes_cluster.cluster
 }
+
+output "grafana_identity_principal_id" {
+  description = "The principal ID of the Grafana identity."
+  value       = var.azure_prometheus_grafana_monitor.enabled ? azurerm_dashboard_grafana.grafana[0].identity[0].principal_id : null
+}

@@ -95,7 +95,11 @@ module "aks" {
   kubernetes_default_node_count_min    = 1
   kubernetes_default_node_count_max    = 1
   kubernetes_default_node_os_disk_size = 30
-  log_analytics_workspace_id           = azurerm_log_analytics_workspace.aks_logs.id
+  log_analytics_workspace = {
+    id                  = azurerm_log_analytics_workspace.aks_logs.id
+    location            = azurerm_log_analytics_workspace.aks_logs.location
+    resource_group_name = azurerm_resource_group.aks_rg.name
+  }
   network_profile = {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]

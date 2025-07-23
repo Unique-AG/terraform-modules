@@ -101,9 +101,13 @@ module "aks" {
   kubernetes_default_node_os_disk_size = 30
 
   # Enable logging with the Log Analytics Workspace
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.aks_law.id
-  retention_in_days          = 30
-  log_table_plan             = "Basic"
+  log_analytics_workspace = {
+    id                  = azurerm_log_analytics_workspace.aks_law.id
+    location            = azurerm_log_analytics_workspace.aks_law.location
+    resource_group_name = azurerm_resource_group.aks_rg.name
+  }
+  retention_in_days = 30
+  log_table_plan    = "Basic"
 
   network_profile = {
     network_plugin          = "azure"

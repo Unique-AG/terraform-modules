@@ -158,10 +158,15 @@ variable "tags" {
   default     = {}
 }
 
-variable "log_analytics_workspace_id" {
-  description = "The ID of the Log Analytics Workspace."
-  type        = string
-  nullable    = false
+variable "log_analytics_workspace" {
+  description = "The Log Analytics Workspace configuration for monitoring and logging."
+  type = object({
+    id                  = string
+    location            = string
+    resource_group_name = string
+  })
+  default  = null
+  nullable = true
 }
 
 variable "application_gateway_id" {
@@ -177,12 +182,21 @@ variable "azure_prometheus_grafana_monitor" {
     azure_monitor_location = string
     azure_monitor_rg_name  = string
     grafana_major_version  = optional(number, 10)
+    identity = optional(object({
+      type         = string
+      identity_ids = optional(list(string))
+      }), {
+      type = "SystemAssigned"
+    })
   })
   default = {
     enabled                = false
     azure_monitor_location = "westeurope"
     grafana_major_version  = 11
     azure_monitor_rg_name  = "monitor-rg"
+    identity = {
+      type = "SystemAssigned"
+    }
   }
 }
 
