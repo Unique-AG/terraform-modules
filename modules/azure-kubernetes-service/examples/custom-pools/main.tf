@@ -51,8 +51,8 @@ resource "azurerm_resource_group" "aks_rg" {
 module "aks" {
   source = "../.."
 
-  resource_group_name     = "my-resource-group"
-  resource_group_location = "switzerlandnorth"
+  resource_group_name     = azurerm_resource_group.aks_rg.name
+  resource_group_location = azurerm_resource_group.aks_rg.location
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.aks_law.id
     location            = azurerm_log_analytics_workspace.aks_law.location
