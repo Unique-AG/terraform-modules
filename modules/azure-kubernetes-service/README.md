@@ -357,61 +357,241 @@ Version 3.0.0 introduces several breaking changes to improve subnet configuratio
 
 ### ~> `4.0.0`
 
+Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
+
 #### Network Profile Changes
 
-The network_policy property of the network_profile is not set by default.
+1. **Network Policy Default Removed**: The `network_policy` property no longer defaults to "azure". You must explicitly set it if needed:
 
-  ```hcl
+   ```hcl
+   # Before (3.2.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+     # network_policy defaulted to "azure"
+   }
 
-    # Before
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   # After (4.0.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     network_policy = "azure"  # Must be explicitly set
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+   This change enables support for [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli):
+
+   ```hcl
+   network_profile = {
+     network_plugin = "none"  # BYO CNI
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+2. **Network Data Plane Support**: Added support for `network_data_plane` configuration:
+
+   ```hcl
+   network_profile = {
+     network_plugin     = "azure"
+     network_data_plane = "cilium"  # New option
+     network_policy     = "cilium"
+   }
+   ```
+
+#### Log Analytics Workspace Changes
+
+The `log_analytics_workspace_id` variable has been replaced with a more flexible `log_analytics_workspace` object:
+
+```hcl
+# Before (3.2.0)
+log_analytics_workspace_id = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+
+# After (4.0.0)
+log_analytics_workspace = {
+  id                  = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+  location            = "westeurope"
+  resource_group_name = "monitoring-rg"
+}
+```
+
+Note: The new variable is optional/nullable, allowing for configurations without log analytics.
+
+#### Node Pool Settings Changes
+
+The unused `node_count` variable has been removed from `node_pool_settings`:
+
+```hcl
+# Before (3.2.0)
+node_pool_settings = {
+  stable = {
+    node_count           = 1  # This was not used
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+
+# After (4.0.0)
+node_pool_settings = {
+  stable = {
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+```
+
+#### Prometheus Alert Rules Changes
+
+Prometheus alert rule variables now default to `null` instead of pre-configured rules:
+
+```hcl
+# Before (3.2.0) - extensive default alert rules were provided
+# No configuration needed for basic alerts
+
+# After (4.0.0) - must explicitly configure if needed
+prometheus_node_alert_rules = [
+  {
+    alert      = "KubeNodeUnreachable"
+    enabled    = true
+    expression = "..."
+    # ... configure your specific alert rules
+  }
+]
+
+prometheus_cluster_alert_rules = [
+  # ... configure your cluster-level alerts
+]
+
+prometheus_pod_alert_rules = [
+  # ... configure your pod-level alerts
+]
+```
+
+#### Azure Prometheus Grafana Monitor Changes
+
+1. **Grafana Version**: Default major version changed from 10 to 11
+2. **Identity Configuration**: Added identity configuration options
+
+```hcl
+# Before (3.2.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true
+  grafana_major_version = 10  # Default was 10
+  # ... other settings
+}
+
+# After (4.0.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true
+  grafana_major_version = 11  # Default is now 11
+  identity = {
+    type = "SystemAssigned"  # New identity configuration
+  }
+  # ... other settings
+}
+```
+
+#### Alert Configuration (New Feature)
+
+Version 4.0.0 introduces optional alert configuration:
+
+```hcl
+alert_configuration = {
+  email_receiver = {
+    email_address = "alerts@example.com"
+    name         = "aks-alerts-email"
+  }
+  action_group = {
+    short_name = "aks-alerts"
+    location   = "germanywestcentral"
+  }
+}
+```
+
+#### Migration Steps
+
+1. **Update Network Profile**: Explicitly set `network_policy` if you were relying on the default "azure" value
+
+2. **Replace Log Analytics Configuration**: Convert `log_analytics_workspace_id` to the new object format
+
+3. **Remove node_count**: Remove the `node_count` field from your `node_pool_settings`
+
+4. **Configure Prometheus Alerts**: If you were using the default alert rules, you'll need to explicitly configure them or set them to `null`
+
+5. **Update Grafana Version**: If you need Grafana v10, explicitly set `grafana_major_version = 10`
+
+6. **Review Resource Naming**: Monitor-related resources have updated naming patterns, which may affect existing deployments
+
+#### Example Migration
+
+```hcl
+# Before (3.2.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace_id = "/subscriptions/.../workspaces/my-workspace"
+  
+  network_profile = {
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+    # network_policy defaulted to "azure"
+  }
+  
+  node_pool_settings = {
+    stable = {
+      node_count           = 1
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
     }
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled = true
+    # grafana_major_version defaulted to 10
+  }
+}
 
-    # After
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      network_policy = "azure"
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+# After (4.0.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace = {
+    id                  = "/subscriptions/.../workspaces/my-workspace"
+    location            = "westeurope"
+    resource_group_name = "monitoring-rg"
+  }
+  
+  network_profile = {
+    network_policy          = "azure"  # Must be explicit
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+  }
+  
+  node_pool_settings = {
+    stable = {
+      # node_count removed
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
     }
-
-  ```
-
-This allows to [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli), e.g.:
-
-  ```hcl
-
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      network_plugin = "none"
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled               = true
+    grafana_major_version = 10  # Explicit if you need v10
+    identity = {
+      type = "SystemAssigned"
     }
-
-  ```
-#### Removed node_count from node_pool_settings
-The `node_count` variable in `node_pool_settings` was not used. It has been removed.
-
-
-  ```hcl
-
-    # Before
-    node_pool_settings = {
-      stable = {
-        node_count           = 1
-        auto_scaling_enabled = true
-        vm_size              = "Standard_D2s_v6"
-        ...
-      }
-    }
-
-    # After
-    node_pool_settings = {
-      stable = {
-        auto_scaling_enabled = true
-        vm_size              = "Standard_D2s_v6"
-        ...
-      }
-    }
-
-  ```
+  }
+  
+  # Configure alerts explicitly if needed
+  prometheus_node_alert_rules    = null
+  prometheus_cluster_alert_rules = null
+  prometheus_pod_alert_rules     = null
+}
