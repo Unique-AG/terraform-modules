@@ -180,9 +180,13 @@ No modules.
 | [azurerm_kubernetes_cluster.cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_log_analytics_workspace_table.basic_log_table](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace_table) | resource |
+| [azurerm_monitor_action_group.aks_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.cluster_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
+| [azurerm_monitor_alert_prometheus_rule_group.kubernetes_recording_rules_rule_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.node_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
+| [azurerm_monitor_alert_prometheus_rule_group.node_recording_rules_rule_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.pod_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
+| [azurerm_monitor_alert_prometheus_rule_group.ux_recording_rules_rule_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
 | [azurerm_monitor_data_collection_endpoint.monitor_dce](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
 | [azurerm_monitor_data_collection_rule.ci_dcr](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 | [azurerm_monitor_data_collection_rule.monitor_dcr](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
@@ -196,11 +200,12 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin_group_object_ids"></a> [admin\_group\_object\_ids](#input\_admin\_group\_object\_ids) | The object IDs of the admin groups for the Kubernetes Cluster. | `list(string)` | `[]` | no |
+| <a name="input_alert_configuration"></a> [alert\_configuration](#input\_alert\_configuration) | Configuration for AKS alerts and monitoring | <pre>object({<br/>    email_receiver = optional(object({<br/>      email_address = string<br/>      name          = optional(string, "aks-alerts-email")<br/>    }), null)<br/>    action_group = optional(object({<br/>      short_name = optional(string, "aks-alerts")<br/>      location   = optional(string, "germanywestcentral")<br/>    }), null)<br/>  })</pre> | `null` | no |
 | <a name="input_api_server_authorized_ip_ranges"></a> [api\_server\_authorized\_ip\_ranges](#input\_api\_server\_authorized\_ip\_ranges) | The IP ranges that are allowed to access the Kubernetes API server. | `list(string)` | `null` | no |
 | <a name="input_application_gateway_id"></a> [application\_gateway\_id](#input\_application\_gateway\_id) | The ID of the Application Gateway. | `string` | `null` | no |
 | <a name="input_automatic_upgrade_channel"></a> [automatic\_upgrade\_channel](#input\_automatic\_upgrade\_channel) | The automatic upgrade channel for the Kubernetes Cluster. | `string` | `"stable"` | no |
 | <a name="input_azure_policy_enabled"></a> [azure\_policy\_enabled](#input\_azure\_policy\_enabled) | Specifies whether Azure Policy is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
-| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 10)<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 10<br/>}</pre> | no |
+| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 10)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
@@ -214,7 +219,7 @@ No modules.
 | <a name="input_kubernetes_default_node_zones"></a> [kubernetes\_default\_node\_zones](#input\_kubernetes\_default\_node\_zones) | The availability zones for the default node pool. | `list(string)` | <pre>[<br/>  "1",<br/>  "3"<br/>]</pre> | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked. | `string` | `null` | no |
 | <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled) | Specifies whether the local account is disabled for the Kubernetes Cluster. | `bool` | `true` | no |
-| <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace. | `string` | n/a | yes |
+| <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | The Log Analytics Workspace configuration for monitoring and logging. | <pre>object({<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | `null` | no |
 | <a name="input_log_table_plan"></a> [log\_table\_plan](#input\_log\_table\_plan) | The pricing tier for the Log Analytics Workspace Table. | `string` | `"Basic"` | no |
 | <a name="input_maintenance_window_auto_upgrade"></a> [maintenance\_window\_auto\_upgrade](#input\_maintenance\_window\_auto\_upgrade) | The maintenance window for automatic upgrades of the Kubernetes cluster. | <pre>object({<br/>    frequency    = optional(string, "Weekly")<br/>    interval     = optional(number, 2)<br/>    duration     = optional(number, 6)<br/>    day_of_week  = optional(string, "Sunday")<br/>    day_of_month = optional(number, null)<br/>    week_index   = optional(string, null)<br/>    start_time   = optional(string, "18:00")<br/>    utc_offset   = optional(string, "+00:00")<br/>    start_date   = optional(string, null)<br/>    not_allowed = optional(list(object({<br/>      start = string<br/>      end   = string<br/>    })), [])<br/>  })</pre> | `null` | no |
 | <a name="input_maintenance_window_day"></a> [maintenance\_window\_day](#input\_maintenance\_window\_day) | The day of the maintenance window. | `string` | `"Sunday"` | no |
@@ -231,9 +236,12 @@ No modules.
 | <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | Specifies whether the Kubernetes Cluster is private. | `bool` | `true` | no |
 | <a name="input_private_cluster_public_fqdn_enabled"></a> [private\_cluster\_public\_fqdn\_enabled](#input\_private\_cluster\_public\_fqdn\_enabled) | Specifies whether the private cluster has a public FQDN. | `bool` | `true` | no |
 | <a name="input_private_dns_zone_id"></a> [private\_dns\_zone\_id](#input\_private\_dns\_zone\_id) | The ID of the private DNS zone. | `string` | `"None"` | no |
-| <a name="input_prometheus_cluster_alert_rules"></a> [prometheus\_cluster\_alert\_rules](#input\_prometheus\_cluster\_alert\_rules) | n/a | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "alert": "KubeCPUQuotaOvercommit",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Cluster {{ $labels.cluster }} has overcommitted CPU resource requests for Namespaces. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\", type=\"hard\", resource=~\"(cpu|requests.cpu)\"})) / sum(kube_node_status_allocatable{resource=\"cpu\", job=\"kube-state-metrics\"}) > 1.5",<br/>    "for": "PT5M",<br/>    "labels": {<br/>      "severity": "warning"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeMemoryQuotaOvercommit",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Cluster {{ $labels.cluster }} has overcommitted memory resource requests for Namespaces. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\", type=\"hard\", resource=~\"(memory|requests.memory)\"})) / sum(kube_node_status_allocatable{resource=\"memory\", job=\"kube-state-metrics\"}) > 1.5",<br/>    "for": "PT5M",<br/>    "labels": {},<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeContainerOOMKilledCount",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Number of OOM killed containers is greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum by (cluster,container,controller,namespace) (kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\"} * on(cluster,namespace,pod) group_left(controller) label_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \".*\")) > 0",<br/>    "for": "PT5M",<br/>    "labels": {},<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeClientErrors",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance }}' is experiencing {{ $value | humanizePercentage }} errors. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "(sum(rate(rest_client_requests_total{code=~\"5..\"}[5m])) by (cluster, instance, job, namespace) / sum(rate(rest_client_requests_total[5m])) by (cluster, instance, job, namespace)) > 0.01",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubePersistentVolumeFillingUp",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kubelet_volume_stats_available_bytes{job=\"kubelet\"}/kubelet_volume_stats_capacity_bytes{job=\"kubelet\"} < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\"}[6h], 4 * 24 * 3600) < 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePersistentVolumeInodesFillingUp",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} only has {{ $value | humanizePercentage }} free inodes. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kubelet_volume_stats_inodes_free{job=\"kubelet\"} / kubelet_volume_stats_inodes{job=\"kubelet\"} < 0.03",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePersistentVolumeErrors",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "The persistent volume {{ $labels.persistentvolume }} has status {{ $labels.phase }}. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kube_persistentvolume_status_phase{phase=~\"Failed|Pending\",job=\"kube-state-metrics\"} > 0",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeDaemonSetNotScheduled",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"} - kube_daemonset_status_current_number_scheduled{job=\"kube-state-metrics\"} > 0",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeDaemonSetMisScheduled",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kube_daemonset_status_number_misscheduled{job=\"kube-state-metrics\"} > 0",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeQuotaAlmostFull",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $value | humanizePercentage }} usage of {{ $labels.resource }} in namespace {{ $labels.namespace }} in {{ $labels.cluster }}. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kube_resourcequota{job=\"kube-state-metrics\", type=\"used\"} / ignoring(instance, job, type)(kube_resourcequota{job=\"kube-state-metrics\", type=\"hard\"} > 0) > 0.9 < 1",<br/>    "for": "PT15M",<br/>    "labels": {},<br/>    "severity": 3<br/>  }<br/>]</pre> | no |
-| <a name="input_prometheus_node_alert_rules"></a> [prometheus\_node\_alert\_rules](#input\_prometheus\_node\_alert\_rules) | n/a | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "alert": "KubeNodeUnreachable",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $labels.node }} in {{ $labels.cluster }} is unreachable."<br/>    },<br/>    "enabled": true,<br/>    "expression": "(kube_node_spec_taint{job=\"kube-state-metrics\",key=\"node.kubernetes.io/unreachable\",effect=\"NoSchedule\"} unless ignoring(key,value) kube_node_spec_taint{job=\"kube-state-metrics\",key=~\"ToBeDeletedByClusterAutoscaler|cloud.google.com/imminent-node-termination|aws-node-termination-handler/spot-itn\"} == 1)\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeNodeUnreachable",<br/>      "team": "prod"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeNodeReadinessFlapping",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Node readiness is flapping."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum(changes(kube_node_status_condition{status=\"true\",condition=\"Ready\"}[15m])) by (cluster, node) > 2",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeNodeReadinessFlapping",<br/>      "team": "prod"<br/>    },<br/>    "severity": 3<br/>  }<br/>]</pre> | no |
-| <a name="input_prometheus_pod_alert_rules"></a> [prometheus\_pod\_alert\_rules](#input\_prometheus\_pod\_alert\_rules) | n/a | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "alert": "KubePVUsageHigh",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Average PV usage on pod {{ $labels.pod }} in container {{ $labels.container }} is greater than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "avg by (namespace, controller, container, cluster) (\n  (kubelet_volume_stats_used_bytes{job=\"kubelet\"} / on(namespace, cluster, pod, container) group_left\n  kubelet_volume_stats_capacity_bytes{job=\"kubelet\"}) * on(namespace, pod, cluster) group_left(controller)\n  label_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \"(.*)\")\n) > 0.8\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubePVUsageHigh"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeDeploymentReplicasMismatch",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} in {{ $labels.cluster}} replica mismatch. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "(\n  kube_deployment_spec_replicas{job=\"kube-state-metrics\"} > kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}\n  and (changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\"}[10m]) == 0)\n)\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeDeploymentReplicasMismatch"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeStatefulSetReplicasMismatch",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} in {{ $labels.cluster}} replica mismatch. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "(\n  kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"} != kube_statefulset_status_replicas{job=\"kube-state-metrics\"}\n  and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\"}[10m]) == 0)\n)\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeStatefulSetReplicasMismatch"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeHpaReplicasMismatch",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Horizontal Pod Autoscaler in {{ $labels.cluster}} has not matched the desired number of replicas for longer than 15 minutes. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "(\n  kube_horizontalpodautoscaler_status_desired_replicas{job=\"kube-state-metrics\"} != kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\"}\n  and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\"} > kube_horizontalpodautoscaler_spec_min_replicas{job=\"kube-state-metrics\"})\n  and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\"} < kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\"})\n  and (changes(kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\"}[15m]) == 0)\n)\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeHpaReplicasMismatch"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeHpaMaxedOut",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Horizontal Pod Autoscaler in {{ $labels.cluster}} has been running at max replicas for longer than 15 minutes. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\"} == kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\"}\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeHpaMaxedOut"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePodCrashLooping",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) in {{ $labels.cluster}} is restarting {{ printf \"%.2f\" $value }} / second. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "max_over_time(kube_pod_container_status_waiting_reason{reason=\"CrashLoopBackOff\", job=\"kube-state-metrics\"}[5m]) >= 1\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubePodCrashLooping"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePodContainerRestart",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Pod container restarted in last 1 hour. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum by (namespace, controller, container, cluster)\n(increase(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}[1h])\n* on(namespace, pod, cluster) group_left(controller)\nlabel_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \"(.*)\")) > 0\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubePodContainerRestart"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePodReadyStateLow",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Ready state of pods is less than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum by (cluster,namespace,deployment)\n(kube_deployment_status_replicas_ready) / sum by\n(cluster,namespace,deployment)(kube_deployment_spec_replicas) < .8 or sum\nby (cluster,namespace,deployment)(kube_daemonset_status_number_ready) /\nsum by (cluster,namespace,deployment)(kube_daemonset_status_desired_number_scheduled) < .8\n",<br/>    "for": "PT5M",<br/>    "labels": {<br/>      "alert_name": "KubePodReadyStateLow"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePodFailedState",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Number of pods in failed state are greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "    sum by (cluster, namespace, controller)\n    (kube_pod_status_phase{phase=\"failed\"} * on(namespace, pod, cluster)\n    group_left(controller) label_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \"(.*)\")) > 0\n",<br/>    "for": "PT5M",<br/>    "labels": {<br/>      "alert_name": "KubePodFailedState"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubePodNotReadyByController",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "{{ $labels.namespace }}/{{ $labels.pod }} in {{ $labels.cluster }} by controller is not ready. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "    sum by (namespace, controller, cluster) (max by(namespace, pod, cluster)\n    (kube_pod_status_phase{job=\"kube-state-metrics\", phase=~\"Pending|Unknown\"})\n    * on(namespace, pod, cluster) group_left(controller)\n    label_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \"(.*)\")) > 0\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubePodNotReadyByController"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeStatefulSetGenerationMismatch",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "    kube_statefulset_status_observed_generation{job=\"kube-state-metrics\"} !=\n    kube_statefulset_metadata_generation{job=\"kube-state-metrics\"}\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeStatefulSetGenerationMismatch"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeJobFailed",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Job {{ $labels.namespace }}/{{ $labels.job_name }} in {{ $labels.cluster}} failed to complete. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "    kube_job_failed{job=\"kube-state-metrics\"} > 0\n",<br/>    "for": "PT15M",<br/>    "labels": {<br/>      "alert_name": "KubeJobFailed"<br/>    },<br/>    "severity": 3<br/>  },<br/>  {<br/>    "alert": "KubeContainerAverageCPUHigh",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT15M"<br/>    },<br/>    "annotations": {<br/>      "description": "Average CPU usage per container is greater than 95%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "sum (rate(container_cpu_usage_seconds_total{image!=\"\", container!=\"POD\"}[5m])) by (pod,cluster,container,namespace)\n/ sum(container_spec_cpu_quota{image!=\"\", container!=\"POD\"}/container_spec_cpu_period{image!=\"\", container!=\"POD\"})\nby (pod,cluster,container,namespace) > .95\n",<br/>    "for": "PT5M",<br/>    "labels": {<br/>      "alert_name": "KubeContainerAverageCPUHigh"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeContainerAverageMemoryHigh",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Average Memory usage per container is greater than 95%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "avg by (namespace, controller, container, cluster)(((container_memory_working_set_bytes{container!=\"\", image!=\"\", container!=\"POD\"}\n/ on(namespace,cluster,pod,container) group_left kube_pod_container_resource_limits{resource=\"memory\", node!=\"\"})\n*on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, \"controller\", \"$1\", \"owner_name\", \"(.*)\")) > .95)\n",<br/>    "for": "PT10M",<br/>    "labels": {<br/>      "alert_name": "KubeContainerAverageMemoryHigh"<br/>    },<br/>    "severity": 4<br/>  },<br/>  {<br/>    "alert": "KubeletPodStartUpLatencyHigh",<br/>    "alert_resolution": {<br/>      "auto_resolved": true,<br/>      "time_to_resolve": "PT10M"<br/>    },<br/>    "annotations": {<br/>      "description": "Kubelet Pod startup latency is too high. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."<br/>    },<br/>    "enabled": true,<br/>    "expression": "    histogram_quantile(0.99,\n    sum(rate(kubelet_pod_worker_duration_seconds_bucket{job=\"kubelet\"}[5m]))\n    by (cluster, instance, le)) * on(cluster, instance) group_left(node)\n    kubelet_node_name{job=\"kubelet\"} > 60\n",<br/>    "for": "PT10M",<br/>    "labels": {<br/>      "alert_name": "KubeletPodStartUpLatencyHigh"<br/>    },<br/>    "severity": 4<br/>  }<br/>]</pre> | no |
+| <a name="input_prometheus_cluster_alert_rules"></a> [prometheus\_cluster\_alert\_rules](#input\_prometheus\_cluster\_alert\_rules) | Cluster level alert rules for Prometheus monitoring | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | `null` | no |
+| <a name="input_prometheus_kubernetes_recording_rules"></a> [prometheus\_kubernetes\_recording\_rules](#input\_prometheus\_kubernetes\_recording\_rules) | Kubernetes level recording rules for Prometheus monitoring | <pre>list(object({<br/>    enabled    = optional(bool, true)<br/>    record     = string<br/>    expression = string<br/>    labels     = optional(map(string))<br/>  }))</pre> | `null` | no |
+| <a name="input_prometheus_node_alert_rules"></a> [prometheus\_node\_alert\_rules](#input\_prometheus\_node\_alert\_rules) | Node level alert rules for Prometheus monitoring | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | `null` | no |
+| <a name="input_prometheus_node_recording_rules"></a> [prometheus\_node\_recording\_rules](#input\_prometheus\_node\_recording\_rules) | Node level recording rules for Prometheus monitoring | <pre>list(object({<br/>    enabled    = optional(bool, true)<br/>    record     = string<br/>    expression = string<br/>    labels     = optional(map(string))<br/>  }))</pre> | `null` | no |
+| <a name="input_prometheus_pod_alert_rules"></a> [prometheus\_pod\_alert\_rules](#input\_prometheus\_pod\_alert\_rules) | Pod level alert rules for Prometheus monitoring | <pre>list(object({<br/>    action = optional(object({<br/>      action_group_id = string<br/>    }))<br/>    alert       = optional(string)<br/>    annotations = optional(map(string))<br/>    enabled     = optional(bool)<br/>    expression  = string<br/>    for         = optional(string)<br/>    labels      = optional(map(string))<br/>    record      = optional(string)<br/>    alert_resolution = optional(object({<br/>      auto_resolved   = bool<br/>      time_to_resolve = string<br/>    }))<br/>    severity = optional(number)<br/>  }))</pre> | `null` | no |
+| <a name="input_prometheus_ux_recording_rules"></a> [prometheus\_ux\_recording\_rules](#input\_prometheus\_ux\_recording\_rules) | UX level recording rules for Prometheus monitoring | <pre>list(object({<br/>    enabled    = optional(bool, true)<br/>    record     = string<br/>    expression = string<br/>    labels     = optional(map(string))<br/>  }))</pre> | `null` | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | The location of the resource group. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group. | `string` | n/a | yes |
 | <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | The retention period in days for the Log Analytics Workspace. | `number` | `30` | no |
@@ -254,6 +262,7 @@ No modules.
 | <a name="output_csi_identity_client_id"></a> [csi\_identity\_client\_id](#output\_csi\_identity\_client\_id) | The client ID of the identity used by the CSI driver. |
 | <a name="output_csi_identity_object_id"></a> [csi\_identity\_object\_id](#output\_csi\_identity\_object\_id) | The object ID of the identity used by the CSI driver. |
 | <a name="output_csi_user_assigned_identity_name"></a> [csi\_user\_assigned\_identity\_name](#output\_csi\_user\_assigned\_identity\_name) | The name of the user-assigned identity for the CSI driver. Prefer using the csi\_identity\_client\_id and csi\_identity\_object\_id outputs as they are more reliable. |
+| <a name="output_grafana_identity_principal_id"></a> [grafana\_identity\_principal\_id](#output\_grafana\_identity\_principal\_id) | The principal ID of the Grafana identity. |
 | <a name="output_kubernetes_cluster_id"></a> [kubernetes\_cluster\_id](#output\_kubernetes\_cluster\_id) | The ID of the Kubernetes cluster. |
 | <a name="output_kubernetes_node_rg_name"></a> [kubernetes\_node\_rg\_name](#output\_kubernetes\_node\_rg\_name) | The name of the node resource group. This name is important as the CSI driver identity is created there. |
 | <a name="output_kublet_identity_client_id"></a> [kublet\_identity\_client\_id](#output\_kublet\_identity\_client\_id) | The client ID of the identity used by the kubelet. |
@@ -348,61 +357,241 @@ Version 3.0.0 introduces several breaking changes to improve subnet configuratio
 
 ### ~> `4.0.0`
 
+Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
+
 #### Network Profile Changes
 
-The network_policy property of the network_profile is not set by default.
+1. **Network Policy Default Removed**: The `network_policy` property no longer defaults to "azure". You must explicitly set it if needed:
 
-  ```hcl
+   ```hcl
+   # Before (3.2.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+     # network_policy defaulted to "azure"
+   }
 
-    # Before
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   # After (4.0.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     network_policy = "azure"  # Must be explicitly set
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+   This change enables support for [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli):
+
+   ```hcl
+   network_profile = {
+     network_plugin = "none"  # BYO CNI
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+2. **Network Data Plane Support**: Added support for `network_data_plane` configuration:
+
+   ```hcl
+   network_profile = {
+     network_plugin     = "azure"
+     network_data_plane = "cilium"  # New option
+     network_policy     = "cilium"
+   }
+   ```
+
+#### Log Analytics Workspace Changes
+
+The `log_analytics_workspace_id` variable has been replaced with a more flexible `log_analytics_workspace` object:
+
+```hcl
+# Before (3.2.0)
+log_analytics_workspace_id = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+
+# After (4.0.0)
+log_analytics_workspace = {
+  id                  = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+  location            = "westeurope"
+  resource_group_name = "monitoring-rg"
+}
+```
+
+Note: The new variable is optional/nullable, allowing for configurations without log analytics.
+
+#### Node Pool Settings Changes
+
+The unused `node_count` variable has been removed from `node_pool_settings`:
+
+```hcl
+# Before (3.2.0)
+node_pool_settings = {
+  stable = {
+    node_count           = 1  # This was not used
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+
+# After (4.0.0)
+node_pool_settings = {
+  stable = {
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+```
+
+#### Prometheus Alert Rules Changes
+
+Prometheus alert rule variables now default to `null` instead of pre-configured rules:
+
+```hcl
+# Before (3.2.0) - extensive default alert rules were provided
+# No configuration needed for basic alerts
+
+# After (4.0.0) - must explicitly configure if needed
+prometheus_node_alert_rules = [
+  {
+    alert      = "KubeNodeUnreachable"
+    enabled    = true
+    expression = "..."
+    # ... configure your specific alert rules
+  }
+]
+
+prometheus_cluster_alert_rules = [
+  # ... configure your cluster-level alerts
+]
+
+prometheus_pod_alert_rules = [
+  # ... configure your pod-level alerts
+]
+```
+
+#### Azure Prometheus Grafana Monitor Changes
+
+1. **Grafana Version**: Default major version changed from 10 to 11
+2. **Identity Configuration**: Added identity configuration options
+
+```hcl
+# Before (3.2.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true
+  grafana_major_version = 10  # Default was 10
+  # ... other settings
+}
+
+# After (4.0.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true
+  grafana_major_version = 11  # Default is now 11
+  identity = {
+    type = "SystemAssigned"  # New identity configuration
+  }
+  # ... other settings
+}
+```
+
+#### Alert Configuration (New Feature)
+
+Version 4.0.0 introduces optional alert configuration:
+
+```hcl
+alert_configuration = {
+  email_receiver = {
+    email_address = "alerts@example.com"
+    name         = "aks-alerts-email"
+  }
+  action_group = {
+    short_name = "aks-alerts"
+    location   = "germanywestcentral"
+  }
+}
+```
+
+#### Migration Steps
+
+1. **Update Network Profile**: Explicitly set `network_policy` if you were relying on the default "azure" value
+
+2. **Replace Log Analytics Configuration**: Convert `log_analytics_workspace_id` to the new object format
+
+3. **Remove node_count**: Remove the `node_count` field from your `node_pool_settings`
+
+4. **Configure Prometheus Alerts**: If you were using the default alert rules, you'll need to explicitly configure them or set them to `null`
+
+5. **Update Grafana Version**: If you need Grafana v10, explicitly set `grafana_major_version = 10`
+
+6. **Review Resource Naming**: Monitor-related resources have updated naming patterns, which may affect existing deployments
+
+#### Example Migration
+
+```hcl
+# Before (3.2.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace_id = "/subscriptions/.../workspaces/my-workspace"
+  
+  network_profile = {
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+    # network_policy defaulted to "azure"
+  }
+  
+  node_pool_settings = {
+    stable = {
+      node_count           = 1
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
     }
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled = true
+    # grafana_major_version defaulted to 10
+  }
+}
 
-    # After
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      network_policy = "azure"
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+# After (4.0.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace = {
+    id                  = "/subscriptions/.../workspaces/my-workspace"
+    location            = "westeurope"
+    resource_group_name = "monitoring-rg"
+  }
+  
+  network_profile = {
+    network_policy          = "azure"  # Must be explicit
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+  }
+  
+  node_pool_settings = {
+    stable = {
+      # node_count removed
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
     }
-
-  ```
-
-This allows to [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli), e.g.:
-
-  ```hcl
-
-    network_profile = {
-      idle_timeout_in_minutes = 100
-      network_plugin = "none"
-      outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled               = true
+    grafana_major_version = 10  # Explicit if you need v10
+    identity = {
+      type = "SystemAssigned"
     }
-
-  ```
-#### Removed node_count from node_pool_settings
-The `node_count` variable in `node_pool_settings` was not used. It has been removed.
-
-
-  ```hcl
-
-    # Before
-    node_pool_settings = {
-      stable = {
-        node_count           = 1
-        auto_scaling_enabled = true
-        vm_size              = "Standard_D2s_v6"
-        ...
-      }
-    }
-
-    # After
-    node_pool_settings = {
-      stable = {
-        auto_scaling_enabled = true
-        vm_size              = "Standard_D2s_v6"
-        ...
-      }
-    }
-
-  ```
+  }
+  
+  # Configure alerts explicitly if needed
+  prometheus_node_alert_rules    = null
+  prometheus_cluster_alert_rules = null
+  prometheus_pod_alert_rules     = null
+}

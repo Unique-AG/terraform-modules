@@ -16,8 +16,8 @@ locals {
 }
 
 resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each                = toset(local.basic_log_tables)
-  workspace_id            = var.log_analytics_workspace_id
+  for_each                = var.log_analytics_workspace != null ? toset(local.basic_log_tables) : []
+  workspace_id            = var.log_analytics_workspace.id
   name                    = each.value
   plan                    = var.log_table_plan
   total_retention_in_days = var.retention_in_days
@@ -25,9 +25,10 @@ resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
 
 
 resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
+  count                          = var.log_analytics_workspace != null ? 1 : 0
   name                           = "aks-diagnostic-logs"
   target_resource_id             = azurerm_kubernetes_cluster.cluster.id
-  log_analytics_workspace_id     = var.log_analytics_workspace_id
+  log_analytics_workspace_id     = var.log_analytics_workspace.id
   log_analytics_destination_type = "Dedicated"
 
   dynamic "enabled_log" {
@@ -37,23 +38,23 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
     }
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
-    enabled  = false
   }
 }
 
 resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
+  count               = var.log_analytics_workspace != null ? 1 : 0
   name                = "${var.cluster_name}-ci-dcr"
-  resource_group_name = var.resource_group_name
-  location            = var.resource_group_location
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = var.log_analytics_workspace.location
   tags                = var.tags
   kind                = "Linux"
 
   destinations {
     log_analytics {
       name                  = "ciworkspace"
-      workspace_resource_id = var.log_analytics_workspace_id
+      workspace_resource_id = var.log_analytics_workspace.id
     }
   }
 
@@ -84,7 +85,8 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "ci_dcr_asc" {
+  count                   = var.log_analytics_workspace != null ? 1 : 0
   name                    = "${var.cluster_name}-ci-dcr-asc"
   target_resource_id      = azurerm_kubernetes_cluster.cluster.id
-  data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr[0].id
 }

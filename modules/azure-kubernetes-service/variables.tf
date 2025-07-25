@@ -158,10 +158,15 @@ variable "tags" {
   default     = {}
 }
 
-variable "log_analytics_workspace_id" {
-  description = "The ID of the Log Analytics Workspace."
-  type        = string
-  nullable    = false
+variable "log_analytics_workspace" {
+  description = "The Log Analytics Workspace configuration for monitoring and logging."
+  type = object({
+    id                  = string
+    location            = string
+    resource_group_name = string
+  })
+  default  = null
+  nullable = true
 }
 
 variable "application_gateway_id" {
@@ -177,12 +182,21 @@ variable "azure_prometheus_grafana_monitor" {
     azure_monitor_location = string
     azure_monitor_rg_name  = string
     grafana_major_version  = optional(number, 10)
+    identity = optional(object({
+      type         = string
+      identity_ids = optional(list(string))
+      }), {
+      type = "SystemAssigned"
+    })
   })
   default = {
     enabled                = false
     azure_monitor_location = "westeurope"
-    grafana_major_version  = 10
+    grafana_major_version  = 11
     azure_monitor_rg_name  = "monitor-rg"
+    identity = {
+      type = "SystemAssigned"
+    }
   }
 }
 
@@ -605,4 +619,19 @@ variable "node_os_upgrade_channel" {
     condition     = contains(["Unmanaged", "SecurityPatch", "NodeImage", "None"], var.node_os_upgrade_channel)
     error_message = "node_os_upgrade_channel must be one of: Unmanaged, SecurityPatch, NodeImage, None"
   }
+}
+
+variable "alert_configuration" {
+  description = "Configuration for AKS alerts and monitoring"
+  type = object({
+    email_receiver = optional(object({
+      email_address = string
+      name          = optional(string, "aks-alerts-email")
+    }), null)
+    action_group = optional(object({
+      short_name = optional(string, "aks-alerts")
+      location   = optional(string, "germanywestcentral")
+    }), null)
+  })
+  default = null
 }

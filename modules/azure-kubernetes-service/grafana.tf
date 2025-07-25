@@ -9,8 +9,19 @@ resource "azurerm_dashboard_grafana" "grafana" {
   grafana_major_version = var.azure_prometheus_grafana_monitor.grafana_major_version
   location              = var.azure_prometheus_grafana_monitor.azure_monitor_location
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = var.azure_prometheus_grafana_monitor.identity.type == "UserAssigned" ? [1] : []
+    content {
+      type         = var.azure_prometheus_grafana_monitor.identity.type
+      identity_ids = var.azure_prometheus_grafana_monitor.identity.identity_ids
+    }
+  }
+
+  dynamic "identity" {
+    for_each = var.azure_prometheus_grafana_monitor.identity.type == "SystemAssigned" ? [1] : []
+    content {
+      type = var.azure_prometheus_grafana_monitor.identity.type
+    }
   }
 
   azure_monitor_workspace_integrations {
