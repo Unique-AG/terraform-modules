@@ -1,9 +1,9 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version:  4.0.0
+version: 4.0.1
 compatibility:
   unique.ai: ~> 2025.26
 changes:
   - kind: fixed
-    description: "Modified output for the Cognitive Services Accounts to include the whole resource not just the ID"
+    description: "metric has been deprecated in favor of the enabled_metric"
