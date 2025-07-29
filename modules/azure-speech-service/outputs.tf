@@ -23,9 +23,9 @@ output "keys_secret_names" {
   description = "List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled"
   value       = [for k, v in azurerm_key_vault_secret.key : v.name]
 }
-output "cognitive_account_ids" {
-  description = "Resource IDs of the Cognitive Services Accounts"
-  value       = { for k, v in azurerm_cognitive_account.aca : k => v.id }
+output "cognitive_account_resources" {
+  description = "The Cognitive Services Account resources"
+  value       = { for k, v in azurerm_cognitive_account.aca : k => v }
 }
 
 output "speech_service_secret_names" {

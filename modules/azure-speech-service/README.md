@@ -64,7 +64,7 @@ No modules.
 |------|-------------|
 | <a name="output_azure_speech_service_endpoint_definitions"></a> [azure\_speech\_service\_endpoint\_definitions](#output\_azure\_speech\_service\_endpoint\_definitions) | Object containing list of objects containing endpoint definitions with name, endpoint and location |
 | <a name="output_azure_speech_service_endpoints"></a> [azure\_speech\_service\_endpoints](#output\_azure\_speech\_service\_endpoints) | Object containing list of endpoints |
-| <a name="output_cognitive_account_ids"></a> [cognitive\_account\_ids](#output\_cognitive\_account\_ids) | Resource IDs of the Cognitive Services Accounts |
+| <a name="output_cognitive_account_resources"></a> [cognitive\_account\_resources](#output\_cognitive\_account\_resources) | The Cognitive Services Account resources |
 | <a name="output_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#output\_endpoint\_definitions\_secret\_name) | Name of the secret containing the list of objects containing endpoint definitions with name, endpoint and location (content of `azure_speech_service_endpoint_definitions` output). Returns null if Key Vault integration is disabled |
 | <a name="output_endpoints_secret_name"></a> [endpoints\_secret\_name](#output\_endpoints\_secret\_name) | Name of the secret containing the list of endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_fqdn_secret_names"></a> [fqdn\_secret\_names](#output\_fqdn\_secret\_names) | The names of the Key Vault secrets containing the Speech Service FQDNs |
