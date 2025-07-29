@@ -1,8 +1,7 @@
-
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.0.0
+version: 2.1.0
 changes:
-  - kind: added
-    description: "AI resource type."
+  - kind: changed
+    description: "Defaults for StorageAccounts#BlobScanResultsOptions to fix forever drifts."
