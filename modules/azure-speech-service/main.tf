@@ -51,7 +51,7 @@ resource "azurerm_monitor_diagnostic_setting" "diag" {
     }
   }
 
-  dynamic "metric" {
+  dynamic "enabled_metric" {
     for_each = try(
       each.value.diagnostic_settings != null ?
       (each.value.diagnostic_settings.enabled_metrics != null ?
@@ -61,8 +61,7 @@ resource "azurerm_monitor_diagnostic_setting" "diag" {
       []
     )
     content {
-      category = metric.value
-      enabled  = each.value.diagnostic_settings.enabled_metrics != null
+      category = enabled_metric.value
     }
   }
 
