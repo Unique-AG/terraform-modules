@@ -69,6 +69,12 @@ module "apfs" {
   name                = "my-postgresql-server-${random_string.server_name.result}"
   resource_group_name = azurerm_resource_group.example.name
   location            = "switzerlandnorth"
+
+  # Default alerts are automatically enabled:
+  # - CPU > 80% for 30 minutes (Warning)
+  # - Memory > 90% for 1 hour (Error)
+  # Set metric_alerts = {} to disable all alerts
+
   tags = {
     environment = "example"
   }

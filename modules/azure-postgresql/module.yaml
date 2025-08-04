@@ -2,12 +2,12 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 2.0.0
+version: 3.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: changed
-    description: "Support for storage auto_grow_enabled which also defaults to true."
+  - kind: added
+    description: "Support for metric alerts"
 
 
     
