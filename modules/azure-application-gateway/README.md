@@ -44,7 +44,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_autoscale_configuration"></a> [autoscale\_configuration](#input\_autoscale\_configuration) | Configuration for the autoscale configuration | <pre>object({<br/>    min_capacity = number<br/>    max_capacity = number<br/>  })</pre> | <pre>{<br/>  "max_capacity": 10,<br/>  "min_capacity": 1<br/>}</pre> | no |
+| <a name="input_autoscale_configuration"></a> [autoscale\_configuration](#input\_autoscale\_configuration) | Configuration for the autoscale configuration | <pre>object({<br/>    min_capacity = optional(number, 1)<br/>    max_capacity = optional(number, 10)<br/>  })</pre> | <pre>{<br/>  "max_capacity": 10,<br/>  "min_capacity": 1<br/>}</pre> | no |
 | <a name="input_backend_address_pool"></a> [backend\_address\_pool](#input\_backend\_address\_pool) | Configuration for the backend\_address\_pool | <pre>object({<br/>    explicit_name = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_backend_http_settings"></a> [backend\_http\_settings](#input\_backend\_http\_settings) | Configuration for the backend\_http\_settings | <pre>object({<br/>    explicit_name         = optional(string)<br/>    cookie_based_affinity = optional(string, "Disabled")<br/>    port                  = optional(number, 80)<br/>    protocol              = optional(string, "Http")<br/>    request_timeout       = optional(number, 60)<br/>  })</pre> | `{}` | no |
 | <a name="input_explicit_name"></a> [explicit\_name](#input\_explicit\_name) | Name for the Gateway if <name\_prefix>-appgw is not desired. | `string` | `null` | no |

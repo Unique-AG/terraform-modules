@@ -1,8 +1,8 @@
 variable "autoscale_configuration" {
   description = "Configuration for the autoscale configuration"
   type = object({
-    min_capacity = number
-    max_capacity = number
+    min_capacity = optional(number, 1)
+    max_capacity = optional(number, 10)
   })
   default = {
     min_capacity = 1
