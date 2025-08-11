@@ -26,7 +26,7 @@ By default, the HTTP listener is configured using the public IP configuration. T
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.38.1 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
 
 ## Modules
 
@@ -79,6 +79,35 @@ No modules.
 | <a name="output_appgw_id"></a> [appgw\_id](#output\_appgw\_id) | The ID of the Application Gateway |
 | <a name="output_appgw_name"></a> [appgw\_name](#output\_appgw\_name) | The name of the Application Gateway |
 <!-- END_TF_DOCS -->
+
+## Upgrade Guide
+
+### ~> 4.0.0
+
+This version introduces comprehensive WAF (Web Application Firewall) support with breaking changes. While doing so the variable syntax was overworked extensively to future-proof the module and allow for more customization. Follow this guide to upgrade to `~> 4.0.0`.
+
+#### Migration Steps
+
+1. **Update Module Version**
+   ```hcl
+   module "application_gateway" {
+     source = "github.com/Unique-AG/terraform-modules//modules/azure-application-gateway?ref=v4.0.0-rc.1"
+     # ... rest of configuration
+   }
+   ```
+
+2. **Review Response Buffering**
+   - Check if your application requires response buffering
+   - If yes, add `global_response_buffering_enabled = true`
+
+3. **WAF Configuration (if using WAF_v2)**
+   - Review default WAF settings in the examples
+   - Customize WAF rules as needed for your environment
+
+4. **Test in Non-Production**
+   - Deploy to a test environment first
+   - Verify WAF rules don't block legitimate traffic
+
 
 ## Remarks
 
