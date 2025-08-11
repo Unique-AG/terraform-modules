@@ -5,6 +5,8 @@ version: 4.0.0-rc.1
 compatibility:
   unique.ai: ~> 2025.30
 changes:
+  - kind: changed
+    description: "⚠️ The module no longer internally manages the public IP address. You must now manage it separately. This decision was taken to align with our design principles explained in the README."
   - kind: added
     description: "Comprehensive Web Application Firewall (WAF) policy support with Unique AI-specific configurations"
   - kind: added

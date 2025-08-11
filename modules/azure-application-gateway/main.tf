@@ -8,6 +8,225 @@ locals {
   active_frontend_ip_configuration_name = var.public_frontend_ip_configuration.is_active_http_listener ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
 }
 
+resource "azurerm_web_application_firewall_policy" "wafpolicy" {
+  count               = local.waf_enabled ? 1 : 0
+  name                = var.waf_policy_settings.explicit_name != null ? var.waf_policy_settings.explicit_name : "${var.name_prefix}-wafpolicy"
+  resource_group_name = var.resource_group.name
+  location            = var.resource_group.location
+
+  policy_settings {
+    enabled                     = true
+    mode                        = try(var.waf_policy_settings.mode, "Prevention")
+    request_body_check          = try(var.waf_policy_settings.request_body_check, true)
+    file_upload_limit_in_mb     = try(var.waf_policy_settings.file_upload_limit_in_mb, 512)
+    max_request_body_size_in_kb = try(var.waf_policy_settings.max_request_body_size_in_kb, 2000)
+    request_body_enforcement    = try(var.waf_policy_settings.request_body_enforcement, true)
+  }
+
+  # (1)
+  # Allow Let's Encrypt HTTP-01 challenges
+  dynamic "custom_rules" {
+    for_each = var.waf_custom_rules_allow_https_challenges ? [1] : []
+    content {
+      name      = "AllowHttpsChallenges"
+      priority  = 1
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = "User-Agent"
+        }
+        operator           = "Contains"
+        negation_condition = false
+        match_values       = ["https://www.letsencrypt.org"]
+        transforms         = ["Lowercase"]
+      }
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator           = "BeginsWith"
+        negation_condition = false
+        match_values       = ["/.well-known/acme-challenge/"]
+        transforms         = ["Lowercase"]
+      }
+    }
+  }
+
+  # (2)
+  # Allow Monitoring Agents to probe services
+  dynamic "custom_rules" {
+    for_each = var.waf_custom_rules_allow_monitoring_agents_to_probe_services != null ? [1] : []
+    content {
+      name      = "AllowMonitoringAgentsToProbeServices"
+      priority  = 2
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = "User-Agent"
+        }
+        operator           = "Equal"
+        negation_condition = false
+        match_values       = [var.waf_custom_rules_allow_monitoring_agents_to_probe_services.request_header_user_agent]
+      }
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator           = "Equal"
+        negation_condition = false
+        match_values       = toset(var.waf_custom_rules_allow_monitoring_agents_to_probe_services.probe_path_equals)
+        transforms         = ["Lowercase"]
+      }
+    }
+  }
+
+  # (3)
+  # Restrict certain routes to certain IP addresses
+  dynamic "custom_rules" {
+    for_each = var.waf_custom_rules_unique_access_to_paths_ip_restricted
+    content {
+      name      = "RestrictAccessTo${replace(title(custom_rules.key), "-", "")}"
+      priority  = 3 + index(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted), custom_rules.key)
+      rule_type = "MatchRule"
+      action    = "Block"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RemoteAddr"
+        }
+        operator           = "IPMatch"
+        negation_condition = length(custom_rules.value.ip_allow_list) > 0
+        match_values       = length(custom_rules.value.ip_allow_list) > 0 ? custom_rules.value.ip_allow_list : []
+      }
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator           = "BeginsWith"
+        negation_condition = false
+        match_values       = custom_rules.value.path_begin_withs
+        transforms         = ["Lowercase"]
+      }
+    }
+  }
+
+  # (4)
+  # Only allow listed IP addresses and ranges for the rest
+  dynamic "custom_rules" {
+    for_each = length(var.waf_custom_rules_ip_allow_list) > 0 ? [1] : []
+    content {
+      name      = "BlockUnwantedIPs"
+      priority  = 15
+      rule_type = "MatchRule"
+      action    = "Block"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RemoteAddr"
+        }
+        operator           = "IPMatch"
+        negation_condition = true
+        match_values       = compact(var.waf_custom_rules_ip_allow_list)
+      }
+    }
+  }
+
+  # (5)
+  # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads)
+  dynamic "custom_rules" {
+    for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
+    content {
+      name      = "FurtherCheckingExemptedURIs"
+      priority  = 16
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "BeginsWith"
+        match_values = var.waf_custom_rules_exempted_request_path_begin_withs
+        transforms   = ["Lowercase"]
+      }
+    }
+  }
+
+  # (99)
+  # Allow certain host headers to pass
+  # TODO
+
+  # (#)
+  managed_rules {
+    managed_rule_set {
+      type    = "OWASP"
+      version = "3.2"
+
+      dynamic "rule_group_override" {
+        for_each = var.waf_managed_rules.owasp_rules
+        content {
+          rule_group_name = rule_group_override.value.rule_group_name
+          dynamic "rule" {
+            for_each = rule_group_override.value.rules
+            content {
+              id      = rule.value.id
+              action  = rule.value.action
+              enabled = rule.value.enabled
+            }
+          }
+        }
+      }
+    }
+    managed_rule_set {
+      type    = "Microsoft_BotManagerRuleSet"
+      version = "1.0"
+
+      dynamic "rule_group_override" {
+        for_each = var.waf_managed_rules.bot_rules
+        content {
+          rule_group_name = rule_group_override.value.rule_group_name
+          dynamic "rule" {
+            for_each = rule_group_override.value.rules
+            content {
+              id      = rule.value.id
+              action  = rule.value.action
+              enabled = rule.value.enabled
+            }
+          }
+        }
+      }
+    }
+
+    dynamic "exclusion" {
+      for_each = var.waf_managed_rules.exclusions
+      content {
+        match_variable          = exclusion.value.match_variable
+        selector_match_operator = exclusion.value.selector_match_operator
+        selector                = exclusion.value.selector
+
+        excluded_rule_set {
+          type    = exclusion.value.excluded_rule_set.type
+          version = exclusion.value.excluded_rule_set.version
+          rule_group {
+            rule_group_name = exclusion.value.excluded_rule_set.rule_group_name
+            excluded_rules  = exclusion.value.excluded_rule_set.excluded_rules
+          }
+        }
+      }
+    }
+  }
+}
+
+
 resource "azurerm_application_gateway" "appgw" {
   enable_http2        = true
   firewall_policy_id  = local.waf_enabled ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
