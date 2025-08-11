@@ -11,22 +11,22 @@ No additional configuration required! Set `metric_alerts = {}` to disable if not
 
 ## 🔄 Migration Guide
 
-### ⚠️ Breaking Change: Default Monitoring Alerts (v3.0.0)
+### ℹ️ Behavior Change: Default Monitoring Alerts (v2.1.0)
 
-**This is a breaking change introduced in version 3.0.0.** If you're upgrading from any version prior to 3.0.0, the module now creates monitoring alerts by default, which may affect your existing infrastructure.
+Starting with version 2.1.0, the module creates monitoring alerts by default. Prior to 2.1.0, no alerts were created automatically.
 
 **Version Information:**
-- **Current Version**: 3.0.0
-- **Breaking Change**: Default metric alerts are now enabled
-- **Previous Behavior (< 3.0.0)**: No monitoring alerts were created by default
+- **Current Version**: 2.1.0
+- **Change**: Default metric alerts are now enabled
+- **Previous Behavior (< 2.1.0)**: No monitoring alerts were created by default
 
 #### Migrating from Previous Versions
 
-**Important**: When upgrading, consider pinning to a specific version to control when you adopt breaking changes:
+**Important**: When upgrading, consider pinning to a specific version to control when you adopt behavior changes:
 
 ```hcl
 module "postgresql" {
-  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-postgresql?ref=v3.0.0"
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-postgresql?ref=v2.1.0"
   # ... your configuration
 }
 ```
