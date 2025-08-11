@@ -265,4 +265,5 @@ variable "tags" {
 variable "zones" {
   description = "Specifies a list of Availability Zones in which this Application Gateway should be located. Changing this forces a new Application Gateway to be created."
   type        = list(string)
+  default     = null
 }
