@@ -130,7 +130,7 @@ variable "monitor_diagnostic_setting" {
     log_analytics_workspace_id = string
     enabled_log = optional(list(object({
       category_group = string
-    })))
+    })), [{ category_group = "allLogs" }])
   })
   default = null
 }
