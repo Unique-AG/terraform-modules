@@ -184,7 +184,7 @@ index 2e43158285..f1e4606ad5 100644
 +  name_prefix   = "agw"
 +  tags          = local.tags
 +
-+  autoscale_configuration {
++  autoscale_configuration = {
 +    max_capacity = 2
 +  }
 +
