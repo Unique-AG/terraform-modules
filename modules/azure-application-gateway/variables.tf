@@ -126,7 +126,7 @@ variable "http_listener" {
 variable "monitor_diagnostic_setting" {
   description = "Configuration for the application gateway diagnostic setting"
   type = object({
-    name                       = optional(string)
+    explicit_name              = optional(string)
     log_analytics_workspace_id = string
     enabled_log = optional(list(object({
       category_group = string

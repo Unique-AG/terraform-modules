@@ -82,32 +82,138 @@ No modules.
 
 ## Upgrade Guide
 
-### ~> 4.0.0
+### ~> `4.0.0`
 
-This version introduces comprehensive WAF (Web Application Firewall) support with breaking changes. While doing so the variable syntax was overworked extensively to future-proof the module and allow for more customization. Follow this guide to upgrade to `~> 4.0.0`.
+> [!CAUTION]
+> `4.0.0` currently is a release candidate. Refrain from upgrading for production clusters. When upgrading non-production environments inspect the diffs carefully and report issues where changes occur un-intended or sub-ideal.
 
-#### Migration Steps
+This version introduces comprehensive WAF (Web Application Firewall) support. Additionally, true to the [Design principles](https://github.com/Unique-AG/terraform-modules/blob/d8dd200b7871f55b8a274903a9865161b7f1ec61/DESIGN.md) the module no longer implicitly or forcibly creates a public IP address; control over networking and the IP addresses is passed to the user/caller. While doing so the variable syntax was overworked extensively to future-proof the module and allow for more customization. Follow this guide to upgrade to `~> 4.0.0`.
 
-1. **Update Module Version**
-   ```hcl
-   module "application_gateway" {
-     source = "github.com/Unique-AG/terraform-modules//modules/azure-application-gateway?ref=v4.0.0-rc.1"
-     # ... rest of configuration
-   }
-   ```
+#### Variable mapping
+Nearly all variables where reworked to have consistent names and address their effective _target_. Refer to this map, the [README](https://github.com/Unique-AG/terraform-modules/blob/d8dd200b7871f55b8a274903a9865161b7f1ec61/README.md) and the example below to find a correct migration path.
 
-2. **Review Response Buffering**
-   - Check if your application requires response buffering
-   - If yes, add `global_response_buffering_enabled = true`
+> [!NOTE]
+> Few variables are actually required. When migrating, only previously used variables would be requried, the rest can be omitted as before.
 
-3. **WAF Configuration (if using WAF_v2)**
-   - Review default WAF settings in the examples
-   - Customize WAF rules as needed for your environment
+|Old variable name|New variable
+|---|---|
+|`agw_diagnostic_name`|`monitor_diagnostic_setting.name`|
+|`application_gateway_name`|`explicit_name`|
+|`backend_address_pool_name`|`backend_address_pool.explicit_name`|
+|`backend_http_settings_name`|`backend_http_settings.name`|
+|`file_upload_limit_in_mb`|`waf_policy_settings.file_upload_limit_in_mb`|
+|`frontend_ip_config_name`|`public_frontend_ip_configuration.explicit_name`|
+|`frontend_ip_private_config_name`|`private_frontend_ip_configuration.explicit_name`|
+|`frontend_port_name`|`frontend_port.explicit_name`|
+|`gateway_mode`|`waf_policy_settings.mode`|
+|`gateway_sku`|`sku.name`|
+|`gateway_tier`|`sku.tier`|
+|`gw_ip_config_name`|`gateway_ip_configuration.name`|
+|`http_listener_name`|`http_listener.explicit_name`|
+|`ip_name`|⚠️ _removed_|
+|`log_analytics_workspace_id`|`monitor_diagnostic_setting.log_analytics_workspace_id`|
+|`max_capacity`|`autoscale_configuration.max_capacity`|
+|`max_request_body_size_exempted_request_uris`|`waf_custom_rules_exempted_request_path_begin_withs`|
+|`max_request_body_size_in_kb`|`waf_policy_settings.max_request_body_size_in_kb`|
+|`min_capacity`|`autoscale_configuration.min_capacity`|
+|`name_prefix`|_unchanged_|
+|`private_frontend_enabled`|_replaced by mutually exclusive objects `public_frontend_ip_configuration` / `private_frontend_ip_configuration`_|
+|`private_ip`|`private_frontend_ip_configuration.ip_address_resource_id`|
+|`public_ip_address_id`|`public_frontend_ip_configuration.ip_address_resource_id`|
+|`request_buffering_enabled`|`global_request_buffering_enabled`|
+|`resource_group_location`|`resource_group.location`|
+|`resource_group_name`|`resource_group.name`|
+|`response_buffering_enabled`|`global_response_buffering_enabled`|
+|`routing_rule_name`|`request_routing_rule.explicit_name`|
+|`ssl_policy_name`|`ssl_policy.name`|
+|`ssl_policy_type`|`ssl_policy.type`|
+|`subnet_appgw`|`gateway_ip_configuration.subnet_resource_id`|
+|`tags`|_unchanged_|
+|`waf_ip_allow_list`|`waf_custom_rules_ip_allow_list`|
+|`waf_policy_managed_rule_settings`|`waf_managed_rules`|
+|`waf_policy_name`|`waf_policy_settings.explicit_name`|
+|`zones`|_unchanged_|
 
-4. **Test in Non-Production**
-   - Deploy to a test environment first
-   - Verify WAF rules don't block legitimate traffic
+#### (Public) IP Address creation and maintenance
+The IP address configuration moves into its own blocks and becomes mandatory. Refer to the examples folder to see the module-external IP address creation.
 
+Unique is aware that this change causes downtime due to potentialy DNS changes and propagation times. The change was deemed necessary as the old module was released rather pre-maturely from internal usage without adhering truely to the [Design principles](https://github.com/Unique-AG/terraform-modules/blob/d8dd200b7871f55b8a274903a9865161b7f1ec61/DESIGN.md).
+
+#### WAF Policies
+Adhering to _secure by default_ the module now defaults to using a set of managed and custom rules for the Web Application Firewall Policy when using the `WAF_v2` SKU. These settings are in their base version compatible with Unique AI but can be further tweaked or hardened by the callers demands.
+
+Refer to the `waf_*` variable descriptions to see which customizations and settings are available.
+
+This module did not offer these settings in previous versions so there is no variable map available. Callers please test and verify the changes on a test environment or get in touch with Unique Forward-Facing Engineering Teams.
+
+#### Opinionated migration example
+The following migration shows an example migration from ~> `3.3` to `4.0`.
+
+```diff
+diff --git a/path/agw.tf b/path/agw.tf
+index 2e43158285..f1e4606ad5 100644
+--- a/path/agw.tf
++++ b/path/agw.tf
+@@ -25,24 +25,39 @@ data "azurerm_subnet" "agw" {
+ }
+
+ module "agw" {
+-  source                   = "github.com/unique-ag/terraform-modules.git//modules/azure-application-gateway?depth=1&ref=azure-application-gateway-3.3.0"
+-  application_gateway_name = "agw-${var.tenant_name}-${var.tenant_environment}"
+-  gateway_mode             = var.agw_gateway_mode
+-  gateway_sku              = "WAF_v2"
+-  gateway_tier             = "WAF_v2"
+-  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+-  name_prefix             = "agw"
+-  public_ip_address_id    = data.azurerm_public_ip.public_ip_address_ingress.id
+-  private_ip              = cidrhost(data.azurerm_subnet.agw.address_prefix, 6)
+-  resource_group_location = data.azurerm_resource_group.core.location
+-  resource_group_name     = data.azurerm_resource_group.core.name
+-  subnet_appgw            = data.azurerm_subnet.agw.id
+-  tags                    = local.tags
+-
+-  waf_ip_allow_list = concat(
+-    compact(var.ip_list_client),
+-    compact(values(var.ip_list_unique)),
+-    compact(flatten(values(var.ip_list_3rd_party))),
+-    [data.azurerm_public_ip.public_ip_address_egress.ip_address]
+-  )
++  source = "github.com/unique-ag/terraform-modules.git//modules/azure-application-gateway?depth=1&ref=azure-application-gateway-4.0.0"
++
++  explicit_name = "agw-${var.tenant_name}-${var.tenant_environment}"
++  name_prefix   = "agw"
++  tags          = local.tags
++
++  gateway_ip_configuration = {
++    subnet_resource_id = data.azurerm_subnet.agw.id
++  }
++
++  monitor_diagnostic_setting = {
++    log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
++  }
++
++  public_frontend_ip_configuration = {
++    ip_address_resource_id = data.azurerm_public_ip.public_ip_address_ingress.id
++    ip_address             = cidrhost(data.azurerm_subnet.agw.address_prefix, 6)
++  }
++
++  resource_group = {
++    name     = data.azurerm_resource_group.core.name
++    location = data.azurerm_resource_group.core.location
++  }
++
++  sku = {
++    name = "WAF_v2"
++    tier = "WAF_v2"
++  }
++
++  waf_policy_settings = {
++    mode = "Detection"
++  }
++
++  waf_custom_rules_ip_allow_list = concat(compact(var.ip_list_client), compact(values(var.ip_list_unique)), compact(flatten(values(var.ip_list_3rd_party))), [data.azurerm_public_ip.public_ip_address_egress.ip_address])
+ }
+```
 
 ## Remarks
 
