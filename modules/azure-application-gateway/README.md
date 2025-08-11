@@ -184,6 +184,10 @@ index 2e43158285..f1e4606ad5 100644
 +  name_prefix   = "agw"
 +  tags          = local.tags
 +
++  autoscale_configuration {
++    max_capacity = 2
++  }
++
 +  gateway_ip_configuration = {
 +    subnet_resource_id = data.azurerm_subnet.agw.id
 +  }
@@ -208,6 +212,7 @@ index 2e43158285..f1e4606ad5 100644
 +  }
 +
 +  waf_policy_settings = {
++    explicit_name = "wafp-${var.tenant_name}-${var.tenant_environment}"
 +    mode = "Detection"
 +  }
 +
