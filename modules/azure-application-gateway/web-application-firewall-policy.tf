@@ -379,7 +379,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
         operator           = "IPMatch"
         negation_condition = true
-        match_values       = compact(concat(var.waf_custom_rules_ip_allow_list, [var.public_ip_address.ip_address]))
+        match_values       = compact(var.waf_custom_rules_ip_allow_list)
       }
     }
   }
