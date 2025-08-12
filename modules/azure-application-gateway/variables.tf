@@ -1,67 +1,138 @@
-variable "gateway_sku" {
-  description = "The SKU of the gateway"
-  type        = string
-  default     = "Standard_v2"
+variable "autoscale_configuration" {
+  description = "Configuration for the autoscale configuration"
+  type = object({
+    min_capacity = optional(number, 1)
+    max_capacity = optional(number, 10)
+  })
+  default = {
+    min_capacity = 1
+    max_capacity = 10
+  }
+
   validation {
-    condition     = length(var.gateway_sku) > 0
-    error_message = "The gateway_sku must not be empty."
+    condition     = var.autoscale_configuration.min_capacity >= 0
+    error_message = "The min_capacity must be at least 0."
+  }
+
+  validation {
+    condition     = var.autoscale_configuration.max_capacity <= 125
+    error_message = "The max_capacity must be at most 125."
+  }
+
+  validation {
+    condition     = var.autoscale_configuration.max_capacity > var.autoscale_configuration.min_capacity
+    error_message = "The max_capacity must be greater than min_capacity."
   }
 }
 
-variable "gateway_tier" {
-  description = "The tier of the gateway"
-  type        = string
-  default     = "Standard_v2"
+variable "backend_address_pool" {
+  description = "Configuration for the backend_address_pool"
+  type = object({
+    explicit_name = optional(string)
+  })
+  default = {}
+}
+
+variable "backend_http_settings" {
+  description = "Configuration for the backend_http_settings"
+  type = object({
+    explicit_name         = optional(string)
+    cookie_based_affinity = optional(string, "Disabled")
+    port                  = optional(number, 80)
+    protocol              = optional(string, "Http")
+    request_timeout       = optional(number, 60)
+  })
+  default = {}
+
   validation {
-    condition     = length(var.gateway_tier) > 0
-    error_message = "The gateway_tier must not be empty."
+    condition     = contains(["Enabled", "Disabled"], var.backend_http_settings.cookie_based_affinity)
+    error_message = "The cookie_based_affinity must be either 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition     = var.backend_http_settings.port >= 1 && var.backend_http_settings.port <= 65535
+    error_message = "The port must be between 1 and 65535."
+  }
+
+  validation {
+    condition     = contains(["Http", "Https"], var.backend_http_settings.protocol)
+    error_message = "The protocol must be either 'Http' or 'Https'."
+  }
+
+  validation {
+    condition     = var.backend_http_settings.request_timeout >= 1 && var.backend_http_settings.request_timeout <= 86400
+    error_message = "The request_timeout must be between 1 and 86400 seconds."
   }
 }
 
-variable "gateway_mode" {
-  description = "The mode of the gateway (Prevention or Detection)"
-  type        = string
-  default     = "Prevention"
-  validation {
-    condition     = contains(["Prevention", "Detection"], var.gateway_mode)
-    error_message = "The gateway_mode must be either 'Prevention' or 'Detection'."
-  }
-}
-
-
-variable "resource_group_location" {
-  description = "The location of the resource group."
-  type        = string
-
-  validation {
-    condition     = length(var.resource_group_location) > 0
-    error_message = "The resource group location must not be empty."
-  }
-}
-
-variable "resource_group_name" {
-  description = "The name of the resource group."
-  type        = string
-
-  validation {
-    condition     = length(var.resource_group_name) > 0
-    error_message = "The resource group name must not be empty."
-  }
-}
-
-variable "ip_name" {
-  description = "The name of the public IP address."
+variable "explicit_name" {
+  description = "Name for the Gateway if <name_prefix>-appgw is not desired."
   type        = string
   default     = null
 }
 
-variable "tags" {
-  description = "Tags to apply to resources."
-  type        = map(string)
+variable "frontend_port" {
+  description = "Settings for the frontend port."
+  type = object({
+    explicit_name = optional(string)
+    port          = optional(number, 80)
+  })
+  default = {}
+
   validation {
-    condition     = length(var.tags) > 0
-    error_message = "The tags map must not be empty."
+    condition     = var.frontend_port.port >= 1 && var.frontend_port.port <= 65535
+    error_message = "The port must be between 1 and 65535."
   }
+}
+
+variable "gateway_ip_configuration" {
+  description = "Defines which subnet the Application Gateway will be deployed in and under which name."
+  type = object({
+    explicit_name      = optional(string)
+    subnet_resource_id = string
+  })
+
+  validation {
+    condition     = can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/virtualNetworks/.+/subnets/.+$", var.gateway_ip_configuration.subnet_resource_id))
+    error_message = "The subnet_resource_id must be a valid Azure subnet resource ID."
+  }
+}
+
+variable "global_request_buffering_enabled" {
+  description = "Enable request buffering, setting it to false is incompatible with WAF_v2 SKU. Refer to https://learn.microsoft.com/en-us/azure/application-gateway/proxy-buffers#request-buffer to understand the implications."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.global_request_buffering_enabled == true || var.sku.tier != "WAF_v2"
+    error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
+  }
+}
+
+variable "global_response_buffering_enabled" {
+  description = "Enable response buffering, refer to https://learn.microsoft.com/en-us/azure/application-gateway/proxy-buffers#response-buffer to understand the implications. Defaults to false to support Unique AI server-sent events."
+  type        = bool
+  default     = false
+}
+
+variable "http_listener" {
+  description = "Configuration for the http_listener"
+  type = object({
+    explicit_name = optional(string)
+  })
+  default = {}
+}
+
+variable "monitor_diagnostic_setting" {
+  description = "Configuration for the application gateway diagnostic setting"
+  type = object({
+    explicit_name              = optional(string)
+    log_analytics_workspace_id = string
+    enabled_log = optional(list(object({
+      category_group = string
+    })), [{ category_group = "allLogs" }])
+  })
+  default = null
 }
 
 variable "name_prefix" {
@@ -73,195 +144,378 @@ variable "name_prefix" {
   }
 }
 
-variable "min_capacity" {
-  description = "Minimum capacity for autoscaling"
-  type        = number
-  default     = 1
+variable "private_frontend_ip_configuration" {
+  description = "Configuration for the frontend_ip_configuration that leverages a private IP address."
+  type = object({
+    explicit_name           = optional(string)
+    ip_address_resource_id  = string
+    address_allocation      = optional(string, "Static")
+    subnet_resource_id      = string
+    is_active_http_listener = optional(bool, false)
+  })
+  default = null
+}
+
+variable "public_frontend_ip_configuration" {
+  description = "Configuration for the frontend_ip_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview."
+  type = object({
+    explicit_name           = optional(string)
+    ip_address_resource_id  = string
+    ip_address              = optional(string)
+    is_active_http_listener = optional(bool, true)
+  })
 
   validation {
-    condition     = var.min_capacity >= 1
-    error_message = "The min_capacity must be at least 1."
+    condition     = can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/publicIPAddresses/.+$", var.public_frontend_ip_configuration.ip_address_resource_id))
+    error_message = "The ip_address_resource_id must be a valid Azure public IP address resource ID."
+  }
+
+  validation {
+    condition     = var.public_frontend_ip_configuration.ip_address == null || can(cidrhost(format("%s/32", var.public_frontend_ip_configuration.ip_address), 0))
+    error_message = "The ip_address must be a valid IPv4 address."
   }
 }
 
-variable "max_capacity" {
-  description = "Maximum capacity for autoscaling"
-  type        = number
-  default     = 2
+variable "request_routing_rule" {
+  description = "Configuration for the request_routing_rule"
+  type = object({
+    explicit_name = optional(string)
+  })
+  default = {}
+}
+
+variable "resource_group" {
+  description = "The resource group to deploy the gateway to."
+  type = object({
+    name     = string
+    location = string
+  })
 
   validation {
-    condition     = var.max_capacity <= 10
-    error_message = "The max_capacity must be smaller than or equal to 10."
+    condition     = length(var.resource_group.name) > 0 && length(var.resource_group.name) <= 90
+    error_message = "The resource group name must be between 1 and 90 characters long."
+  }
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9._-]+$", var.resource_group.name))
+    error_message = "The resource group name can only contain alphanumeric characters, periods, underscores, and hyphens."
   }
 }
 
-variable "ssl_policy_name" {
-  description = "Name of the SSL policy"
-  type        = string
-  default     = "AppGwSslPolicy20220101"
+variable "sku" {
+  description = "The SKU of the gateway"
+  type = object({
+    name = string
+    tier = string
+  })
+  default = {
+    name = "Standard_v2"
+    tier = "Standard_v2"
+  }
 
   validation {
-    condition     = length(var.ssl_policy_name) > 0
-    error_message = "The ssl_policy_name must not be empty."
+    condition = contains([
+      "Standard_Small", "Standard_Medium", "Standard_Large",
+      "Standard_v2", "WAF_Medium", "WAF_Large", "WAF_v2"
+    ], var.sku.name)
+    error_message = "The SKU name must be one of: Standard_Small, Standard_Medium, Standard_Large, Standard_v2, WAF_Medium, WAF_Large, WAF_v2."
+  }
+
+  validation {
+    condition = contains([
+      "Standard", "Standard_v2", "WAF", "WAF_v2"
+    ], var.sku.tier)
+    error_message = "The SKU tier must be one of: Standard, Standard_v2, WAF, WAF_v2."
+  }
+
+  validation {
+    condition = (
+      (var.sku.tier == "Standard" && contains(["Standard_Small", "Standard_Medium", "Standard_Large"], var.sku.name)) ||
+      (var.sku.tier == "Standard_v2" && var.sku.name == "Standard_v2") ||
+      (var.sku.tier == "WAF" && contains(["WAF_Medium", "WAF_Large"], var.sku.name)) ||
+      (var.sku.tier == "WAF_v2" && var.sku.name == "WAF_v2")
+    )
+    error_message = "The SKU name and tier combination is invalid."
   }
 }
 
-variable "ssl_policy_type" {
-  description = "Type of the SSL policy"
-  type        = string
-  default     = "Predefined"
+variable "ssl_policy" {
+  description = "SSL policy configuration"
+  type = object({
+    name = string
+    type = string
+  })
+  default = {
+    name = "AppGwSslPolicy20220101"
+    type = "Predefined"
+  }
+  nullable = false
 
   validation {
-    condition     = contains(["Predefined", "Custom"], var.ssl_policy_type)
-    error_message = "The ssl_policy_type must be either 'Predefined' or 'Custom'."
+    condition     = contains(["Predefined", "Custom"], var.ssl_policy.type)
+    error_message = "The ssl_policy.type must be either 'Predefined' or 'Custom'."
   }
 }
 
-variable "subnet_appgw" {
-  description = "The ID of the subnet for the application gateway"
-  type        = string
-  validation {
-    condition     = length(var.subnet_appgw) > 0
-    error_message = "The subnet_appgw must not be empty."
+variable "tags" {
+  description = "Tags to apply to resources."
+  type        = map(string)
+}
+
+variable "waf_policy_settings" {
+  description = "The mode of the firewall policy (Prevention or Detection)"
+  type = object({
+    explicit_name               = optional(string)
+    mode                        = optional(string, "Prevention")
+    request_body_check          = optional(bool, true)
+    file_upload_limit_in_mb     = optional(number, 512)
+    max_request_body_size_in_kb = optional(number, 2000)
+    request_body_enforcement    = optional(bool, true)
+  })
+  default = {
+    mode                        = "Prevention"
+    request_body_check          = true
+    file_upload_limit_in_mb     = 512
+    max_request_body_size_in_kb = 2000
+    request_body_enforcement    = true
   }
 }
 
-variable "private_ip" {
-  description = "Private IP address for the frontend IP configuration"
-  type        = string
+variable "waf_custom_rules_ip_allow_list" {
+  description = "List of IP addresses or ranges which are allowed to pass the WAF. An empty list means all IPs are allowed."
+  type        = list(string)
+  default     = []
 }
 
-variable "log_analytics_workspace_id" {
-  description = "The ID of the Log Analytics Workspace"
-  type        = string
-  default     = null
-}
-
-variable "public_ip_address_id" {
-  description = "The ID of the public IP address"
-  type        = string
-  default     = ""
-}
-
-variable "application_gateway_name" {
-  description = "Name for the Gateway"
-  type        = string
-  default     = null
-}
-
-variable "frontend_ip_config_name" {
-  description = "Name for the frontend_ip_config"
-  type        = string
-  default     = null
-}
-
-variable "frontend_ip_private_config_name" {
-  description = "Name for the frontend_ip_private_config"
-  type        = string
-  default     = null
-}
-
-variable "http_listener_name" {
-  description = "Name for the http_listener"
-  type        = string
-  default     = null
-}
-
-variable "backend_http_settings_name" {
-  description = "Name for the backend_http_settings"
-  type        = string
-  default     = null
-}
-
-variable "routing_rule_name" {
-  description = "Name for the routing_rule"
-  type        = string
-  default     = null
-}
-
-variable "backend_address_pool_name" {
-  description = "Name for the backend_address_pool"
-  type        = string
-  default     = null
-}
-
-variable "frontend_port_name" {
-  description = "Name for the frontend_port"
-  type        = string
-  default     = null
-}
-
-variable "gw_ip_config_name" {
-  description = "Name for the gw_ip_config"
-  type        = string
-  default     = null
-}
-
-variable "agw_diagnostic_name" {
-  description = "Name for the agw_diagnostic"
-  type        = string
-  default     = null
-}
-
-variable "response_buffering_enabled" {
-  description = "Enable response buffering"
-  type        = bool
-  default     = false
-}
-
-variable "request_buffering_enabled" {
-  description = "Enable request buffering"
+variable "waf_custom_rules_allow_https_challenges" {
+  description = "Allow HTTP-01 challenges e.g.from Let's Encrypt."
   type        = bool
   default     = true
+}
 
-  validation {
-    condition     = var.request_buffering_enabled == true || var.gateway_sku != "WAF_v2"
-    error_message = "Request buffering cannot be disabled when using WAF_v2 SKU."
+variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
+  description = "Allow monitoring agents to probe services."
+  type = object({
+    request_header_user_agent = string
+    probe_path_equals         = list(string)
+  })
+  default = {
+    request_header_user_agent = "Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    probe_path_equals         = ["/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser", "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"]
   }
 }
 
-variable "private_frontend_enabled" {
-  description = "Enable the private frontend IP configuration for the http listener. If disabled, uses public frontend IP configuration"
-  type        = bool
-  default     = false
+variable "waf_custom_rules_allow_hosts" {
+  description = "Allow monitoring agents to probe services."
+  type = object({
+    request_header_host = string
+    host_contains       = list(string)
+  })
+  default = {
+    request_header_host = "host"
+    host_contains       = ["kubernetes.default.svc"]
+  }
 }
 
-variable "file_upload_limit_in_mb" {
-  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy#file_upload_limit_in_mb-1
-  description = "The file upload limit in MB. This is the maximum size of the file that can be uploaded through the application gateway. Revert it to 100 if you want to adhere to the policies defaults."
-  type        = number
-  default     = 512
+variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
+  description = "Only allow certain IP matches to access selected paths. Passing no IP means all requests get blocked for these paths."
+  type = map(object({
+    ip_allow_list    = list(string)
+    path_begin_withs = list(string)
+  }))
+  default = {
+    chat-export = {
+      ip_allow_list    = []
+      path_begin_withs = ["/chat/analytics/user-chat-export"]
+    }
+  }
+  validation {
+    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13
+    error_message = "The number of unique access to paths IP restricted rules must be less than 13 or else the priorities overlap. If you need more, open an issue on GitHub."
+  }
+}
+
+variable "waf_custom_rules_exempted_request_path_begin_withs" {
+  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
+  # Note that this is now a green card to allowlist any URL.
+  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
+  # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+  # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+  description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
+  type        = list(string)
+  default     = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+}
+
+
+variable "waf_managed_rules" {
+  description = "Default configuration for managed rules."
+  type = object({
+    owasp_rules = optional(list(
+      object({
+        rule_group_name = string
+        rules = list(
+          object({
+            id      = string
+            action  = optional(string, "AnomalyScoring")
+            enabled = optional(bool, false)
+          })
+        )
+      })
+    ))
+    bot_rules = optional(list(
+      object({
+        rule_group_name = string
+        rules = list(
+          object({
+            id      = string
+            action  = optional(string, "AnomalyScoring")
+            enabled = optional(bool, false)
+          })
+        )
+      })
+    ))
+    exclusions = optional(list(
+      object({
+        match_variable          = string
+        selector_match_operator = string
+        selector                = string
+        excluded_rule_set = optional(object({
+          type            = string
+          version         = string
+          excluded_rules  = optional(list(string), null)
+          rule_group_name = string
+        }), null)
+      })
+    ))
+  })
+  default = {
+    owasp_rules = [
+      {
+        rule_group_name = "REQUEST-913-SCANNER-DETECTION"
+        rules           = [{ id = "913101" }]
+      },
+      {
+        rule_group_name = "REQUEST-920-PROTOCOL-ENFORCEMENT"
+        rules           = [{ id = "920230" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
+      },
+      {
+        rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
+        rules           = [{ id = "931130" }]
+      },
+      {
+        rule_group_name = "REQUEST-932-APPLICATION-ATTACK-RCE"
+        rules           = [{ id = "932100" }, { id = "932105" }, { id = "932115" }, { id = "932130" }]
+      },
+      {
+        rule_group_name = "REQUEST-933-APPLICATION-ATTACK-PHP"
+        rules           = [{ id = "933160" }]
+      },
+      {
+        rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+        rules = [
+          { id = "942100" },
+          { id = "942110" },
+          { id = "942130" },
+          { id = "942150" },
+          { id = "942190" },
+          { id = "942200" },
+          { id = "942260" },
+          { id = "942330" },
+          { id = "942340" },
+          { id = "942370" },
+          { id = "942380" },
+          { id = "942410" },
+          { id = "942430" },
+          { id = "942440" },
+          { id = "942450" }
+        ]
+      }
+    ]
+    bot_rules = [
+      {
+        rule_group_name = "UnknownBots"
+        rules = [
+          {
+            id      = "300300"
+            action  = "Log"
+            enabled = false
+          },
+          {
+            id      = "300700"
+            action  = "Log"
+            enabled = false
+          }
+        ]
+      }
+    ]
+    exclusions = [
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.favicon,variables.input.logoHeader,variables.input.logoNavbar"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          excluded_rules  = ["941130", "941170"]
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+        }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-932-APPLICATION-ATTACK-RCE"
+        }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-933-APPLICATION-ATTACK-PHP"
+        }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Secure-next-auth.session-token"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+        }
+      }
+    ]
+  }
 }
 
 variable "zones" {
   description = "Specifies a list of Availability Zones in which this Application Gateway should be located. Changing this forces a new Application Gateway to be created."
   type        = list(string)
   default     = null
-  nullable    = true
 }
-
-/**
-* These two next variables are only needed until Unique AI internally supports multi-part 
-* uploads.
-*/
-variable "max_request_body_size_in_kb" {
-  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy
-  description = "The max request body size in KB. This defaults to the maximum to support as many use cases as possible. Lower it back to its default of 128 if you want to adhere to the policies defaults."
-  type        = number
-  default     = 2000
-}
-
-variable "max_request_body_size_exempted_request_uris" {
-  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
-  # Note that this is now a green card to allowlist any URL.
-  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
-  # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
-  # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
-  description = "The request URIs that are exempted from the max request body size. This is a list of request URIs that are exempted from the max request body size. If the WAF is running in Prevention mode, these URIs will be exempted from the max request body size. This setting has no effect if the WAF is running in Detection mode or the gateway isn't using the WAF_v2 SKU."
-  type        = list(string)
-  default     = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
-}
-
-/**
-* The two previous variables are only needed until Unique AI internally supports multi-part * uploads.
-*/
