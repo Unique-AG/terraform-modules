@@ -224,6 +224,9 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       }
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 
