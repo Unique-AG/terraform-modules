@@ -38,7 +38,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
     }
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
   }
 }
