@@ -348,3 +348,9 @@ variable "metric_alerts" {
     error_message = "Window size must be one of: PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, P1D and must be greater than frequency."
   }
 }
+
+variable "metric_alerts_external_action_group_ids" {
+  description = "List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action_group_ids. If an alert defines actions or action_group_ids, those take precedence."
+  type        = list(string)
+  default     = []
+}

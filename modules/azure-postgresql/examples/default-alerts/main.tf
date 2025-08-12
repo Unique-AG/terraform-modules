@@ -13,42 +13,7 @@ resource "azurerm_resource_group" "postgresql_alerts_rg" {
   location = "switzerlandnorth"
 }
 
-resource "azurerm_virtual_network" "postgresql_vnet" {
-  name                = "vnet-postgresql-alerts-prod-swn-${random_string.resource_suffix.result}"
-  location            = azurerm_resource_group.postgresql_alerts_rg.location
-  resource_group_name = azurerm_resource_group.postgresql_alerts_rg.name
-  address_space       = ["10.0.0.0/16"]
-}
 
-resource "azurerm_subnet" "postgresql_subnet" {
-  name                 = "snet-postgresql-alerts-prod-swn-${random_string.resource_suffix.result}"
-  resource_group_name  = azurerm_resource_group.postgresql_alerts_rg.name
-  virtual_network_name = azurerm_virtual_network.postgresql_vnet.name
-  address_prefixes     = ["10.0.2.0/24"]
-  service_endpoints    = ["Microsoft.Storage"]
-  delegation {
-    name = "postgresql-fs-delegation-${random_string.resource_suffix.result}"
-    service_delegation {
-      name = "Microsoft.DBforPostgreSQL/flexibleServers"
-      actions = [
-        "Microsoft.Network/virtualNetworks/subnets/join/action",
-      ]
-    }
-  }
-}
-
-resource "azurerm_private_dns_zone" "postgresql_dns" {
-  name                = "prod-alerts-${random_string.resource_suffix.result}.postgres.database.azure.com"
-  resource_group_name = azurerm_resource_group.postgresql_alerts_rg.name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "postgresql_dns_link" {
-  name                  = "postgresql-alerts-vnet-dns-link-${random_string.resource_suffix.result}"
-  private_dns_zone_name = azurerm_private_dns_zone.postgresql_dns.name
-  virtual_network_id    = azurerm_virtual_network.postgresql_vnet.id
-  resource_group_name   = azurerm_resource_group.postgresql_alerts_rg.name
-  depends_on            = [azurerm_subnet.postgresql_subnet]
-}
 
 # Action group for notifications
 resource "azurerm_monitor_action_group" "postgresql_alerts" {
@@ -178,71 +143,91 @@ resource "random_string" "server_name" {
 #   }
 # }
 
-# # Staging PostgreSQL with custom alert thresholds
-module "postgresql_staging_custom" {
+# Production PostgreSQL with default alerts using external Action Group fallback
+module "postgresql_prod_defaults_with_external_action_group" {
   source              = "../.."
   admin_password      = random_password.postgres_password.result
   administrator_login = random_password.postgres_username.result
-  name                = "psql-stg-custom-${random_string.server_name.result}"
+  name                = "psql-prod-default-extag-${random_string.server_name.result}"
   resource_group_name = azurerm_resource_group.postgresql_alerts_rg.name
   location            = "switzerlandnorth"
 
-  # Customize the default thresholds and add more alerts
-  metric_alerts = {
-    # Lower CPU threshold for development environment
-    custom_cpu_alert = {
-      name        = "PostgreSQL High CPU Usage (Custom)"
-      description = "Alert when CPU usage is above 70% for more than 15 minutes"
-      severity    = 3
-      frequency   = "PT5M"
-      window_size = "PT15M"
-      enabled     = true
-      criteria = {
-        metric_name = "cpu_percent"
-        aggregation = "Average"
-        operator    = "GreaterThan"
-        threshold   = 70
-      }
-      action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
-    }
-
-    # Keep default memory alert but with notifications
-    default_memory_alert = {
-      name        = "PostgreSQL High Memory Usage"
-      description = "Alert when memory usage is above 90% for more than 1 hour"
-      severity    = 1
-      frequency   = "PT15M"
-      window_size = "PT1H"
-      enabled     = true
-      criteria = {
-        metric_name = "memory_percent"
-        aggregation = "Average"
-        operator    = "GreaterThan"
-        threshold   = 90
-      }
-      action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
-    }
-
-    # Add connection monitoring
-    connection_alert = {
-      name        = "PostgreSQL High Connection Count"
-      description = "Alert when active connections exceed 300"
-      severity    = 2
-      frequency   = "PT5M"
-      window_size = "PT15M"
-      enabled     = true
-      criteria = {
-        metric_name = "active_connections"
-        aggregation = "Average"
-        operator    = "GreaterThan"
-        threshold   = 300
-      }
-      action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
-    }
-  }
+  # Fallback Action Group applied to all alerts that don't define their own
+  metric_alerts_external_action_group_ids = [
+    azurerm_monitor_action_group.postgresql_alerts.id
+  ]
 
   tags = {
-    environment = "staging"
-    purpose     = "custom-thresholds-demo"
+    environment = "production"
+    purpose     = "default-alerts-external-action-group"
   }
 }
+
+# # Staging PostgreSQL with custom alert thresholds
+# module "postgresql_staging_custom" {
+#   source              = "../.."
+#   admin_password      = random_password.postgres_password.result
+#   administrator_login = random_password.postgres_username.result
+#   name                = "psql-stg-custom-${random_string.server_name.result}"
+#   resource_group_name = azurerm_resource_group.postgresql_alerts_rg.name
+#   location            = "switzerlandnorth"
+
+#   # Customize the default thresholds and add more alerts
+#   metric_alerts = {
+#     # Lower CPU threshold for development environment
+#     custom_cpu_alert = {
+#       name        = "PostgreSQL High CPU Usage (Custom)"
+#       description = "Alert when CPU usage is above 70% for more than 15 minutes"
+#       severity    = 3
+#       frequency   = "PT5M"
+#       window_size = "PT15M"
+#       enabled     = true
+#       criteria = {
+#         metric_name = "cpu_percent"
+#         aggregation = "Average"
+#         operator    = "GreaterThan"
+#         threshold   = 70
+#       }
+#       action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
+#     }
+
+#     # Keep default memory alert but with notifications
+#     default_memory_alert = {
+#       name        = "PostgreSQL High Memory Usage"
+#       description = "Alert when memory usage is above 90% for more than 1 hour"
+#       severity    = 1
+#       frequency   = "PT15M"
+#       window_size = "PT1H"
+#       enabled     = true
+#       criteria = {
+#         metric_name = "memory_percent"
+#         aggregation = "Average"
+#         operator    = "GreaterThan"
+#         threshold   = 90
+#       }
+#       action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
+#     }
+
+#     # Add connection monitoring
+#     connection_alert = {
+#       name        = "PostgreSQL High Connection Count"
+#       description = "Alert when active connections exceed 300"
+#       severity    = 2
+#       frequency   = "PT5M"
+#       window_size = "PT15M"
+#       enabled     = true
+#       criteria = {
+#         metric_name = "active_connections"
+#         aggregation = "Average"
+#         operator    = "GreaterThan"
+#         threshold   = 300
+#       }
+#       action_group_ids = [azurerm_monitor_action_group.postgresql_alerts.id]
+#     }
+#   }
+
+#   tags = {
+#     environment = "staging"
+#     purpose     = "custom-thresholds-demo"
+#   }
+# }

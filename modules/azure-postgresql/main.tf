@@ -177,12 +177,19 @@ resource "azurerm_monitor_metric_alert" "postgres_metric_alerts" {
 
   # Action blocks for notifications - prefer new actions format, fallback to action_group_ids
   dynamic "action" {
-    for_each = length(each.value.actions) > 0 ? each.value.actions : [
-      for action_group_id in each.value.action_group_ids : {
-        action_group_id    = action_group_id
-        webhook_properties = {}
-      }
-    ]
+    for_each = length(each.value.actions) > 0 ? each.value.actions : (
+      length(each.value.action_group_ids) > 0 ? [
+        for action_group_id in each.value.action_group_ids : {
+          action_group_id    = action_group_id
+          webhook_properties = {}
+        }
+        ] : [
+        for action_group_id in var.metric_alerts_external_action_group_ids : {
+          action_group_id    = action_group_id
+          webhook_properties = {}
+        }
+      ]
+    )
     content {
       action_group_id    = action.value.action_group_id
       webhook_properties = action.value.webhook_properties
