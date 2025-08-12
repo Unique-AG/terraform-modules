@@ -5,5 +5,5 @@ version: 4.0.1
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: changed
-    description: "Update azurerm provider to 4.39"
+  - kind: fixed
+    description: "Fixed the issue with the metric block"
