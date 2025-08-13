@@ -181,7 +181,7 @@ variable "azure_prometheus_grafana_monitor" {
     enabled                = bool
     azure_monitor_location = string
     azure_monitor_rg_name  = string
-    grafana_major_version  = optional(number, 10)
+    grafana_major_version  = optional(number, 11)
     identity = optional(object({
       type         = string
       identity_ids = optional(list(string))

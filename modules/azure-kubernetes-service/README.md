@@ -159,14 +159,14 @@ The module includes several security features:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.39 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.39 |
 
 ## Modules
 
@@ -205,7 +205,7 @@ No modules.
 | <a name="input_application_gateway_id"></a> [application\_gateway\_id](#input\_application\_gateway\_id) | The ID of the Application Gateway. | `string` | `null` | no |
 | <a name="input_automatic_upgrade_channel"></a> [automatic\_upgrade\_channel](#input\_automatic\_upgrade\_channel) | The automatic upgrade channel for the Kubernetes Cluster. | `string` | `"stable"` | no |
 | <a name="input_azure_policy_enabled"></a> [azure\_policy\_enabled](#input\_azure\_policy\_enabled) | Specifies whether Azure Policy is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
-| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 10)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
+| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 11)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
