@@ -266,17 +266,19 @@ variable "waf_policy_settings" {
   description = "The mode of the firewall policy (Prevention or Detection)"
   type = object({
     explicit_name               = optional(string)
-    mode                        = optional(string, "Prevention")
-    request_body_check          = optional(bool, true)
+    file_upload_enforcement     = optional(bool, true)
     file_upload_limit_in_mb     = optional(number, 4000)
     max_request_body_size_in_kb = optional(number, 2000)
+    mode                        = optional(string, "Prevention")
+    request_body_check          = optional(bool, true)
     request_body_enforcement    = optional(bool, true)
   })
   default = {
-    mode                        = "Prevention"
-    request_body_check          = true
+    file_upload_enforcement     = true
     file_upload_limit_in_mb     = 4000
     max_request_body_size_in_kb = 2000
+    mode                        = "Prevention"
+    request_body_check          = true
     request_body_enforcement    = true
   }
 }

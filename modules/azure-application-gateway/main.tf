@@ -15,10 +15,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   location            = var.resource_group.location
 
   policy_settings {
-    enabled                     = true
-    mode                        = try(var.waf_policy_settings.mode, "Prevention")
-    request_body_check          = try(var.waf_policy_settings.request_body_check, true)
+    enabled = true
+    mode    = try(var.waf_policy_settings.mode, "Prevention")
+
+    file_upload_enforcement     = try(var.waf_policy_settings.file_upload_enforcement, true)
     file_upload_limit_in_mb     = try(var.waf_policy_settings.file_upload_limit_in_mb, 512)
+    request_body_check          = try(var.waf_policy_settings.request_body_check, true)
     max_request_body_size_in_kb = try(var.waf_policy_settings.max_request_body_size_in_kb, 2000)
     request_body_enforcement    = try(var.waf_policy_settings.request_body_enforcement, true)
   }
