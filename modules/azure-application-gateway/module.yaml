@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 3.3.1
+version: 3.4.0
 changes:
-  - kind: fixed
-    description: "Deprecation warning for metric#enabled. This is now enabled_metric."
-  - kind: fixed
-    description: "Allow setting zones for the application gateway to address https://github.com/hashicorp/terraform-provider-azurerm/issues/30129 where Microsoft seems to have silently enabled zone redundancy for older gateways. See module readme#remarks for more information."
+  - kind: added
+    description: "Support for private CA certificates via backend_http_settings_trusted_root_certificate_names"
+  - kind: added
+    description: "Inputs for backend_http_settings_protocol and backend_http_settings_port"

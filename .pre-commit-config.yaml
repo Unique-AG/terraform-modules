@@ -11,9 +11,9 @@ repos:
           entry: scripts/tf-fmt.sh
           language: script
           pass_filenames: false
-        - id: tf-sec
-          name: tf-sec
-          entry: scripts/tf-sec.sh
+        - id: trivy
+          name: trivy
+          entry: scripts/trivy.sh
           language: script
           pass_filenames: false
 

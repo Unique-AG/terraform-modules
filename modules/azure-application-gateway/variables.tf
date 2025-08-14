@@ -173,6 +173,32 @@ variable "backend_http_settings_name" {
   default     = null
 }
 
+variable "backend_http_settings_protocol" {
+  description = "Protocol for backend HTTP settings"
+  type        = string
+  default     = "Http"
+  validation {
+    condition     = contains(["Http", "Https"], var.backend_http_settings_protocol)
+    error_message = "Backend HTTP settings protocol must be either 'Http' or 'Https'."
+  }
+}
+
+variable "backend_http_settings_port" {
+  description = "Port for backend HTTP settings"
+  type        = number
+  default     = 80
+  validation {
+    condition     = var.backend_http_settings_port >= 1 && var.backend_http_settings_port <= 65535
+    error_message = "Backend HTTP settings port must be between 1 and 65535."
+  }
+}
+
+variable "backend_http_settings_trusted_root_certificate_names" {
+  description = "Names of trusted root certificates to associate with backend HTTP settings"
+  type        = list(string)
+  default     = []
+}
+
 variable "routing_rule_name" {
   description = "Name for the routing_rule"
   type        = string
@@ -241,7 +267,7 @@ variable "zones" {
 }
 
 /**
-* These two next variables are only needed until Unique AI internally supports multi-part 
+* These two next variables are only needed until Unique AI internally supports multi-part
 * uploads.
 */
 variable "max_request_body_size_in_kb" {
@@ -265,3 +291,28 @@ variable "max_request_body_size_exempted_request_uris" {
 /**
 * The two previous variables are only needed until Unique AI internally supports multi-part * uploads.
 */
+
+variable "trusted_root_certificates" {
+  description = "Configuration for trusted root certificates (e.g., for private CAs). Each certificate will be uploaded to the Application Gateway and can be referenced in backend HTTP settings."
+  type = list(object({
+    name             = string
+    certificate_path = string
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      length(cert.name) > 0 && length(cert.name) <= 80
+    ])
+    error_message = "Each trusted root certificate name must be between 1 and 80 characters long."
+  }
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      can(regex("\\.(cer|crt|pem)$", cert.certificate_path))
+    ])
+    error_message = "Certificate file must have a .cer, .crt, or .pem extension."
+  }
+}
