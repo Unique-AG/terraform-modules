@@ -90,7 +90,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (3)
+  # (3 to 14)
   # Restrict certain routes to certain IP addresses
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_unique_access_to_paths_ip_restricted
@@ -125,7 +125,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (4)
+  # (15)
   # Only allow listed IP addresses and ranges for the rest
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_ip_allow_list) > 0 ? [1] : []
@@ -146,7 +146,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (5)
+  # (16)
   # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads)
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
@@ -169,7 +169,25 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # (99)
   # Allow certain host headers to pass
-  # TODO
+  dynamic "custom_rules" {
+    for_each = var.waf_custom_rules_allow_hosts != null ? [1] : []
+    content {
+      name      = "AllowSpecificHosts"
+      priority  = 99
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = var.waf_custom_rules_allow_hosts.request_header_host
+        }
+        operator           = "Contains"
+        negation_condition = false
+        match_values       = var.waf_custom_rules_allow_hosts.host_contains
+      }
+    }
+  }
 
   # (#)
   managed_rules {
