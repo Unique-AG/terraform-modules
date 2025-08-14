@@ -46,9 +46,11 @@ module "application_gateway" {
   waf_custom_rules_unique_access_to_paths_ip_restricted = {
     chat-export-ip = {
       ip_allow_list    = ["127.0.0.1"]
-      path_begin_withs = ["/chat/analytics/user-chat-export"]
+      path_begin_withs = ["/chat/feature-p/some-path"]
     }
   }
+
+  waf_custom_rules_exempted_request_path_begin_withs = ["/scim"]
 
   public_frontend_ip_configuration = {
     ip_address_resource_id = azurerm_public_ip.example.id

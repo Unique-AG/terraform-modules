@@ -268,14 +268,14 @@ variable "waf_policy_settings" {
     explicit_name               = optional(string)
     mode                        = optional(string, "Prevention")
     request_body_check          = optional(bool, true)
-    file_upload_limit_in_mb     = optional(number, 512)
+    file_upload_limit_in_mb     = optional(number, 4000)
     max_request_body_size_in_kb = optional(number, 2000)
     request_body_enforcement    = optional(bool, true)
   })
   default = {
     mode                        = "Prevention"
     request_body_check          = true
-    file_upload_limit_in_mb     = 512
+    file_upload_limit_in_mb     = 4000
     max_request_body_size_in_kb = 2000
     request_body_enforcement    = true
   }
@@ -323,14 +323,9 @@ variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
     ip_allow_list    = list(string)
     path_begin_withs = list(string)
   }))
-  default = {
-    chat-export = {
-      ip_allow_list    = []
-      path_begin_withs = ["/chat/analytics/user-chat-export"]
-    }
-  }
+  default = {}
   validation {
-    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13
+    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13 # this is limited due to the rule priority, can be increased if needed but then the rule priority must be adjusted
     error_message = "The number of unique access to paths IP restricted rules must be less than 13 or else the priorities overlap. If you need more, open an issue on GitHub."
   }
 }

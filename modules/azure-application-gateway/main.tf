@@ -131,7 +131,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       name      = "BlockUnwantedIPs"
       priority  = 15
       rule_type = "MatchRule"
-      action    = "Block"
+      action    = "Block" # condition is negated, we block everything that does _not_ IPMatch
 
       match_conditions {
         match_variables {
