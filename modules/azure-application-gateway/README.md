@@ -12,6 +12,49 @@
 
 By default, the HTTP listener is configured using the public IP configuration. This can be switched to the private IP configuration by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment. Having an Application Gateway provisioned with only private IP is only possible by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)) and not currently supported by this module.
 
+## Private CA Certificate Support
+
+This module supports uploading private Certificate Authority (CA) root certificates to enable the Application Gateway to trust backend services that use certificates issued by a private CA. This is particularly useful in enterprise environments where internal services use certificates from corporate CAs.
+
+### Configuration
+
+To configure private CA support, use the `trusted_root_certificates` variable to upload your CA certificates:
+
+```hcl
+module "application_gateway" {
+  source = "path/to/module"
+
+  # ... other configuration ...
+
+  # Upload private CA root certificates
+  trusted_root_certificates = [
+    {
+      name             = "corporate-ca-root"
+      certificate_path = "./certificates/corporate-ca-root.cer"
+    },
+    {
+      name             = "partner-ca-root"
+      certificate_path = "./certificates/partner-ca-root.cer"
+    }
+  ]
+
+  # Configure backend HTTP settings to trust the uploaded CAs
+  backend_http_settings = {
+    trusted_root_certificate_names  = ["corporate-ca-root", "partner-ca-root"]
+  }
+}
+```
+
+### Certificate Requirements
+
+- Certificates must be in `.cer`, `.crt`, or `.pem` format
+- The certificate should contain the root CA certificate (not intermediate certificates)
+- Ensure the certificate file is accessible to Terraform during execution
+
+### Example
+
+See the [private-ca example](./examples/private-ca/) for a complete working configuration.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -46,7 +89,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_autoscale_configuration"></a> [autoscale\_configuration](#input\_autoscale\_configuration) | Configuration for the autoscale configuration | <pre>object({<br/>    min_capacity = optional(number, 1)<br/>    max_capacity = optional(number, 10)<br/>  })</pre> | <pre>{<br/>  "max_capacity": 10,<br/>  "min_capacity": 1<br/>}</pre> | no |
 | <a name="input_backend_address_pool"></a> [backend\_address\_pool](#input\_backend\_address\_pool) | Configuration for the backend\_address\_pool | <pre>object({<br/>    explicit_name = optional(string)<br/>  })</pre> | `{}` | no |
-| <a name="input_backend_http_settings"></a> [backend\_http\_settings](#input\_backend\_http\_settings) | Configuration for the backend\_http\_settings | <pre>object({<br/>    explicit_name         = optional(string)<br/>    cookie_based_affinity = optional(string, "Disabled")<br/>    port                  = optional(number, 80)<br/>    protocol              = optional(string, "Http")<br/>    request_timeout       = optional(number, 60)<br/>  })</pre> | `{}` | no |
+| <a name="input_backend_http_settings"></a> [backend\_http\_settings](#input\_backend\_http\_settings) | Configuration for the backend\_http\_settings | <pre>object({<br/>    explicit_name                  = optional(string)<br/>    cookie_based_affinity          = optional(string, "Disabled")<br/>    port                           = optional(number, 80)<br/>    protocol                       = optional(string, "Http")<br/>    request_timeout                = optional(number, 60)<br/>    trusted_root_certificate_names = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_explicit_name"></a> [explicit\_name](#input\_explicit\_name) | Name for the Gateway if <name\_prefix>-appgw is not desired. | `string` | `null` | no |
 | <a name="input_frontend_port"></a> [frontend\_port](#input\_frontend\_port) | Settings for the frontend port. | <pre>object({<br/>    explicit_name = optional(string)<br/>    port          = optional(number, 80)<br/>  })</pre> | `{}` | no |
 | <a name="input_gateway_ip_configuration"></a> [gateway\_ip\_configuration](#input\_gateway\_ip\_configuration) | Defines which subnet the Application Gateway will be deployed in and under which name. | <pre>object({<br/>    explicit_name      = optional(string)<br/>    subnet_resource_id = string<br/>  })</pre> | n/a | yes |
@@ -62,6 +105,7 @@ No modules.
 | <a name="input_sku"></a> [sku](#input\_sku) | The SKU of the gateway | <pre>object({<br/>    name = string<br/>    tier = string<br/>  })</pre> | <pre>{<br/>  "name": "Standard_v2",<br/>  "tier": "Standard_v2"<br/>}</pre> | no |
 | <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101",<br/>  "type": "Predefined"<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to resources. | `map(string)` | n/a | yes |
+| <a name="input_trusted_root_certificates"></a> [trusted\_root\_certificates](#input\_trusted\_root\_certificates) | Configuration for trusted root certificates (e.g., for private CAs). Each certificate will be uploaded to the Application Gateway and can be referenced in backend HTTP settings. | <pre>list(object({<br/>    name             = string<br/>    certificate_path = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_waf_custom_rules_allow_hosts"></a> [waf\_custom\_rules\_allow\_hosts](#input\_waf\_custom\_rules\_allow\_hosts) | Allow monitoring agents to probe services. | <pre>object({<br/>    request_header_host = string<br/>    host_contains       = list(string)<br/>  })</pre> | <pre>{<br/>  "host_contains": [<br/>    "kubernetes.default.svc"<br/>  ],<br/>  "request_header_host": "host"<br/>}</pre> | no |
 | <a name="input_waf_custom_rules_allow_https_challenges"></a> [waf\_custom\_rules\_allow\_https\_challenges](#input\_waf\_custom\_rules\_allow\_https\_challenges) | Allow HTTP-01 challenges e.g.from Let's Encrypt. | `bool` | `true` | no |
 | <a name="input_waf_custom_rules_allow_monitoring_agents_to_probe_services"></a> [waf\_custom\_rules\_allow\_monitoring\_agents\_to\_probe\_services](#input\_waf\_custom\_rules\_allow\_monitoring\_agents\_to\_probe\_services) | Allow monitoring agents to probe services. | <pre>object({<br/>    request_header_user_agent = string<br/>    probe_path_equals         = list(string)<br/>  })</pre> | <pre>{<br/>  "probe_path_equals": [<br/>    "/probe",<br/>    "/chat/api/health",<br/>    "/knowledge-upload/api/health",<br/>    "/sidebar/browser",<br/>    "/debug/ready",<br/>    "/",<br/>    "/browser",<br/>    "/chat/probe",<br/>    "/ingestion/probe",<br/>    "/api/probe",<br/>    "/scope-management/probe",<br/>    "/health"<br/>  ],<br/>  "request_header_user_agent": "Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"<br/>}</pre> | no |

@@ -330,14 +330,25 @@ resource "azurerm_application_gateway" "appgw" {
     name = local.backend_address_pool_name
   }
 
+  # TRUSTED ROOT CERTIFICATES - Private CA certificates
+  # Uploads private CA root certificates for validating backend HTTPS connections
+  dynamic "trusted_root_certificate" {
+    for_each = var.trusted_root_certificates
+    content {
+      name = trusted_root_certificate.value.name
+      data = filebase64(trusted_root_certificate.value.certificate_path)
+    }
+  }
+
   # BACKEND HTTP SETTINGS - How to communicate with backend
   # Defines protocol, port, timeout, and session affinity settings for backend communication
   backend_http_settings {
-    name                  = local.backend_http_settings_name
-    cookie_based_affinity = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
-    port                  = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
-    protocol              = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
-    request_timeout       = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 60
+    name                           = local.backend_http_settings_name
+    cookie_based_affinity          = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
+    port                           = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
+    protocol                       = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
+    request_timeout                = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 60
+    trusted_root_certificate_names = length(var.backend_http_settings.trusted_root_certificate_names) > 0 ? var.backend_http_settings.trusted_root_certificate_names : null
   }
 
   # HTTP LISTENER - Traffic reception point

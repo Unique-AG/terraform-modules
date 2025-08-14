@@ -29,3 +29,5 @@ changes:
     description: "Replace simple and advanced-rules examples with standard and waf examples"
   - kind: added
     description: "Comprehensive exclusions for Unique AI-specific request patterns to prevent false positives"
+  - kind: added
+    description: "Support for private CA certificates"

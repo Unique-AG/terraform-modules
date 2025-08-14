@@ -36,11 +36,12 @@ variable "backend_address_pool" {
 variable "backend_http_settings" {
   description = "Configuration for the backend_http_settings"
   type = object({
-    explicit_name         = optional(string)
-    cookie_based_affinity = optional(string, "Disabled")
-    port                  = optional(number, 80)
-    protocol              = optional(string, "Http")
-    request_timeout       = optional(number, 60)
+    explicit_name                  = optional(string)
+    cookie_based_affinity          = optional(string, "Disabled")
+    port                           = optional(number, 80)
+    protocol                       = optional(string, "Http")
+    request_timeout                = optional(number, 60)
+    trusted_root_certificate_names = optional(list(string), [])
   })
   default = {}
 
@@ -347,7 +348,7 @@ variable "waf_custom_rules_exempted_request_path_begin_withs" {
     * https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
     * https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
     */
-    "/ingestion/v1/content", # 
+    "/ingestion/v1/content", #
     /**
     * Unblocks Ingestion Upload if the max request body size is greater than 2000KB (in this case large bodies getting _streamed_ into the backing blob storage).
     * Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
@@ -527,6 +528,31 @@ variable "waf_managed_rules" {
         }
       }
     ]
+  }
+}
+
+variable "trusted_root_certificates" {
+  description = "Configuration for trusted root certificates (e.g., for private CAs). Each certificate will be uploaded to the Application Gateway and can be referenced in backend HTTP settings."
+  type = list(object({
+    name             = string
+    certificate_path = string
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      length(cert.name) > 0 && length(cert.name) <= 80
+    ])
+    error_message = "Each trusted root certificate name must be between 1 and 80 characters long."
+  }
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      can(regex("\\.(cer|crt|pem)$", cert.certificate_path))
+    ])
+    error_message = "Certificate file must have a .cer, .crt, or .pem extension."
   }
 }
 
