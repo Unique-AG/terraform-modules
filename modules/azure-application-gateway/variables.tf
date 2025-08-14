@@ -336,11 +336,30 @@ variable "waf_custom_rules_exempted_request_path_begin_withs" {
   # Unblock Ingestion Upload if the max request body size is greater than 2000KB
   # Note that this is now a green card to allowlist any URL.
   # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
-  # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
-  # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+
   description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
   type        = list(string)
-  default     = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+  default = [
+    # ‼️ Each line must have a use case rationale ‼️
+    /**
+    * Unblocks Ingestion Upload if the max request body size is greater than 2000KB (in this case here text ingestions with large bodies).
+    * Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    * https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+    * https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+    */
+    "/ingestion/v1/content", # 
+    /**
+    * Unblocks Ingestion Upload if the max request body size is greater than 2000KB (in this case large bodies getting _streamed_ into the backing blob storage).
+    * Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    * https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+    * https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+    */
+    "/scoped/ingestion/upload", # Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    /**
+    * Internal reference for mitigation: UN-12893
+    */
+    "/scim",
+  ]
 }
 
 
