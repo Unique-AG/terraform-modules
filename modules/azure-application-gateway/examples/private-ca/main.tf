@@ -29,10 +29,6 @@ module "application_gateway" {
   source      = "../.."
   name_prefix = "example"
   zones       = ["1", "2", "3"]
-  sku = {
-    name = "WAF_v2"
-    tier = "WAF_v2"
-  }
 
   resource_group = {
     name     = "my-resource-group"
@@ -43,21 +39,24 @@ module "application_gateway" {
     subnet_resource_id = azurerm_subnet.example.id
   }
 
-  waf_custom_rules_unique_access_to_paths_ip_restricted = {
-    chat-export-ip = {
-      ip_allow_list    = ["127.0.0.1"]
-      path_begin_withs = ["/chat/feature-p/some-path"]
-    }
-  }
-
-  waf_custom_rules_exempted_request_path_begin_withs = ["/scim"]
-
   public_frontend_ip_configuration = {
     ip_address_resource_id = azurerm_public_ip.example.id
   }
+
+  # Configure backend HTTP settings to trust the uploaded CA
+  backend_http_settings = {
+    trusted_root_certificate_names = ["private-ca-root"]
+  }
+
+  # Upload your private CA root certificate
+  trusted_root_certificates = [
+    {
+      name             = "private-ca-root"
+      certificate_path = "./private-ca-root.cer"
+    }
+  ]
 
   tags = {
     environment = "example"
   }
 }
-

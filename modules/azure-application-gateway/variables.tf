@@ -36,11 +36,12 @@ variable "backend_address_pool" {
 variable "backend_http_settings" {
   description = "Configuration for the backend_http_settings"
   type = object({
-    explicit_name         = optional(string)
-    cookie_based_affinity = optional(string, "Disabled")
-    port                  = optional(number, 80)
-    protocol              = optional(string, "Http")
-    request_timeout       = optional(number, 60)
+    explicit_name                  = optional(string)
+    cookie_based_affinity          = optional(string, "Disabled")
+    port                           = optional(number, 80)
+    protocol                       = optional(string, "Http")
+    request_timeout                = optional(number, 60)
+    trusted_root_certificate_names = optional(list(string), [])
   })
   default = {}
 
@@ -266,17 +267,19 @@ variable "waf_policy_settings" {
   description = "The mode of the firewall policy (Prevention or Detection)"
   type = object({
     explicit_name               = optional(string)
+    file_upload_enforcement     = optional(bool, true)
+    file_upload_limit_in_mb     = optional(number, 4000)
+    max_request_body_size_in_kb = optional(number, 2000)
     mode                        = optional(string, "Prevention")
     request_body_check          = optional(bool, true)
-    file_upload_limit_in_mb     = optional(number, 512)
-    max_request_body_size_in_kb = optional(number, 2000)
     request_body_enforcement    = optional(bool, true)
   })
   default = {
+    file_upload_enforcement     = true
+    file_upload_limit_in_mb     = 4000
+    max_request_body_size_in_kb = 2000
     mode                        = "Prevention"
     request_body_check          = true
-    file_upload_limit_in_mb     = 512
-    max_request_body_size_in_kb = 2000
     request_body_enforcement    = true
   }
 }
@@ -323,14 +326,9 @@ variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
     ip_allow_list    = list(string)
     path_begin_withs = list(string)
   }))
-  default = {
-    chat-export = {
-      ip_allow_list    = []
-      path_begin_withs = ["/chat/analytics/user-chat-export"]
-    }
-  }
+  default = {}
   validation {
-    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13
+    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13 # this is limited due to the rule priority, can be increased if needed but then the rule priority must be adjusted
     error_message = "The number of unique access to paths IP restricted rules must be less than 13 or else the priorities overlap. If you need more, open an issue on GitHub."
   }
 }
@@ -339,11 +337,30 @@ variable "waf_custom_rules_exempted_request_path_begin_withs" {
   # Unblock Ingestion Upload if the max request body size is greater than 2000KB
   # Note that this is now a green card to allowlist any URL.
   # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
-  # https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
-  # https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+
   description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
   type        = list(string)
-  default     = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+  default = [
+    # ‼️ Each line must have a use case rationale ‼️
+    /**
+    * Unblocks Ingestion Upload if the max request body size is greater than 2000KB (in this case here text ingestions with large bodies).
+    * Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    * https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+    * https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+    */
+    "/ingestion/v1/content", #
+    /**
+    * Unblocks Ingestion Upload if the max request body size is greater than 2000KB (in this case large bodies getting _streamed_ into the backing blob storage).
+    * Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    * https://stackoverflow.com/questions/70975624/azure-web-application-firewall-waf-not-diferentiating-file-uploads-from-normal/72184077#72184077
+    * https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits
+    */
+    "/scoped/ingestion/upload", # Currently Unique AI does not use multi-part uploads, therefore we must allow large body uploads for ingestion as the WAF limits otherwise block the request.
+    /**
+    * Internal reference for mitigation: UN-12893
+    */
+    "/scim",
+  ]
 }
 
 
@@ -511,6 +528,31 @@ variable "waf_managed_rules" {
         }
       }
     ]
+  }
+}
+
+variable "trusted_root_certificates" {
+  description = "Configuration for trusted root certificates (e.g., for private CAs). Each certificate will be uploaded to the Application Gateway and can be referenced in backend HTTP settings."
+  type = list(object({
+    name             = string
+    certificate_path = string
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      length(cert.name) > 0 && length(cert.name) <= 80
+    ])
+    error_message = "Each trusted root certificate name must be between 1 and 80 characters long."
+  }
+
+  validation {
+    condition = alltrue([
+      for cert in var.trusted_root_certificates :
+      can(regex("\\.(cer|crt|pem)$", cert.certificate_path))
+    ])
+    error_message = "Certificate file must have a .cer, .crt, or .pem extension."
   }
 }
 

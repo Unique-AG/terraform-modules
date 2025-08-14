@@ -15,10 +15,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   location            = var.resource_group.location
 
   policy_settings {
-    enabled                     = true
-    mode                        = try(var.waf_policy_settings.mode, "Prevention")
-    request_body_check          = try(var.waf_policy_settings.request_body_check, true)
+    enabled = true
+    mode    = try(var.waf_policy_settings.mode, "Prevention")
+
+    file_upload_enforcement     = try(var.waf_policy_settings.file_upload_enforcement, true)
     file_upload_limit_in_mb     = try(var.waf_policy_settings.file_upload_limit_in_mb, 512)
+    request_body_check          = try(var.waf_policy_settings.request_body_check, true)
     max_request_body_size_in_kb = try(var.waf_policy_settings.max_request_body_size_in_kb, 2000)
     request_body_enforcement    = try(var.waf_policy_settings.request_body_enforcement, true)
   }
@@ -88,7 +90,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (3)
+  # (3 to 14)
   # Restrict certain routes to certain IP addresses
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_unique_access_to_paths_ip_restricted
@@ -123,7 +125,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (4)
+  # (15)
   # Only allow listed IP addresses and ranges for the rest
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_ip_allow_list) > 0 ? [1] : []
@@ -131,7 +133,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       name      = "BlockUnwantedIPs"
       priority  = 15
       rule_type = "MatchRule"
-      action    = "Block"
+      action    = "Block" # condition is negated, we block everything that does _not_ IPMatch
 
       match_conditions {
         match_variables {
@@ -144,7 +146,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (5)
+  # (16)
   # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads)
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
@@ -167,7 +169,25 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
   # (99)
   # Allow certain host headers to pass
-  # TODO
+  dynamic "custom_rules" {
+    for_each = var.waf_custom_rules_allow_hosts != null ? [1] : []
+    content {
+      name      = "AllowSpecificHosts"
+      priority  = 99
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = var.waf_custom_rules_allow_hosts.request_header_host
+        }
+        operator           = "Contains"
+        negation_condition = false
+        match_values       = var.waf_custom_rules_allow_hosts.host_contains
+      }
+    }
+  }
 
   # (#)
   managed_rules {
@@ -310,14 +330,25 @@ resource "azurerm_application_gateway" "appgw" {
     name = local.backend_address_pool_name
   }
 
+  # TRUSTED ROOT CERTIFICATES - Private CA certificates
+  # Uploads private CA root certificates for validating backend HTTPS connections
+  dynamic "trusted_root_certificate" {
+    for_each = var.trusted_root_certificates
+    content {
+      name = trusted_root_certificate.value.name
+      data = filebase64(trusted_root_certificate.value.certificate_path)
+    }
+  }
+
   # BACKEND HTTP SETTINGS - How to communicate with backend
   # Defines protocol, port, timeout, and session affinity settings for backend communication
   backend_http_settings {
-    name                  = local.backend_http_settings_name
-    cookie_based_affinity = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
-    port                  = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
-    protocol              = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
-    request_timeout       = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 60
+    name                           = local.backend_http_settings_name
+    cookie_based_affinity          = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
+    port                           = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
+    protocol                       = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
+    request_timeout                = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 60
+    trusted_root_certificate_names = length(var.backend_http_settings.trusted_root_certificate_names) > 0 ? var.backend_http_settings.trusted_root_certificate_names : null
   }
 
   # HTTP LISTENER - Traffic reception point
