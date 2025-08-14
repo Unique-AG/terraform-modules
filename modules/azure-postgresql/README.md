@@ -1,6 +1,176 @@
 
 This Terraform module creates a PostgreSQL flexible server on Azure and configures the server's parameters and databases. It's designed to be reusable as a module, allowing you to easily deploy PostgreSQL servers with different configurations.
 
+## 🚨 Default Monitoring Included
+
+**This module automatically enables essential monitoring alerts by default:**
+- **CPU Alert**: Triggers when CPU usage > 80% for 30+ minutes (Warning level)
+- **Memory Alert**: Triggers when memory usage > 90% for 1+ hour (Error level)
+
+No additional configuration required! Set `metric_alerts = {}` to disable if not needed.
+
+## 🔄 Migration Guide
+
+### ℹ️ Behavior Change: Default Monitoring Alerts (v2.1.0)
+
+Starting with version 2.1.0, the module creates monitoring alerts by default. Prior to 2.1.0, no alerts were created automatically.
+
+**Version Information:**
+- **Current Version**: 2.1.0
+- **Change**: Default metric alerts are now enabled
+- **Previous Behavior (< 2.1.0)**: No monitoring alerts were created by default
+
+#### Migrating from Previous Versions
+
+**Important**: When upgrading, consider pinning to a specific version to control when you adopt behavior changes:
+
+```hcl
+module "postgresql" {
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-postgresql?ref=v2.1.0"
+  # ... your configuration
+}
+```
+
+Choose one of the following migration strategies:
+
+**Option 1: Disable all alerts (maintain previous behavior)**
+```hcl
+module "postgresql" {
+  source = "..."
+  
+  # Disable all default alerts to maintain previous behavior
+  metric_alerts = {}
+  
+  # ... other configuration
+}
+```
+
+**Option 2: Customize default alerts**
+```hcl
+module "postgresql" {
+  source = "..."
+  
+  # Override default alert settings
+  metric_alerts = {
+    cpu_alert = {
+      name        = "Custom CPU Alert"
+      description = "Custom CPU alert description"
+      severity    = 3
+      criteria = {
+        metric_name = "cpu_percent"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 75  # Lower threshold
+      }
+    }
+    # Memory alert will use defaults if not specified
+  }
+  
+  # ... other configuration
+}
+```
+
+**Option 3: Keep defaults with action groups**
+```hcl
+module "postgresql" {
+  source = "..."
+  
+  # Keep default alerts but add notifications
+  metric_alerts = {
+    default_cpu_alert = {
+      name        = "PostgreSQL High CPU Usage"
+      description = "Alert when CPU usage is above 80% for more than 30 minutes"
+      severity    = 2
+      frequency   = "PT5M"
+      window_size = "PT30M"
+      criteria = {
+        metric_name = "cpu_percent"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 80
+      }
+      actions = [{
+        action_group_id = azurerm_monitor_action_group.example.id
+      }]
+    }
+    
+    default_memory_alert = {
+      name        = "PostgreSQL High Memory Usage"  
+      description = "Alert when memory usage is above 90% for more than 1 hour"
+      severity    = 1
+      frequency   = "PT15M"
+      window_size = "PT1H"
+      criteria = {
+        metric_name = "memory_percent"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 90
+      }
+      actions = [{
+        action_group_id = azurerm_monitor_action_group.example.id
+      }]
+    }
+  }
+  
+  # ... other configuration
+}
+```
+
+### Default/external Action Group for alerts
+
+You can supply module-level external Action Groups to be attached to alerts that do not explicitly define their own actions:
+
+```hcl
+module "postgresql" {
+  source = "..."
+
+  # Applies this Action Group to every alert that lacks its own actions/action_group_ids
+  metric_alerts_external_action_group_ids = [
+    azurerm_monitor_action_group.platform_ops.id,
+  ]
+
+  # Alerts that define actions take precedence and will not use the external list
+  metric_alerts = {
+    default_cpu_alert = {
+      name     = "PostgreSQL High CPU Usage"
+      criteria = {
+        metric_name = "cpu_percent"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 80
+      }
+      # No actions defined here -> will use external action group(s)
+    }
+
+    custom_memory_alert = {
+      name     = "Custom Memory Alert"
+      criteria = {
+        metric_name = "memory_percent"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 85
+      }
+      actions = [{
+        action_group_id = azurerm_monitor_action_group.team_oncall.id
+      }]
+      # This alert defines actions -> these take precedence over external action groups
+    }
+  }
+}
+```
+
+Precedence order for attaching action groups to alerts:
+- Alert-level `actions` (highest precedence)
+- Alert-level `action_group_ids` (back-compat)
+- Module-level `metric_alerts_external_action_group_ids` (fallback)
+
+#### Impact Assessment
+
+Before upgrading:
+1. **Review existing monitoring**: Check if you have external monitoring for PostgreSQL that might conflict
+2. **Action groups**: Default alerts have no action groups, so they won't send notifications until configured
+3. **Resource costs**: Additional monitoring alert resources will be created (minimal cost impact)
+
 ## Pre-requisites
 - To deploy this module, you have at least the following permissions:
     + Reader of the subscription
@@ -39,6 +209,7 @@ No modules.
 | [azurerm_key_vault_secret.password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.port](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.username](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_monitor_metric_alert.postgres_metric_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_metric_alert) | resource |
 | [azurerm_postgresql_flexible_server.apfs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server) | resource |
 | [azurerm_postgresql_flexible_server_configuration.parameters](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server_configuration) | resource |
 | [azurerm_postgresql_flexible_server_database.destructible_database_server](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server_database) | resource |
@@ -63,6 +234,8 @@ No modules.
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where the secrets will be stored | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | The location where the resources will be deployed. | `string` | n/a | yes |
+| <a name="input_metric_alerts"></a> [metric\_alerts](#input\_metric\_alerts) | Map of metric alerts to create for the PostgreSQL server. By default, includes CPU (>80% for 30min) and memory (>90% for 1h) alerts. Set to {} to disable all default alerts. | <pre>map(object({<br/>    name                     = string<br/>    description              = optional(string, "")<br/>    severity                 = optional(number, 3)<br/>    frequency                = optional(string, "PT5M")<br/>    window_size              = optional(string, "PT15M")<br/>    enabled                  = optional(bool, true)<br/>    auto_mitigate            = optional(bool, true)<br/>    target_resource_type     = optional(string, null)<br/>    target_resource_location = optional(string, null)<br/><br/>    # Static criteria (one of criteria, dynamic_criteria, or application_insights_web_test_location_availability_criteria must be specified)<br/>    criteria = optional(object({<br/>      metric_namespace       = optional(string, "Microsoft.DBforPostgreSQL/flexibleServers")<br/>      metric_name            = string<br/>      aggregation            = string<br/>      operator               = string<br/>      threshold              = number<br/>      skip_metric_validation = optional(bool, false)<br/>      dimension = optional(list(object({<br/>        name     = string<br/>        operator = string # Include, Exclude, StartsWith<br/>        values   = list(string)<br/>      })), [])<br/>    }))<br/><br/>    # Dynamic criteria (alternative to static criteria)<br/>    dynamic_criteria = optional(object({<br/>      metric_namespace         = optional(string, "Microsoft.DBforPostgreSQL/flexibleServers")<br/>      metric_name              = string<br/>      aggregation              = string<br/>      operator                 = string<br/>      alert_sensitivity        = optional(string, "Medium")<br/>      evaluation_total_count   = optional(number, 4)<br/>      evaluation_failure_count = optional(number, 4)<br/>      ignore_data_before       = optional(string, null)<br/>      skip_metric_validation   = optional(bool, false)<br/>      dimension = optional(list(object({<br/>        name     = string<br/>        operator = string # Include, Exclude, StartsWith<br/>        values   = list(string)<br/>      })), [])<br/>    }))<br/><br/>    # Application Insights web test location availability criteria (alternative to other criteria types)<br/>    application_insights_web_test_location_availability_criteria = optional(object({<br/>      web_test_id           = string<br/>      component_id          = string<br/>      failed_location_count = number<br/>    }))<br/><br/>    # Actions configuration<br/>    actions = optional(list(object({<br/>      action_group_id    = string<br/>      webhook_properties = optional(map(string), {})<br/>    })), [])<br/><br/>    # Backward compatibility - will be deprecated in favor of actions<br/>    action_group_ids = optional(list(string), [])<br/>  }))</pre> | <pre>{<br/>  "default_cpu_alert": {<br/>    "criteria": {<br/>      "aggregation": "Average",<br/>      "metric_name": "cpu_percent",<br/>      "operator": "GreaterThan",<br/>      "threshold": 80<br/>    },<br/>    "description": "Alert when CPU usage is above 80% for more than 30 minutes",<br/>    "enabled": true,<br/>    "frequency": "PT5M",<br/>    "name": "PostgreSQL High CPU Usage",<br/>    "severity": 2,<br/>    "window_size": "PT30M"<br/>  },<br/>  "default_memory_alert": {<br/>    "criteria": {<br/>      "aggregation": "Average",<br/>      "metric_name": "memory_percent",<br/>      "operator": "GreaterThan",<br/>      "threshold": 90<br/>    },<br/>    "description": "Alert when memory usage is above 90% for more than 1 hour",<br/>    "enabled": true,<br/>    "frequency": "PT15M",<br/>    "name": "PostgreSQL High Memory Usage",<br/>    "severity": 1,<br/>    "window_size": "PT1H"<br/>  }<br/>}</pre> | no |
+| <a name="input_metric_alerts_external_action_group_ids"></a> [metric\_alerts\_external\_action\_group\_ids](#input\_metric\_alerts\_external\_action\_group\_ids) | List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action\_group\_ids. If an alert defines actions or action\_group\_ids, those take precedence. | `list(string)` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name of the PostgreSQL server resource. | `string` | n/a | yes |
 | <a name="input_parameter_values"></a> [parameter\_values](#input\_parameter\_values) | values for the server configuration parameters | `map(string)` | <pre>{<br/>  "azure.extensions": "PG_STAT_STATEMENTS,PG_TRGM",<br/>  "enable_seqscan": "off",<br/>  "max_connections": "400"<br/>}</pre> | no |
 | <a name="input_password_secret_name"></a> [password\_secret\_name](#input\_password\_secret\_name) | Name of the secret containing the admin password | `string` | `null` | no |
