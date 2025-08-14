@@ -318,7 +318,7 @@ variable "waf_custom_rules_allow_hosts" {
 }
 
 variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
-  description = "Only allow certain IP matches to access selected paths. Passing no IP means all requests get blocked for these paths."
+  description = "Only allow certain IP matches to access selected paths. Passing no IP means all requests get blocked for these paths. Pass 0.0.0.0/0 to allow all IPs for the routes. The default blocks touchy routes as we ship secure by default."
   type = map(object({
     ip_allow_list    = list(string)
     path_begin_withs = list(string)

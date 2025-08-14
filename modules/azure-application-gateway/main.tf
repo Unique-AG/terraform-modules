@@ -98,13 +98,17 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
       rule_type = "MatchRule"
       action    = "Block"
 
-      match_conditions {
-        match_variables {
-          variable_name = "RemoteAddr"
+      # Only create IP match condition if there are IPs to allow
+      dynamic "match_conditions" {
+        for_each = length(custom_rules.value.ip_allow_list) > 0 ? [1] : []
+        content {
+          match_variables {
+            variable_name = "RemoteAddr"
+          }
+          operator           = "IPMatch"
+          negation_condition = true
+          match_values       = custom_rules.value.ip_allow_list
         }
-        operator           = "IPMatch"
-        negation_condition = length(custom_rules.value.ip_allow_list) > 0
-        match_values       = length(custom_rules.value.ip_allow_list) > 0 ? custom_rules.value.ip_allow_list : []
       }
 
       match_conditions {
@@ -223,6 +227,9 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
       }
     }
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
