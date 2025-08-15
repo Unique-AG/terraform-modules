@@ -5,31 +5,5 @@ version: 4.1.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: changed
-    description: "⚠️ The module no longer internally manages the public IP address. You must now manage it separately. This decision was taken to align with our design principles explained in the README."
-  - kind: added
-    description: "Comprehensive Web Application Firewall (WAF) policy support with Unique AI-specific configurations"
-  - kind: added
-    description: "Custom WAF rules for IP allowlisting and path-based access restrictions"
-  - kind: added
-    description: "HTTP-01 challenge support for Let's Encrypt compatibility"
-  - kind: added
-    description: "Monitoring agent probe allowances with configurable user agents and paths"
-  - kind: added
-    description: "Unique AI-specific path exemptions for ingestion uploads and chat export analytics"
-  - kind: added
-    description: "Pre-configured OWASP 3.2 rule set with Unique AI-optimized exclusions"
-  - kind: added
-    description: "UnknownBots rule group with configurable actions for bot protection"
-  - kind: added
-    description: "Configurable file upload limits (512MB default) and request body size limits (2000KB default)"
-  - kind: changed
-    description: "Response buffering default from true to false for Unique AI server-sent events compatibility"
-  - kind: changed
-    description: "Replace simple and advanced-rules examples with standard and waf examples"
-  - kind: added
-    description: "Comprehensive exclusions for Unique AI-specific request patterns to prevent false positives"
-  - kind: added
-    description: "Support for private CA certificates"
   - kind: change
     description: "Change request timeout default from 60 to 600"
