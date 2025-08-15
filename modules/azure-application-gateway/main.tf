@@ -347,7 +347,7 @@ resource "azurerm_application_gateway" "appgw" {
     cookie_based_affinity          = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
     port                           = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
     protocol                       = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
-    request_timeout                = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 60
+    request_timeout                = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 600
     trusted_root_certificate_names = length(var.backend_http_settings.trusted_root_certificate_names) > 0 ? var.backend_http_settings.trusted_root_certificate_names : null
   }
 

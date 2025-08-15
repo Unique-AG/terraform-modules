@@ -40,7 +40,7 @@ variable "backend_http_settings" {
     cookie_based_affinity          = optional(string, "Disabled")
     port                           = optional(number, 80)
     protocol                       = optional(string, "Http")
-    request_timeout                = optional(number, 60)
+    request_timeout                = optional(number, 600)
     trusted_root_certificate_names = optional(list(string), [])
   })
   default = {}
