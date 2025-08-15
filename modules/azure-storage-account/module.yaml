@@ -1,9 +1,10 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 3.0.2
+version: 3.0.3
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: changed
-    description: "Default value for shared_access_key_enabled is now true."
+  - kind: fixed
+    description: "In previous version, the change feed retention days was not set correctly. 
+    Leading to the change feed being enabled. This has been fixed."

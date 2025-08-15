@@ -30,7 +30,7 @@ resource "azurerm_storage_account" "storage_account" {
   # enable access from browsers
   blob_properties {
     change_feed_enabled           = var.data_protection_settings.change_feed_retention_days > 0
-    change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
+    change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : -1
     versioning_enabled            = var.data_protection_settings.versioning_enabled
     dynamic "cors_rule" {
       for_each = var.cors_rules
