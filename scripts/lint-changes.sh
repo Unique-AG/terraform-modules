@@ -90,20 +90,24 @@ validate_module_yaml() {
     local has_errors=false
     
     echo -e "${YELLOW}Validating: $file${NC}"
+    echo "Debug: Starting validation for file: $file"
     
     # Check if file exists
     if [[ ! -f "$file" ]]; then
         echo -e "${RED}  ERROR: File does not exist${NC}"
         return 1
     fi
+    echo "Debug: File exists, checking changes field..."
     
     # Check if file has changes field
+    echo "Debug: Running yq eval '.changes' on $file"
     if ! yq eval '.changes' "$file" >/dev/null 2>&1; then
         echo -e "${RED}  ERROR: No 'changes' field found${NC}"
         echo -e "${BLUE}  Debug: yq eval '.changes' output:${NC}"
         yq eval '.changes' "$file" 2>&1 || true
         return 1
     fi
+    echo "Debug: Changes field found, proceeding with validation..."
     
     # Add error handling for yq command failures
     set +e  # Don't exit on error in this function
@@ -111,7 +115,9 @@ validate_module_yaml() {
     # Get all kind values from changes array
     local kinds
     echo -e "${BLUE}  Debug: Running yq eval '.changes[].kind' on $file${NC}"
+    echo "Debug: About to run yq eval '.changes[].kind' on $file"
     kinds=$(yq eval '.changes[].kind' "$file" 2>&1 || echo "YQ_ERROR")
+    echo "Debug: yq command completed, result: '$kinds'"
     
     if [[ "$kinds" == "YQ_ERROR" ]]; then
         echo -e "${RED}  ERROR: yq command failed to extract kind values${NC}"
@@ -222,6 +228,9 @@ main() {
         echo "Debug: Loop iteration - file='$file'"
         ((total_files++))
         echo "Processing file $total_files of ${#files_to_check[@]}: $file"
+        
+        # Temporarily disable exit on error for this validation
+        set +e
         if ! validate_module_yaml "$file"; then
             ((failed_files++))
             exit_code=1
@@ -229,6 +238,7 @@ main() {
         else
             echo -e "${GREEN}Successfully validated: $file${NC}"
         fi
+        set -e  # Re-enable exit on error
         echo ""
     done
     
