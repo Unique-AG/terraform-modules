@@ -6,11 +6,14 @@
     + Reader of the subscription
     + Contributor of the resource group
 
+## Compatibility Note
+Starting with Version `5.0.0` this module is no longer a generic gateway module (in fact it never was, due to the large `lifecylce.ignore_changes` block which was added specifically to match the Application Gateway Ingress Controller).
+
+This module is designed to be used in combination with [The Application Gateway Ingress Controller (AGIC)](https://azure.github.io/application-gateway-kubernetes-ingress/). This controller controls many aspects of the gateway (always did) and `5.0.0` makes this fully transparent by just flat our defaulting settings controlled by AGIC.
+
+In order to configure the settings controller via AGIC, you must use annotations on your Ingresses, see [Annotations](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/).
+
 ## [Examples](./examples)
-
-## Configuring the HTTP Listener with private IP
-
-By default, the HTTP listener is configured using the public IP configuration. This can be switched to the private IP configuration by setting `private_frontend_enabled` to `true`. However, in this case the module will anyway create a frontend IP configuration for the public IP, since this is required by a standard Application Gateway v2 deployment. Having an Application Gateway provisioned with only private IP is only possible by [enabling a EnableApplicationGatewayNetworkIsolation preview feature](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment)) and not currently supported by this module.
 
 ## Private CA Certificate Support
 
@@ -37,13 +40,17 @@ module "application_gateway" {
       certificate_path = "./certificates/partner-ca-root.cer"
     }
   ]
-
-  # Configure backend HTTP settings to trust the uploaded CAs
-  backend_http_settings = {
-    trusted_root_certificate_names  = ["corporate-ca-root", "partner-ca-root"]
-  }
 }
 ```
+
+After providing the certificate, it can be used via [Annotations](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/), namely 
+
+```yaml
+appgw.ingress.kubernetes.io/backend-protocol: "https"
+appgw.ingress.kubernetes.io/appgw-trusted-root-certificate: "corporate-ca-root" # example above
+```
+
+You can find this a full example [here](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/#appgw-trusted-root-certificate).
 
 ### Certificate Requirements
 
@@ -88,19 +95,15 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_autoscale_configuration"></a> [autoscale\_configuration](#input\_autoscale\_configuration) | Configuration for the autoscale configuration | <pre>object({<br/>    min_capacity = optional(number, 1)<br/>    max_capacity = optional(number, 10)<br/>  })</pre> | <pre>{<br/>  "max_capacity": 10,<br/>  "min_capacity": 1<br/>}</pre> | no |
-| <a name="input_backend_address_pool"></a> [backend\_address\_pool](#input\_backend\_address\_pool) | Configuration for the backend\_address\_pool | <pre>object({<br/>    explicit_name = optional(string)<br/>  })</pre> | `{}` | no |
-| <a name="input_backend_http_settings"></a> [backend\_http\_settings](#input\_backend\_http\_settings) | Configuration for the backend\_http\_settings | <pre>object({<br/>    explicit_name                  = optional(string)<br/>    cookie_based_affinity          = optional(string, "Disabled")<br/>    port                           = optional(number, 80)<br/>    protocol                       = optional(string, "Http")<br/>    request_timeout                = optional(number, 600)<br/>    trusted_root_certificate_names = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_explicit_name"></a> [explicit\_name](#input\_explicit\_name) | Name for the Gateway if <name\_prefix>-appgw is not desired. | `string` | `null` | no |
 | <a name="input_frontend_port"></a> [frontend\_port](#input\_frontend\_port) | Settings for the frontend port. | <pre>object({<br/>    explicit_name = optional(string)<br/>    port          = optional(number, 80)<br/>  })</pre> | `{}` | no |
 | <a name="input_gateway_ip_configuration"></a> [gateway\_ip\_configuration](#input\_gateway\_ip\_configuration) | Defines which subnet the Application Gateway will be deployed in and under which name. | <pre>object({<br/>    explicit_name      = optional(string)<br/>    subnet_resource_id = string<br/>  })</pre> | n/a | yes |
 | <a name="input_global_request_buffering_enabled"></a> [global\_request\_buffering\_enabled](#input\_global\_request\_buffering\_enabled) | Enable request buffering, setting it to false is incompatible with WAF\_v2 SKU. Refer to https://learn.microsoft.com/en-us/azure/application-gateway/proxy-buffers#request-buffer to understand the implications. | `bool` | `true` | no |
 | <a name="input_global_response_buffering_enabled"></a> [global\_response\_buffering\_enabled](#input\_global\_response\_buffering\_enabled) | Enable response buffering, refer to https://learn.microsoft.com/en-us/azure/application-gateway/proxy-buffers#response-buffer to understand the implications. Defaults to false to support Unique AI server-sent events. | `bool` | `false` | no |
-| <a name="input_http_listener"></a> [http\_listener](#input\_http\_listener) | Configuration for the http\_listener | <pre>object({<br/>    explicit_name = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_monitor_diagnostic_setting"></a> [monitor\_diagnostic\_setting](#input\_monitor\_diagnostic\_setting) | Configuration for the application gateway diagnostic setting | <pre>object({<br/>    explicit_name              = optional(string)<br/>    log_analytics_workspace_id = string<br/>    enabled_log = optional(list(object({<br/>      category_group = string<br/>    })), [{ category_group = "allLogs" }])<br/>  })</pre> | `null` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
 | <a name="input_private_frontend_ip_configuration"></a> [private\_frontend\_ip\_configuration](#input\_private\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a private IP address. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    address_allocation      = optional(string, "Static")<br/>    subnet_resource_id      = string<br/>    is_active_http_listener = optional(bool, false)<br/>  })</pre> | `null` | no |
 | <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    ip_address              = optional(string)<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | n/a | yes |
-| <a name="input_request_routing_rule"></a> [request\_routing\_rule](#input\_request\_routing\_rule) | Configuration for the request\_routing\_rule | <pre>object({<br/>    explicit_name = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | The resource group to deploy the gateway to. | <pre>object({<br/>    name     = string<br/>    location = string<br/>  })</pre> | n/a | yes |
 | <a name="input_sku"></a> [sku](#input\_sku) | The SKU of the gateway | <pre>object({<br/>    name = string<br/>    tier = string<br/>  })</pre> | <pre>{<br/>  "name": "Standard_v2",<br/>  "tier": "Standard_v2"<br/>}</pre> | no |
 | <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101",<br/>  "type": "Predefined"<br/>}</pre> | no |
@@ -125,6 +128,10 @@ No modules.
 <!-- END_TF_DOCS -->
 
 ## Upgrade Guide
+
+### ~> `5.0.0`
+No diff should occur as your gateway is already fully managed by AGIC and the affected blocks are in fact `ignored_changes`. True to Semantic Versioning though, the change is marked as potentially breaking.
+In case you used the explicit variable names, remove them. They were not used anyway as as soon as AGIC kicked in, all terraform changes get forgotten and were always also in `< 4.0.0` `lifecylce.ignore_changes` ignored.
 
 ### ~> `4.0.0`
 

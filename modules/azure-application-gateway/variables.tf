@@ -25,47 +25,6 @@ variable "autoscale_configuration" {
   }
 }
 
-variable "backend_address_pool" {
-  description = "Configuration for the backend_address_pool"
-  type = object({
-    explicit_name = optional(string)
-  })
-  default = {}
-}
-
-variable "backend_http_settings" {
-  description = "Configuration for the backend_http_settings"
-  type = object({
-    explicit_name                  = optional(string)
-    cookie_based_affinity          = optional(string, "Disabled")
-    port                           = optional(number, 80)
-    protocol                       = optional(string, "Http")
-    request_timeout                = optional(number, 600)
-    trusted_root_certificate_names = optional(list(string), [])
-  })
-  default = {}
-
-  validation {
-    condition     = contains(["Enabled", "Disabled"], var.backend_http_settings.cookie_based_affinity)
-    error_message = "The cookie_based_affinity must be either 'Enabled' or 'Disabled'."
-  }
-
-  validation {
-    condition     = var.backend_http_settings.port >= 1 && var.backend_http_settings.port <= 65535
-    error_message = "The port must be between 1 and 65535."
-  }
-
-  validation {
-    condition     = contains(["Http", "Https"], var.backend_http_settings.protocol)
-    error_message = "The protocol must be either 'Http' or 'Https'."
-  }
-
-  validation {
-    condition     = var.backend_http_settings.request_timeout >= 1 && var.backend_http_settings.request_timeout <= 86400
-    error_message = "The request_timeout must be between 1 and 86400 seconds."
-  }
-}
-
 variable "explicit_name" {
   description = "Name for the Gateway if <name_prefix>-appgw is not desired."
   type        = string
@@ -114,14 +73,6 @@ variable "global_response_buffering_enabled" {
   description = "Enable response buffering, refer to https://learn.microsoft.com/en-us/azure/application-gateway/proxy-buffers#response-buffer to understand the implications. Defaults to false to support Unique AI server-sent events."
   type        = bool
   default     = false
-}
-
-variable "http_listener" {
-  description = "Configuration for the http_listener"
-  type = object({
-    explicit_name = optional(string)
-  })
-  default = {}
 }
 
 variable "monitor_diagnostic_setting" {
@@ -175,14 +126,6 @@ variable "public_frontend_ip_configuration" {
     condition     = var.public_frontend_ip_configuration.ip_address == null || can(cidrhost(format("%s/32", var.public_frontend_ip_configuration.ip_address), 0))
     error_message = "The ip_address must be a valid IPv4 address."
   }
-}
-
-variable "request_routing_rule" {
-  description = "Configuration for the request_routing_rule"
-  type = object({
-    explicit_name = optional(string)
-  })
-  default = {}
 }
 
 variable "resource_group" {

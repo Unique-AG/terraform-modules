@@ -1,9 +1,14 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.1.0
+version: 5.0.0
 compatibility:
-  unique.ai: ~> 2025.30
+  unique.ai: ~> 2025.32
 changes:
+<<<<<<< Updated upstream
   - kind: change
     description: "Change request timeout default from 60 to 600"
+=======
+  - kind: changed
+    description: "⚠️ Properties that are AGIC controlled can no longer be set. This module is exclusively designed to be used with AGIC only."
+>>>>>>> Stashed changes
