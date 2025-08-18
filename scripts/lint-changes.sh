@@ -160,12 +160,28 @@ main() {
         files_to_check=("$@")
     else
         echo "Validating changes field in all module.yaml files..."
+        echo "Debug: Current directory: $(pwd)"
+        echo "Debug: Running find command..."
         while IFS= read -r -d '' file; do
+            echo "Debug: Found file: $file"
             files_to_check+=("$file")
         done < <(find . -name "module.yaml" -type f -print0)
+        
+        # Check if any files were found
+        if [[ ${#files_to_check[@]} -eq 0 ]]; then
+            echo -e "${RED}ERROR: No module.yaml files found in current directory${NC}"
+            echo "Current directory: $(pwd)"
+            echo "Available files:"
+            find . -name "*.yaml" -type f | head -10
+            exit 1
+        fi
     fi
     
     echo "Valid kinds: ${VALID_KINDS[*]}"
+    echo "----------------------------------------"
+    echo "Debug: Found ${#files_to_check[@]} files to check"
+    echo "Debug: files_to_check array contents:"
+    printf "  '%s'\n" "${files_to_check[@]}"
     echo "----------------------------------------"
     
     local exit_code=0
