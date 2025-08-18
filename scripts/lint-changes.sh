@@ -26,6 +26,7 @@ echo "Linting modules for their changes syntax."
 #   1 - One or more files have invalid change kinds
 
 set -euo pipefail
+set -x   # <-- this prints each command before running
 
 # Valid change kinds
 VALID_KINDS=("added" "changed" "deprecated" "removed" "fixed" "security")
