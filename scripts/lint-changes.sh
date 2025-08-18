@@ -105,6 +105,9 @@ validate_module_yaml() {
         return 1
     fi
     
+    # Add error handling for yq command failures
+    set +e  # Don't exit on error in this function
+    
     # Get all kind values from changes array
     local kinds
     echo -e "${BLUE}  Debug: Running yq eval '.changes[].kind' on $file${NC}"
@@ -142,9 +145,11 @@ validate_module_yaml() {
     done <<< "$kinds"
     
     if [[ "$has_errors" == "true" ]]; then
+        set -e  # Re-enable exit on error
         return 1
     fi
     
+    set -e  # Re-enable exit on error
     return 0
 }
 
@@ -152,6 +157,14 @@ validate_module_yaml() {
 main() {
     # Ensure yq is installed before proceeding
     ensure_yq_installed
+    
+    # Debug: Check yq version
+    echo "Debug: yq version: $(yq --version)"
+    echo "Debug: bash version: $(bash --version | head -1)"
+    
+    # Test yq functionality
+    echo "Debug: Testing yq with a simple YAML..."
+    echo "name: test" | yq eval '.name' - || echo "ERROR: yq test failed"
     
     local files_to_check=()
     
@@ -191,9 +204,13 @@ main() {
     # Process each file
     for file in "${files_to_check[@]}"; do
         ((total_files++))
+        echo "Processing file $total_files of ${#files_to_check[@]}: $file"
         if ! validate_module_yaml "$file"; then
             ((failed_files++))
             exit_code=1
+            echo -e "${RED}Failed to validate: $file${NC}"
+        else
+            echo -e "${GREEN}Successfully validated: $file${NC}"
         fi
         echo ""
     done
