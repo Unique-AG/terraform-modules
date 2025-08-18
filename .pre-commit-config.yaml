@@ -1,21 +1,26 @@
 repos:
   - repo: local
     hooks:
-        - id: tf-docs
-          name: tf-docs
-          entry: scripts/tf-docs.sh
-          language: script
-          pass_filenames: false
-        - id: tf-fmt
-          name: tf-fmt
-          entry: scripts/tf-fmt.sh
-          language: script
-          pass_filenames: false
-        - id: trivy
-          name: trivy
-          entry: scripts/trivy.sh
-          language: script
-          pass_filenames: false
+      - id: tf-docs
+        name: tf-docs
+        entry: scripts/tf-docs.sh
+        language: script
+        pass_filenames: false
+      - id: tf-fmt
+        name: tf-fmt
+        entry: scripts/tf-fmt.sh
+        language: script
+        pass_filenames: false
+      - id: trivy
+        name: trivy
+        entry: scripts/trivy.sh
+        language: script
+        pass_filenames: false
+      - id: lint-changes
+        name: lint-changes
+        entry: scripts/lint-changes.sh
+        language: script
+        pass_filenames: false
 
   # - repo: local
   #   hooks:

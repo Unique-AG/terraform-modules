@@ -51,6 +51,9 @@ jobs:
       - name: Examples
         run: ./scripts/examples.sh
 
+      - name: Changes
+        run: ./scripts/lint-changes.sh
+
       - name: Report
         run: ./scripts/trivy.sh trivy.sarif
 
