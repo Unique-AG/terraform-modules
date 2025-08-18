@@ -175,10 +175,20 @@ main() {
         echo "Validating changes field in all module.yaml files..."
         echo "Debug: Current directory: $(pwd)"
         echo "Debug: Running find command..."
-        while IFS= read -r -d '' file; do
-            echo "Debug: Found file: $file"
-            files_to_check+=("$file")
-        done < <(find . -name "module.yaml" -type f -print0)
+        
+        # Use a simple while loop to populate array
+        echo "Debug: Using while loop to populate array..."
+        while IFS= read -r file; do
+            if [[ -n "$file" ]]; then
+                echo "Debug: Found file: $file"
+                files_to_check+=("$file")
+            fi
+        done < <(find . -name "module.yaml" -type f)
+        
+        echo "Debug: Found ${#files_to_check[@]} files using while loop"
+        for i in "${!files_to_check[@]}"; do
+            echo "Debug: files_to_check[$i]='${files_to_check[$i]}'"
+        done
         
         # Check if any files were found
         if [[ ${#files_to_check[@]} -eq 0 ]]; then
@@ -202,7 +212,14 @@ main() {
     local failed_files=0
     
     # Process each file
+    echo "Debug: About to start processing loop with ${#files_to_check[@]} files"
+    echo "Debug: Array contents before loop:"
+    for i in "${!files_to_check[@]}"; do
+        echo "  [$i]: '${files_to_check[$i]}'"
+    done
+    
     for file in "${files_to_check[@]}"; do
+        echo "Debug: Loop iteration - file='$file'"
         ((total_files++))
         echo "Processing file $total_files of ${#files_to_check[@]}: $file"
         if ! validate_module_yaml "$file"; then
