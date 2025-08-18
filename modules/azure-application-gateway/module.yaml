@@ -5,10 +5,5 @@ version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-<<<<<<< Updated upstream
-  - kind: change
-    description: "Change request timeout default from 60 to 600"
-=======
   - kind: changed
-    description: "⚠️ Properties that are AGIC controlled can no longer be set. This module is exclusively designed to be used with AGIC only."
->>>>>>> Stashed changes
+    description: "⚠️ Properties that are AGIC controlled can no longer be set. This module is exclusively designed to be used with AGIC only. Refer to the README."
