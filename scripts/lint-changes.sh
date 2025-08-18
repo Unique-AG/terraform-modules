@@ -90,20 +90,43 @@ validate_module_yaml() {
     
     echo -e "${YELLOW}Validating: $file${NC}"
     
+    # Check if file exists
+    if [[ ! -f "$file" ]]; then
+        echo -e "${RED}  ERROR: File does not exist${NC}"
+        return 1
+    fi
+    
     # Check if file has changes field
     if ! yq eval '.changes' "$file" >/dev/null 2>&1; then
         echo -e "${RED}  ERROR: No 'changes' field found${NC}"
+        echo -e "${BLUE}  Debug: yq eval '.changes' output:${NC}"
+        yq eval '.changes' "$file" 2>&1 || true
         return 1
     fi
     
     # Get all kind values from changes array
     local kinds
-    kinds=$(yq eval '.changes[].kind' "$file" 2>/dev/null || true)
+    echo -e "${BLUE}  Debug: Running yq eval '.changes[].kind' on $file${NC}"
+    kinds=$(yq eval '.changes[].kind' "$file" 2>&1 || echo "YQ_ERROR")
+    
+    if [[ "$kinds" == "YQ_ERROR" ]]; then
+        echo -e "${RED}  ERROR: yq command failed to extract kind values${NC}"
+        echo -e "${BLUE}  Debug: Full yq output:${NC}"
+        yq eval '.changes[].kind' "$file" 2>&1 || true
+        return 1
+    fi
     
     if [[ -z "$kinds" ]]; then
         echo -e "${RED}  ERROR: No 'kind' values found in changes array${NC}"
+        echo -e "${BLUE}  Debug: Empty output from yq, checking file structure:${NC}"
+        yq eval '.' "$file" 2>&1 || true
         return 1
     fi
+    
+    echo -e "${BLUE}  Debug: Found kinds:${NC}"
+    echo "$kinds" | while IFS= read -r kind; do
+        echo -e "${BLUE}    '$kind'${NC}"
+    done
     
     # Check each kind
     while IFS= read -r kind; do
