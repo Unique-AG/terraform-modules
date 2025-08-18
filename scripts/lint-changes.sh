@@ -4,6 +4,10 @@
 # SPDX-SnippetCopyrightText: 2025 © Unique AG
 # SPDX-SnippetEnd
 ## Reference: https://github.com/norwoodj/helm-docs
+
+# Fixed version of yq to install if not present
+YQ_VERSION="v4.47.1"
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "Repo root: $REPO_ROOT"
 
@@ -30,7 +34,43 @@ VALID_KINDS=("added" "changed" "deprecated" "removed" "fixed" "security")
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Function to check if yq is installed and install if needed
+ensure_yq_installed() {
+    if ! command -v yq &> /dev/null; then
+        echo -e "${YELLOW}yq is not installed. Installing version $YQ_VERSION...${NC}"
+        
+        # Detect OS and architecture
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+        
+        # Map architecture to yq format
+        case $ARCH in
+            x86_64) ARCH="amd64" ;;
+            aarch64|arm64) ARCH="arm64" ;;
+            *) echo -e "${RED}Unsupported architecture: $ARCH${NC}" && exit 1 ;;
+        esac
+        
+        # Download and install yq
+        YQ_URL="https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_${OS}_${ARCH}"
+        YQ_BINARY="/usr/local/bin/yq"
+        
+        echo -e "${BLUE}Downloading yq from: $YQ_URL${NC}"
+        
+        # Download yq
+        if curl -L -o "$YQ_BINARY" "$YQ_URL"; then
+            chmod +x "$YQ_BINARY"
+            echo -e "${GREEN}✓ yq $YQ_VERSION installed successfully${NC}"
+        else
+            echo -e "${RED}Failed to download yq${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}✓ yq is already installed${NC}"
+    fi
+}
 
 # Function to check if a kind is valid
 is_valid_kind() {
@@ -86,6 +126,9 @@ validate_module_yaml() {
 
 # Main script
 main() {
+    # Ensure yq is installed before proceeding
+    ensure_yq_installed
+    
     local files_to_check=()
     
     # If arguments provided, use them; otherwise find all module.yaml files
