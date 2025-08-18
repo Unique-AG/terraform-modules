@@ -8,6 +8,7 @@ quality:
 	@./scripts/tf-fmt.sh
 	@./scripts/examples.sh
 	@./scripts/trivy.sh
+	@./scripts/lint-changes.sh
 	@echo "Quality checks completed."
 
 examples:
