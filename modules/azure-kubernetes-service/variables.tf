@@ -169,6 +169,18 @@ variable "log_analytics_workspace" {
   nullable = true
 }
 
+variable "log_analytics_table_configuration" {
+  description = "Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'."
+  type = object({
+    plan   = optional(string, "Basic")
+    tables = optional(list(string), ["ContainerLogV2", "AKSControlPlane"])
+  })
+  default = {
+    plan   = "Basic"
+    tables = ["ContainerLogV2", "AKSControlPlane"]
+  }
+}
+
 variable "application_gateway_id" {
   description = "The ID of the Application Gateway."
   type        = string
@@ -176,7 +188,7 @@ variable "application_gateway_id" {
 }
 
 variable "azure_prometheus_grafana_monitor" {
-  description = "Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster."
+  description = "Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. Toggling the enabled flag will cycle node-pools as the addon-will be un-/installed."
   type = object({
     enabled                = bool
     azure_monitor_location = string
@@ -219,12 +231,6 @@ variable "retention_in_days" {
     condition     = var.retention_in_days >= 7
     error_message = "The retention period must be at least 7 days."
   }
-}
-
-variable "log_table_plan" {
-  description = "The pricing tier for the Log Analytics Workspace Table."
-  type        = string
-  default     = "Basic"
 }
 
 variable "node_pool_settings" {
@@ -287,16 +293,6 @@ variable "node_pool_settings" {
         max_surge = "10%"
       }
     }
-  }
-}
-
-variable "monitoring_account_name" {
-  description = "The name of the monitoring account"
-  default     = "MonitoringAccount1"
-  type        = string
-  validation {
-    condition     = length(var.monitoring_account_name) > 0
-    error_message = "The monitoring account name must not be empty."
   }
 }
 
@@ -634,4 +630,39 @@ variable "alert_configuration" {
     }), null)
   })
   default = null
+}
+
+variable "monitor_diagnostic_settings" {
+  description = "Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log_analytics_workspace'. Open an issue to request making this configurable."
+  default     = {} # use all optional values as default
+  type = object({
+    explicit_name                  = optional(string, null)
+    log_analytics_destination_type = optional(string, "Dedicated")
+    enabled_log_categories = optional(list(string), [
+      "cloud-controller-manager",
+      "cluster-autoscaler",
+      "csi-azuredisk-controller",
+      "csi-azurefile-controller",
+      "csi-snapshot-controller",
+      "kube-audit-admin",
+      "kube-scheduler",
+    ])
+    enabled_metric_categories = optional(list(string), ["AllMetrics"])
+  })
+}
+
+variable "monitor_data_collection_rule" {
+  description = "Configures the data collection rule for the Kubernetes Cluster. This is used to collect metrics (Container Insights) and logs (Application Insights) from the cluster, its workloads respectively. Certain properties are reused from general variables. Open an issue to request making this configurable."
+  default     = {} # use all optional values as default
+  type = object({
+    explicit_name                                = optional(string, null)
+    container_insights_collection_interval       = optional(string, "10m")
+    container_insights_namespaces_filtering_mode = optional(string, "Exclude")
+    container_insights_namespaces = optional(list(string), [
+      "kube-system",
+      "gatekeeper-system",
+      "azure-arc"
+    ])
+    container_insights_enable_container_log_v2 = optional(bool, true)
+  })
 }
