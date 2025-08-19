@@ -7,9 +7,9 @@
     + Contributor of the resource group
 
 ## Compatibility Note
-Starting with Version `5.0.0` this module is no longer a generic gateway module (in fact it never was, due to the large `lifecylce.ignore_changes` block which was added specifically to match the Application Gateway Ingress Controller).
+Starting with Version `4.1.0` this module is no longer a generic gateway module (in fact it never was, due to the large `lifecylce.ignore_changes` block which was added specifically to match the Application Gateway Ingress Controller).
 
-This module is designed to be used in combination with [The Application Gateway Ingress Controller (AGIC)](https://azure.github.io/application-gateway-kubernetes-ingress/). This controller controls many aspects of the gateway (always did) and `5.0.0` makes this fully transparent by just flat our defaulting settings controlled by AGIC.
+This module is designed to be used in combination with [The Application Gateway Ingress Controller (AGIC)](https://azure.github.io/application-gateway-kubernetes-ingress/). This controller controls many aspects of the gateway (always did) and `4.1.0` makes this fully transparent by just flat our defaulting settings controlled by AGIC.
 
 In order to configure the settings controller via AGIC, you must use annotations on your Ingresses, see [Annotations](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/).
 
@@ -128,10 +128,6 @@ No modules.
 <!-- END_TF_DOCS -->
 
 ## Upgrade Guide
-
-### ~> `5.0.0`
-No diff should occur as your gateway is already fully managed by AGIC and the affected blocks are in fact `ignored_changes`. True to Semantic Versioning though, the change is marked as potentially breaking.
-In case you used the explicit variable names, remove them. They were not used anyway as as soon as AGIC kicked in, all terraform changes get forgotten and were always also in `< 4.0.0` `lifecylce.ignore_changes` ignored.
 
 ### ~> `4.0.0`
 
