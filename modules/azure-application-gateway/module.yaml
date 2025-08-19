@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.2.0
+version: 4.1.1
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-  - kind: changed
+  - kind: fixed
     description: "Properties that are AGIC controlled can no longer be set. This module is exclusively designed to be used with AGIC only. Refer to the README."
