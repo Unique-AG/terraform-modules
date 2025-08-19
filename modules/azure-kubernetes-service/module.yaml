@@ -1,9 +1,13 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 4.0.1
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Fixed the issue with the metric block"
+  - kind: changed
+    description: "⚠️ `log_table_plan` has moved into `log_analytics_table_configuration` as `tables` field which also allows to set the table plan as `plan`."
+  - kind: added
+    description: "`monitor_diagnostic_settings` allows explicitly setting up the diagnostic settings, defaulting to the `< 5.0.0` settings"
+  - kind: added
+    description: "`monitor_data_collection_rule` allows explicitly setting up the data collection rule, defaulting to the `< 5.0.0` settings"
