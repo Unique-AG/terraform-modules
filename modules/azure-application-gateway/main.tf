@@ -1,8 +1,5 @@
 locals {
   waf_enabled                           = var.sku.tier == "WAF_v2"
-  backend_address_pool_name             = var.backend_address_pool.explicit_name != null ? var.backend_address_pool.explicit_name : "${var.name_prefix}-beap"
-  backend_http_settings_name            = var.backend_http_settings.explicit_name != null ? var.backend_http_settings.explicit_name : "${var.name_prefix}-be-htst"
-  http_listener_name                    = var.http_listener.explicit_name != null ? var.http_listener.explicit_name : "${var.name_prefix}-httplstn"
   public_frontend_ip_config_name        = var.public_frontend_ip_configuration.explicit_name != null ? var.public_frontend_ip_configuration.explicit_name : "${var.name_prefix}-feip"
   private_frontend_ip_config_name       = try(var.private_frontend_ip_configuration.explicit_name, "${var.name_prefix}-privatefeip")
   active_frontend_ip_configuration_name = var.public_frontend_ip_configuration.is_active_http_listener ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
@@ -324,12 +321,6 @@ resource "azurerm_application_gateway" "appgw" {
     }
   }
 
-  # BACKEND ADDRESS POOL - Destination servers
-  # Defines the backend servers/services that will receive the traffic
-  backend_address_pool {
-    name = local.backend_address_pool_name
-  }
-
   # TRUSTED ROOT CERTIFICATES - Private CA certificates
   # Uploads private CA root certificates for validating backend HTTPS connections
   dynamic "trusted_root_certificate" {
@@ -340,37 +331,41 @@ resource "azurerm_application_gateway" "appgw" {
     }
   }
 
+  # BACKEND ADDRESS POOL - Destination servers
+  # Defines the backend servers/services that will receive the traffic
+  # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
+  backend_address_pool {
+    name = "${var.name_prefix}-beap"
+  }
+
   # BACKEND HTTP SETTINGS - How to communicate with backend
   # Defines protocol, port, timeout, and session affinity settings for backend communication
+  # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
   backend_http_settings {
-    name                           = local.backend_http_settings_name
-    cookie_based_affinity          = var.backend_http_settings.cookie_based_affinity != null ? var.backend_http_settings.cookie_based_affinity : "Disabled"
-    port                           = var.backend_http_settings.port != null ? var.backend_http_settings.port : 80
-    protocol                       = var.backend_http_settings.protocol != null ? var.backend_http_settings.protocol : "Http"
-    request_timeout                = var.backend_http_settings.request_timeout != null ? var.backend_http_settings.request_timeout : 600
-    trusted_root_certificate_names = length(var.backend_http_settings.trusted_root_certificate_names) > 0 ? var.backend_http_settings.trusted_root_certificate_names : null
+    name                  = "${var.name_prefix}-be-htst"
+    cookie_based_affinity = "Disabled"
+    port                  = 443
+    protocol              = "Https"
   }
 
   # HTTP LISTENER - Traffic reception point
   # Listens for incoming HTTP traffic on the specified frontend IP and port
   # Routes traffic based on whether private or public frontend is enabled
+  # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
   http_listener {
-    name                           = local.http_listener_name
+    name                           = "${var.name_prefix}-httplstn"
     frontend_ip_configuration_name = local.active_frontend_ip_configuration_name
-    frontend_port_name             = var.frontend_port.explicit_name != null ? var.frontend_port.explicit_name : "${var.name_prefix}-feport"
-    protocol                       = "Http"
+    frontend_port_name             = "${var.name_prefix}-feport"
+    protocol                       = "Https"
   }
 
   # REQUEST ROUTING RULE - Traffic routing logic
   # Defines how incoming requests are routed from the listener to the backend
-  # This is a basic rule that routes all traffic to the backend pool
+  # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
   request_routing_rule {
-    name                       = var.request_routing_rule.explicit_name != null ? var.request_routing_rule.explicit_name : "${var.name_prefix}-rqrt"
-    backend_address_pool_name  = local.backend_address_pool_name
-    backend_http_settings_name = local.backend_http_settings_name
-    http_listener_name         = local.http_listener_name
-    priority                   = 19500
-    rule_type                  = "Basic"
+    name               = "${var.name_prefix}-rqrt"
+    http_listener_name = "${var.name_prefix}-httplstn"
+    rule_type          = "Basic"
   }
 
   # REWRITE RULE SET - Rewrites requests and responses in flight

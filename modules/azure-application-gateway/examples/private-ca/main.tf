@@ -43,11 +43,6 @@ module "application_gateway" {
     ip_address_resource_id = azurerm_public_ip.example.id
   }
 
-  # Configure backend HTTP settings to trust the uploaded CA
-  backend_http_settings = {
-    trusted_root_certificate_names = ["private-ca-root"]
-  }
-
   # Upload your private CA root certificate
   trusted_root_certificates = [
     {
