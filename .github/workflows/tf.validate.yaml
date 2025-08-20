@@ -56,6 +56,6 @@ jobs:
 
       # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
       - name: Upload Sarif results
-        uses: github/codeql-action/upload-sarif@181d5eefc20863364f96762470ba6f862bdef56b #v3.29.2
+        uses: github/codeql-action/upload-sarif@df559355d593797519d70b90fc8edd5db049e7a2 #v3.29.9
         with:
           sarif_file: trivy.sarif
