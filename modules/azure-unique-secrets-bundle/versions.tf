@@ -8,5 +8,9 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3"
     }
+    age = {
+      source  = "clementblaise/age"
+      version = "~> 0.1.1"
+    }
   }
 }
