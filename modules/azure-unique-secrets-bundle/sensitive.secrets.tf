@@ -187,3 +187,47 @@ resource "azurerm_key_vault_secret" "zitadel_main_key" {
   key_vault_id    = var.kv_id_sensitive
   expiration_date = var.secrets_to_create.zitadel_main_key.expiration_date
 }
+
+# ---
+# @description Sops age keys for custom assistants
+# @type age secret key
+# @note Has two keys to rotate. 
+# ---
+
+resource "terraform_data" "sops_age_key_custom_assistant_1_rotation" {
+  input = var.secrets_to_create.sops_age_key_custom_assistant_1.rotation_counter
+}
+
+resource "terraform_data" "sops_age_key_custom_assistant_2_rotation" {
+  input = var.secrets_to_create.sops_age_key_custom_assistant_2.rotation_counter
+}
+
+resource "age_secret_key" "sops_age_key_custom_assistant_1" {
+  lifecycle {
+    replace_triggered_by = [terraform_data.sops_age_key_custom_assistant_1_rotation]
+  }
+}
+
+resource "age_secret_key" "sops_age_key_custom_assistant_2" {
+  lifecycle {
+    replace_triggered_by = [terraform_data.sops_age_key_custom_assistant_2_rotation]
+  }
+}
+
+resource "azurerm_key_vault_secret" "sops_age_key_custom_assistant_1" {
+  count           = var.secrets_to_create.sops_age_key_custom_assistant_1.create ? 1 : 0
+  name            = var.secrets_to_create.sops_age_key_custom_assistant_1.name
+  value           = age_secret_key.sops_age_key_custom_assistant_1.secret_key
+  content_type    = var.secrets_to_create.sops_age_key_custom_assistant_1.content_type
+  key_vault_id    = var.kv_id_sensitive
+  expiration_date = var.secrets_to_create.sops_age_key_custom_assistant_1.expiration_date
+}
+
+resource "azurerm_key_vault_secret" "sops_age_key_custom_assistant_2" {
+  count           = var.secrets_to_create.sops_age_key_custom_assistant_2.create ? 1 : 0
+  name            = var.secrets_to_create.sops_age_key_custom_assistant_2.name
+  value           = age_secret_key.sops_age_key_custom_assistant_2.secret_key
+  content_type    = var.secrets_to_create.sops_age_key_custom_assistant_2.content_type
+  key_vault_id    = var.kv_id_sensitive
+  expiration_date = var.secrets_to_create.sops_age_key_custom_assistant_2.expiration_date
+}
