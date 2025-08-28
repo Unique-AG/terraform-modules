@@ -28,6 +28,7 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 
 | Name | Version |
 |------|---------|
+| <a name="requirement_age"></a> [age](#requirement\_age) | ~> 0.1.1 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3 |
 
@@ -35,8 +36,10 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 
 | Name | Version |
 |------|---------|
+| <a name="provider_age"></a> [age](#provider\_age) | ~> 0.1.1 |
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3 |
+| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
@@ -46,6 +49,8 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [age_secret_key.sops_age_key_custom_assistant_1](https://registry.terraform.io/providers/clementblaise/age/latest/docs/resources/secret_key) | resource |
+| [age_secret_key.sops_age_key_custom_assistant_2](https://registry.terraform.io/providers/clementblaise/age/latest/docs/resources/secret_key) | resource |
 | [azurerm_key_vault_secret.encryption_app_repository](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -55,6 +60,8 @@ No modules.
 | [azurerm_key_vault_secret.litellm_salt_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.manual_secret](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.rabbitmq_password_chat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.sops_age_key_custom_assistant_1](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.sops_age_key_custom_assistant_2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.zitadel_db_user_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.zitadel_main_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [random_id.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
@@ -67,6 +74,8 @@ No modules.
 | [random_password.rabbitmq_password_chat](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.zitadel_db_user_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.zitadel_main_key](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
+| [terraform_data.sops_age_key_custom_assistant_1_rotation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [terraform_data.sops_age_key_custom_assistant_2_rotation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 
 ## Inputs
 
@@ -76,13 +85,14 @@ No modules.
 | <a name="input_extra_secrets_placeholders"></a> [extra\_secrets\_placeholders](#input\_extra\_secrets\_placeholders) | List of secrets that are additionally, manually created and need to be placed in the core key vault. The manual- prefix is prepended automatically. | <pre>map(object({<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>  }))</pre> | `{}` | no |
 | <a name="input_kv_id_core"></a> [kv\_id\_core](#input\_kv\_id\_core) | The ID of the core key vault, all manually created secrets will be placed here. | `string` | n/a | yes |
 | <a name="input_kv_id_sensitive"></a> [kv\_id\_sensitive](#input\_kv\_id\_sensitive) | The ID of the sensitive key vault, all automatically generated secrets will be stored here. | `string` | n/a | yes |
-| <a name="input_secrets_to_create"></a> [secrets\_to\_create](#input\_secrets\_to\_create) | List of secrets that are automatically generated and need to be placed in the sensitive key vault. Increment a counter to rotate the secret. | <pre>map(object({<br/>    create           = optional(bool, true)<br/>    name             = optional(string)<br/>    content_type     = optional(string, "text/plain")<br/>    special          = optional(bool, false)<br/>    length           = optional(number)<br/>    rotation_counter = optional(number, 0)<br/>    expiration_date  = optional(string, "2099-12-31T23:59:59Z")<br/>  }))</pre> | <pre>{<br/>  "encryption_app_repository": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-app-repository",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "hex_encryption_key_ingestion": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-ingestion",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_node_chat_lxm": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-node-chat-lxm",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_scope_management_1": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-scope-management-1",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_scope_management_2": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-scope-management-2",<br/>    "rotation_counter": 0<br/>  },<br/>  "litellm_master_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "litellm-master-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "litellm_salt_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "litellm-salt-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "rabbitmq_password_chat": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 24,<br/>    "name": "rabbitmq-password-chat",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "zitadel_db_user_password": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "zitadel-db-user-password",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "zitadel_main_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "zitadel-main-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  }<br/>}</pre> | no |
+| <a name="input_secrets_to_create"></a> [secrets\_to\_create](#input\_secrets\_to\_create) | List of secrets that are automatically generated and need to be placed in the sensitive key vault. Increment a counter to rotate the secret. | <pre>map(object({<br/>    create           = optional(bool, true)<br/>    name             = optional(string)<br/>    content_type     = optional(string, "text/plain")<br/>    special          = optional(bool, false)<br/>    length           = optional(number)<br/>    rotation_counter = optional(number, 0)<br/>    expiration_date  = optional(string, "2099-12-31T23:59:59Z")<br/>  }))</pre> | <pre>{<br/>  "encryption_app_repository": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-app-repository",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "hex_encryption_key_ingestion": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-ingestion",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_node_chat_lxm": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-node-chat-lxm",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_scope_management_1": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-scope-management-1",<br/>    "rotation_counter": 0<br/>  },<br/>  "hex_encryption_key_scope_management_2": {<br/>    "content_type": "text/hex",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "encryption-key-scope-management-2",<br/>    "rotation_counter": 0<br/>  },<br/>  "litellm_master_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "litellm-master-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "litellm_salt_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "litellm-salt-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "rabbitmq_password_chat": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 24,<br/>    "name": "rabbitmq-password-chat",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "sops_age_key_custom_assistant_1": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "sops-age-key-custom-assistant-1",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "sops_age_key_custom_assistant_2": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "name": "sops-age-key-custom-assistant-2",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "zitadel_db_user_password": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "zitadel-db-user-password",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  },<br/>  "zitadel_main_key": {<br/>    "content_type": "text/plain",<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z",<br/>    "length": 32,<br/>    "name": "zitadel-main-key",<br/>    "rotation_counter": 0,<br/>    "special": false<br/>  }<br/>}</pre> | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_manual_secrets_created"></a> [manual\_secrets\_created](#output\_manual\_secrets\_created) | List of names of secrets created in the core key vault. |
+| <a name="output_sops_age_keys_custom_assistant"></a> [sops\_age\_keys\_custom\_assistant](#output\_sops\_age\_keys\_custom\_assistant) | The public keys of the SOPS age keys for custom assistants. The keys are public and have a secret, private, asymmetric sibling. Learn more at https://github.com/getsops/sops. These keys must and should be provided plain text to the Developers or put into their repository. |
 <!-- END_TF_DOCS -->
 
 ## Compatibility
