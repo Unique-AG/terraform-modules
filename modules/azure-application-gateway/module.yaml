@@ -1,11 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.2.0
+version: 4.3.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-  - kind: added
-    description: "Default metric alerts for Application Gateway."
-  - kind: added
-    description: "Possibility to define custom metric alerts."
+  - kind: changed
+    description: "Default SSL policy to `AppGwSslPolicy20220101S` predefined policy for better security."
