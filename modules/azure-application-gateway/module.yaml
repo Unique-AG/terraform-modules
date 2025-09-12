@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.32
 changes:
   - kind: changed
-    description: "Default SSL policy to `AppGwSslPolicy20220101S` predefined policy for better security."
+    description: "Default SSL policy to `AppGwSslPolicy20220101S` predefined policy. The extra S in the policy name removes cipher suites that support CBC and only allow GCM instead. This is more secure, more modern and parallelizable so even faster, even though it consumes more resources."
