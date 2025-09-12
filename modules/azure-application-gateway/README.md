@@ -43,7 +43,7 @@ module "application_gateway" {
 }
 ```
 
-After providing the certificate, it can be used via [Annotations](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/), namely 
+After providing the certificate, it can be used via [Annotations](https://azure.github.io/application-gateway-kubernetes-ingress/annotations/), namely
 
 ```yaml
 appgw.ingress.kubernetes.io/backend-protocol: "https"
@@ -109,7 +109,7 @@ No modules.
 | <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    ip_address              = optional(string)<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | n/a | yes |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | The resource group to deploy the gateway to. | <pre>object({<br/>    name     = string<br/>    location = string<br/>  })</pre> | n/a | yes |
 | <a name="input_sku"></a> [sku](#input\_sku) | The SKU of the gateway | <pre>object({<br/>    name = string<br/>    tier = string<br/>  })</pre> | <pre>{<br/>  "name": "Standard_v2",<br/>  "tier": "Standard_v2"<br/>}</pre> | no |
-| <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101",<br/>  "type": "Predefined"<br/>}</pre> | no |
+| <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101S",<br/>  "type": "Predefined"<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to resources. | `map(string)` | n/a | yes |
 | <a name="input_trusted_root_certificates"></a> [trusted\_root\_certificates](#input\_trusted\_root\_certificates) | Configuration for trusted root certificates (e.g., for private CAs). Each certificate will be uploaded to the Application Gateway and can be referenced in backend HTTP settings. | <pre>list(object({<br/>    name             = string<br/>    certificate_path = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_waf_custom_rules_allow_hosts"></a> [waf\_custom\_rules\_allow\_hosts](#input\_waf\_custom\_rules\_allow\_hosts) | Allow monitoring agents to probe services. | <pre>object({<br/>    request_header_host = string<br/>    host_contains       = list(string)<br/>  })</pre> | <pre>{<br/>  "host_contains": [<br/>    "kubernetes.default.svc"<br/>  ],<br/>  "request_header_host": "host"<br/>}</pre> | no |

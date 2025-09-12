@@ -190,7 +190,7 @@ variable "ssl_policy" {
     type = string
   })
   default = {
-    name = "AppGwSslPolicy20220101"
+    name = "AppGwSslPolicy20220101S"
     type = "Predefined"
   }
   nullable = false
