@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.3.0
+version: 4.4.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-  - kind: changed
-    description: "Default SSL policy to `AppGwSslPolicy20220101S` predefined policy. The extra S in the policy name removes cipher suites that support CBC and only allow GCM instead. This is more secure, more modern and parallelizable so even faster, even though it consumes more resources."
+  - kind: added
+    description: "Added tags for the application gateway."

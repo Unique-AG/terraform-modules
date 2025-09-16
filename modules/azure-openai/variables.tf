@@ -10,8 +10,14 @@ variable "resource_group_name" {
 variable "tags" {
   type        = map(string)
   description = "Additional tags for the resource"
+  default     = {}
 }
 
+variable "cognitive_account_tags" {
+  description = "Additional tags that apply only to the cognitive account. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
+}
 
 variable "cognitive_accounts" {
   description = "Map of cognitive accounts"
