@@ -257,7 +257,7 @@ resource "azurerm_application_gateway" "appgw" {
   location            = var.resource_group.location
   name                = var.explicit_name != null ? var.explicit_name : "${var.name_prefix}-appgw"
   resource_group_name = var.resource_group.name
-  tags                = var.tags
+  tags                = merge(var.tags, var.application_gateway_tags)
   zones               = var.zones
 
   # GLOBAL CONFIGURATION - Applied to all traffic

@@ -13,7 +13,7 @@ resource "azurerm_storage_account" "storage_account" {
   account_tier             = var.account_tier
   account_replication_type = var.account_replication_type
   access_tier              = var.access_tier
-  tags                     = var.tags
+  tags                     = merge(var.tags, var.storage_account_tags)
 
   # secure by default
   allow_nested_items_to_be_public   = false

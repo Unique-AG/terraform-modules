@@ -206,6 +206,12 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "application_gateway_tags" {
+  description = "Additional tags that apply only to the application gateway. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
+}
+
 variable "waf_policy_settings" {
   description = "The mode of the firewall policy (Prevention or Detection)"
   type = object({
