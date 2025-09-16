@@ -95,6 +95,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_application_gateway_tags"></a> [application\_gateway\_tags](#input\_application\_gateway\_tags) | Additional tags that apply only to the application gateway. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_autoscale_configuration"></a> [autoscale\_configuration](#input\_autoscale\_configuration) | Configuration for the autoscale configuration | <pre>object({<br/>    min_capacity = optional(number, 1)<br/>    max_capacity = optional(number, 10)<br/>  })</pre> | <pre>{<br/>  "max_capacity": 10,<br/>  "min_capacity": 1<br/>}</pre> | no |
 | <a name="input_explicit_name"></a> [explicit\_name](#input\_explicit\_name) | Name for the Gateway if <name\_prefix>-appgw is not desired. | `string` | `null` | no |
 | <a name="input_frontend_port"></a> [frontend\_port](#input\_frontend\_port) | Settings for the frontend port. | <pre>object({<br/>    explicit_name = optional(string)<br/>    port          = optional(number, 80)<br/>  })</pre> | `{}` | no |

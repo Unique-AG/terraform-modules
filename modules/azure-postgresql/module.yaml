@@ -2,12 +2,10 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 2.1.0
+version: 2.2.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Support for metric alerts"
+    description: "Added tags for the PostgreSQL server."
 
-
-    

@@ -13,7 +13,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   administrator_password = var.admin_password
   sku_name               = var.flex_sku
   storage_mb             = var.flex_storage_mb
-  tags                   = var.tags
+  tags                   = merge(var.tags, var.postgresql_server_tags)
   zone                   = var.zone
   auto_grow_enabled      = var.auto_grow_enabled
 
