@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 3.0.2
+version: 3.1.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: changed
-    description: "Default value for shared_access_key_enabled is now true."
+  - kind: added
+    description: "Added tags for the storage account."
