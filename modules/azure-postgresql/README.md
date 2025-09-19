@@ -240,6 +240,7 @@ No modules.
 | <a name="input_parameter_values"></a> [parameter\_values](#input\_parameter\_values) | values for the server configuration parameters | `map(string)` | <pre>{<br/>  "azure.extensions": "PG_STAT_STATEMENTS,PG_TRGM",<br/>  "enable_seqscan": "off",<br/>  "max_connections": "400"<br/>}</pre> | no |
 | <a name="input_password_secret_name"></a> [password\_secret\_name](#input\_password\_secret\_name) | Name of the secret containing the admin password | `string` | `null` | no |
 | <a name="input_port_secret_name"></a> [port\_secret\_name](#input\_port\_secret\_name) | Name of the secret containing the port | `string` | `null` | no |
+| <a name="input_postgresql_server_tags"></a> [postgresql\_server\_tags](#input\_postgresql\_server\_tags) | Additional tags that apply only to the PostgreSQL server. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_private_dns_zone_id"></a> [private\_dns\_zone\_id](#input\_private\_dns\_zone\_id) | The ID of the private DNS zone. | `string` | `null` | no |
 | <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled) | Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false | `string` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group where the resources will be created. | `string` | n/a | yes |

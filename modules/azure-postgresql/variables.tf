@@ -125,6 +125,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "postgresql_server_tags" {
+  description = "Additional tags that apply only to the PostgreSQL server. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
+}
+
 variable "databases" {
   description = "Map of databases and its properties"
   type = map(

@@ -38,7 +38,7 @@ resource "azurerm_cognitive_account" "aca" {
   resource_group_name           = var.resource_group_name
   kind                          = each.value.kind
   sku_name                      = each.value.sku_name
-  tags                          = var.tags
+  tags                          = merge(var.tags, var.cognitive_account_tags)
   public_network_access_enabled = each.value.public_network_access_enabled
   local_auth_enabled            = each.value.local_auth_enabled
   custom_subdomain_name         = each.value.custom_subdomain_name

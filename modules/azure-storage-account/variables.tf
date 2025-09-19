@@ -22,6 +22,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "storage_account_tags" {
+  description = "Additional tags that apply only to the main storage account. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
+}
+
 variable "min_tls_version" {
   description = "Minimum TLS version supported by the storage account."
   type        = string

@@ -40,6 +40,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_cognitive_account_tags"></a> [cognitive\_account\_tags](#input\_cognitive\_account\_tags) | Additional tags that apply only to the cognitive account. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_cognitive_accounts"></a> [cognitive\_accounts](#input\_cognitive\_accounts) | Map of cognitive accounts | <pre>map(object({<br/>    name                          = string<br/>    location                      = string<br/>    kind                          = optional(string, "OpenAI")<br/>    sku_name                      = optional(string, "S0")<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    private_endpoint = optional(object({<br/>      subnet_id           = string<br/>      private_dns_zone_id = string<br/>    }))<br/>    custom_subdomain_name = string<br/>    cognitive_deployments = list(object({<br/>      name                   = string<br/>      model_name             = string<br/>      model_version          = string<br/>      model_format           = optional(string, "OpenAI")<br/>      sku_capacity           = number<br/>      sku_type               = optional(string, "Standard")<br/>      rai_policy_name        = optional(string, "Microsoft.Default")<br/>      version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    }))<br/><br/>  }))</pre> | n/a | yes |
 | <a name="input_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#input\_endpoint\_definitions\_secret\_name) | Name of the secret for the endpoint definitions | `string` | `"azure-openai-endpoint-definitions"` | no |
 | <a name="input_endpoint_secret_name_suffix"></a> [endpoint\_secret\_name\_suffix](#input\_endpoint\_secret\_name\_suffix) | The suffix of the secret name where the Cognitive Account Endpoint is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix | `string` | `"-endpoint"` | no |
@@ -47,7 +48,7 @@ No modules.
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault | `any` | `null` | no |
 | <a name="input_primary_access_key_secret_name_suffix"></a> [primary\_access\_key\_secret\_name\_suffix](#input\_primary\_access\_key\_secret\_name\_suffix) | The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix | `string` | `"-key"` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | Additional tags for the resource | `map(string)` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Additional tags for the resource | `map(string)` | `{}` | no |
 
 ## Outputs
 
