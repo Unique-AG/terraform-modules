@@ -20,14 +20,15 @@ variable "cognitive_account_tags" {
 }
 
 variable "cognitive_accounts" {
-  description = "Map of cognitive accounts"
+  description = "Map of cognitive accounts, refer to the README for more details."
   type = map(object({
-    name                          = string
-    location                      = string
-    kind                          = optional(string, "OpenAI")
-    sku_name                      = optional(string, "S0")
-    local_auth_enabled            = optional(bool, false)
-    public_network_access_enabled = optional(bool, false)
+    name                             = string
+    location                         = string
+    kind                             = optional(string, "OpenAI")
+    sku_name                         = optional(string, "S0")
+    local_auth_enabled               = optional(bool, false)
+    key_in_model_definitions_exposed = optional(bool, false)
+    public_network_access_enabled    = optional(bool, false)
     private_endpoint = optional(object({
       subnet_id           = string
       private_dns_zone_id = string
