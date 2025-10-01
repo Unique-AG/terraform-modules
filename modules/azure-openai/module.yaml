@@ -1,9 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.2.0
+version: 2.3.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Added tags for the cognitive account."
+    description: "Backward compatible exposure of the key inside the model definitions."
