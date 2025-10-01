@@ -3,7 +3,7 @@ locals {
     for account in azurerm_cognitive_account.aca : {
       "endpoint" : account.endpoint,
       "location" : account.location,
-      "key" : var.cognitive_accounts[account.name].key_in_model_definitions_exposed && var.cognitive_accounts[account.name].local_auth_enabled ? account.primary_access_key : "WORKLOAD_IDENTITY",
+      "key" : var.cognitive_accounts[account.name].local_auth_enabled && var.cognitive_accounts[account.name].model_definitions_auth_strategy_injected == "ApiKey" ? account.primary_access_key : "WORKLOAD_IDENTITY", # to be a real enum, this would need to be adjusted to support more than two values (switch instead of if/else so to say)
       "models" : [
         for deployment in azurerm_cognitive_deployment.deployments : {
           "modelName" : deployment.model[0].name,

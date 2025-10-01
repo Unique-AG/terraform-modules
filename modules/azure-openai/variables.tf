@@ -22,13 +22,13 @@ variable "cognitive_account_tags" {
 variable "cognitive_accounts" {
   description = "Map of cognitive accounts, refer to the README for more details."
   type = map(object({
-    name                             = string
-    location                         = string
-    kind                             = optional(string, "OpenAI")
-    sku_name                         = optional(string, "S0")
-    local_auth_enabled               = optional(bool, false)
-    key_in_model_definitions_exposed = optional(bool, false)
-    public_network_access_enabled    = optional(bool, false)
+    name                                     = string
+    location                                 = string
+    kind                                     = optional(string, "OpenAI")
+    sku_name                                 = optional(string, "S0")
+    local_auth_enabled                       = optional(bool, false)
+    model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")
+    public_network_access_enabled            = optional(bool, false)
     private_endpoint = optional(object({
       subnet_id           = string
       private_dns_zone_id = string
@@ -56,6 +56,13 @@ variable "cognitive_accounts" {
       length(account.cognitive_deployments) > 0
     ])
     error_message = "cognitive_deployments cannot be empty for any of the accounts"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.cognitive_accounts :
+      contains(["WorkloadIdentity", "ApiKey"], account.model_definitions_auth_strategy_injected)
+    ])
+    error_message = "model_definitions_auth_strategy_injected must be either 'WorkloadIdentity' or 'ApiKey'"
   }
 }
 
