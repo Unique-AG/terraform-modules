@@ -80,4 +80,4 @@ The module itself defaults to the most secure variants including allowing only W
 > All secrets and/or definitions are only created if a `keyvault_id` is passed!
 
 > [!WARNING]
-> Switching from `WorkloadIdentity` to `ApiKey` needs two apply's. This is due to the fact that an account with `local_auth_enabled = false` has no API Key at first. So the first apply puts the placeholder into both the Key Vault and potentially the definitions while the second apply actually replaces the placeholder with the real key.
+> Switching from `WorkloadIdentity` to `ApiKey` needs two apply's. This is due to the fact that an account with `local_auth_enabled = false` has no API Key at first. So the first apply puts the placeholder into both the Key Vault and potentially the definitions while the second apply actually replaces the placeholder with the real key. If any of the key places contains `<API_KEY_NOT_AVAILABLE>` it means either `local_auth` is disabled or the account does not yet have a key at all.
