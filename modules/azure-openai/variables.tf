@@ -64,6 +64,13 @@ variable "cognitive_accounts" {
     ])
     error_message = "model_definitions_auth_strategy_injected must be either 'WorkloadIdentity' or 'ApiKey'"
   }
+  validation {
+    condition = alltrue([
+      for account in var.cognitive_accounts :
+      account.model_definitions_auth_strategy_injected != "ApiKey" || account.local_auth_enabled == true
+    ])
+    error_message = "When model_definitions_auth_strategy_injected is 'ApiKey', local_auth_enabled must be true"
+  }
 }
 
 variable "key_vault_id" {

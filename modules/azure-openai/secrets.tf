@@ -10,7 +10,7 @@ locals {
 resource "azurerm_key_vault_secret" "key" {
   for_each     = local.create_vault_secrets ? local.aca_with_local_auth : {}
   name         = "${each.key}${var.primary_access_key_secret_name_suffix}"
-  value        = azurerm_cognitive_account.aca[each.value.name].primary_access_key
+  value        = azurerm_cognitive_account.aca[each.value.name].primary_access_key != null ? azurerm_cognitive_account.aca[each.value.name].primary_access_key : "<local_auth is disabled>"
   key_vault_id = var.key_vault_id
 }
 
