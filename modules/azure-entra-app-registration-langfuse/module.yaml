@@ -2,8 +2,6 @@ name: azure-entra-app-registration-langfuse
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-langfuse
 version: 1.0.0
-compatibility:
-  unique.ai: ~> 2025.40
 changes:
   - kind: added
     description: "Added app registration for Langfuse."

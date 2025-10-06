@@ -13,7 +13,7 @@ variable "sign_in_audience" {
 variable "client_secret_generation_config" {
   type = object({
     keyvault_id     = optional(string)
-    secret_name     = optional(string, "langfuse-client-secret")
+    secret_name     = optional(string, "langfuse")
     expiration_date = optional(string, "2099-12-31T23:59:59Z")
   })
   description = "When enabled, a client secret will be generated and stored in the keyvault."
@@ -30,19 +30,14 @@ variable "homepage_url" {
   type        = string
 }
 
-variable "app_role" {
-  description = "The app role to assign to the application. All more detailed roles have to be assigned manually. "
-  type = object({
-    role_id      = optional(string, "6a902661-cfac-44f4-846c-bc5ceaa012d4")
-    description  = optional(string, "User, allows to use the application or login without any additional permissions.")
-    display_name = optional(string, "User")
-    value        = optional(string, "user")
-    members      = optional(set(string), [])
-  })
+variable "allowed_groups" {
+  description = "Set of group object IDs that are allowed to access the application. All members of these groups will have access with default access (no custom roles)."
+  type        = set(string)
+  default     = []
 }
 
 variable "role_assignments_required" {
-  description = "Whether role assignments are required to be able to use the app. Least privilege principle encourages true."
+  description = "Whether role assignments are required to be able to use the app. Least privilege principle encourages true. When true, only members of groups in 'allowed_groups' can access the application."
   type        = bool
   default     = true
 }

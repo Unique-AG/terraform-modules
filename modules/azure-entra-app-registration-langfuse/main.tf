@@ -72,19 +72,10 @@ resource "azuread_service_principal" "langfuse" {
   app_role_assignment_required = var.role_assignments_required
 }
 
-resource "azuread_application_app_role" "user_role" {
-  application_id       = azuread_application.langfuse.id
-  role_id              = var.app_role.role_id
-  allowed_member_types = ["User"]
-  description          = var.app_role.description
-  display_name         = var.app_role.display_name
-  value                = var.app_role.value
-}
+resource "azuread_app_role_assignment" "default_access" {
+  for_each = var.allowed_groups
 
-resource "azuread_app_role_assignment" "user_role_assignment" {
-  for_each = var.app_role.members
-
-  app_role_id         = azuread_application_app_role.user_role.role_id
+  app_role_id         = "00000000-0000-0000-0000-000000000000" # Default role ID 
   principal_object_id = each.value
   resource_object_id  = azuread_service_principal.langfuse.object_id
 }

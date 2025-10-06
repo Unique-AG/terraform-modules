@@ -22,9 +22,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azuread_app_role_assignment.user_role_assignment](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
+| [azuread_app_role_assignment.default_access](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment) | resource |
 | [azuread_application.langfuse](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application) | resource |
-| [azuread_application_app_role.user_role](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_app_role) | resource |
 | [azuread_application_password.langfuse_password](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_password) | resource |
 | [azuread_service_principal.langfuse](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/service_principal) | resource |
 | [azuread_service_principal.msgraph](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/service_principal) | resource |
@@ -36,12 +35,12 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_app_role"></a> [app\_role](#input\_app\_role) | The app role to assign to the application. All more detailed roles have to be assigned manually. | <pre>object({<br/>    role_id      = optional(string, "6a902661-cfac-44f4-846c-bc5ceaa012d4")<br/>    description  = optional(string, "User, allows to use the application or login without any additional permissions.")<br/>    display_name = optional(string, "User")<br/>    value        = optional(string, "user")<br/>    members      = optional(set(string), [])<br/>  })</pre> | n/a | yes |
-| <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret will be generated and stored in the keyvault. | <pre>object({<br/>    keyvault_id     = optional(string)<br/>    secret_name     = optional(string, "langfuse-client-secret")<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>  })</pre> | `{}` | no |
+| <a name="input_allowed_groups"></a> [allowed\_groups](#input\_allowed\_groups) | Set of group object IDs that are allowed to access the application. All members of these groups will have access with default access (no custom roles). | `set(string)` | `[]` | no |
+| <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret will be generated and stored in the keyvault. | <pre>object({<br/>    keyvault_id     = optional(string)<br/>    secret_name     = optional(string, "langfuse")<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>  })</pre> | `{}` | no |
 | <a name="input_display_name"></a> [display\_name](#input\_display\_name) | The display name for the Azure AD application registration. | `string` | n/a | yes |
 | <a name="input_homepage_url"></a> [homepage\_url](#input\_homepage\_url) | The homepage url of the app. | `string` | n/a | yes |
 | <a name="input_redirect_uris"></a> [redirect\_uris](#input\_redirect\_uris) | Authorized redirects. Has to be in format https://yourapplication.com/api/auth/callback/azure-ad | `list(string)` | n/a | yes |
-| <a name="input_role_assignments_required"></a> [role\_assignments\_required](#input\_role\_assignments\_required) | Whether role assignments are required to be able to use the app. Least privilege principle encourages true. | `bool` | `true` | no |
+| <a name="input_role_assignments_required"></a> [role\_assignments\_required](#input\_role\_assignments\_required) | Whether role assignments are required to be able to use the app. Least privilege principle encourages true. When true, only members of groups in 'allowed\_groups' can access the application. | `bool` | `true` | no |
 | <a name="input_sign_in_audience"></a> [sign\_in\_audience](#input\_sign\_in\_audience) | The Microsoft identity platform audiences that are supported by this application. Valid values are 'AzureADMyOrg', 'AzureADMultipleOrgs', 'AzureADandPersonalMicrosoftAccount', or 'PersonalMicrosoftAccount'. We default to AzureADMultipleOrgs as it's the most common use case. Stricter setups can revert back to 'AzureADMyOrg'. | `string` | `"AzureADMultipleOrgs"` | no |
 
 ## Outputs
