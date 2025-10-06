@@ -13,6 +13,7 @@ on:
           - azure-defender
           - azure-document-intelligence
           - azure-entra-app-registration
+          - azure-entra-app-registration-langfuse
           - azure-kubernetes-service
           - azure-openai
           - azure-postgresql
