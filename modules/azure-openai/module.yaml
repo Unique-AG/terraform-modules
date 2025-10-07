@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: fixed
-    description: "Key lookup function now uses the map key instead of the account name which is unknown on initial apply."
+    description: "Key lookup function now uses the map key instead of the account name so name and key are not enforced to concidentally match again (key of terraform can be different than real name again/still)."
