@@ -7,6 +7,11 @@ on:
       - main
     paths:
       - modules/azure-entra-app-registration/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-entra-app-registration/**
 
 jobs:
   validate:

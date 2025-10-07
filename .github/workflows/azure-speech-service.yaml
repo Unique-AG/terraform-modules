@@ -7,6 +7,11 @@ on:
       - main
     paths:
       - modules/azure-speech-service/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-speech-service/**
 
 jobs:
   validate:

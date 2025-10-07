@@ -7,6 +7,11 @@ on:
       - main
     paths:
       - modules/azure-storage-account/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-storage-account/**
 
 jobs:
   validate:

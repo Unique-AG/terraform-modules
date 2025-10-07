@@ -7,8 +7,18 @@ on:
       - main
     paths:
       - modules/azure-postgresql/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-postgresql/**
 
 jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/immutable-artifact.yaml
+    with:
+      module: azure-postgresql
   release:
     uses: ./.github/workflows/release.yaml
     with:
