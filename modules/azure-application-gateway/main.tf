@@ -344,8 +344,8 @@ resource "azurerm_application_gateway" "appgw" {
   backend_http_settings {
     name                  = "${var.name_prefix}-be-htst"
     cookie_based_affinity = "Disabled"
-    port                  = 443
-    protocol              = "Https"
+    port                  = 80
+    protocol              = "Http"
   }
 
   # HTTP LISTENER - Traffic reception point
@@ -356,16 +356,19 @@ resource "azurerm_application_gateway" "appgw" {
     name                           = "${var.name_prefix}-httplstn"
     frontend_ip_configuration_name = local.active_frontend_ip_configuration_name
     frontend_port_name             = "${var.name_prefix}-feport"
-    protocol                       = "Https"
+    protocol                       = "Http"
   }
 
   # REQUEST ROUTING RULE - Traffic routing logic
   # Defines how incoming requests are routed from the listener to the backend
   # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
   request_routing_rule {
-    name               = "${var.name_prefix}-rqrt"
-    http_listener_name = "${var.name_prefix}-httplstn"
-    rule_type          = "Basic"
+    backend_address_pool_name  = "${var.name_prefix}-beap"
+    backend_http_settings_name = "${var.name_prefix}-be-htst"
+    http_listener_name         = "${var.name_prefix}-httplstn"
+    name                       = "${var.name_prefix}-rqrt"
+    priority                   = 100
+    rule_type                  = "Basic"
   }
 
   # REWRITE RULE SET - Rewrites requests and responses in flight
