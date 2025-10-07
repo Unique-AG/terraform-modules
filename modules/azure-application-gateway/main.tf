@@ -367,6 +367,7 @@ resource "azurerm_application_gateway" "appgw" {
     backend_http_settings_name = "${var.name_prefix}-be-htst"
     http_listener_name         = "${var.name_prefix}-httplstn"
     name                       = "${var.name_prefix}-rqrt"
+    priority                   = 100
     rule_type                  = "Basic"
   }
 
