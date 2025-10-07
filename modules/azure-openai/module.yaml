@@ -1,9 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.3.0
+version: 2.3.1
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: added
-    description: "Backward compatible exposure of the key inside the model definitions."
+  - kind: fixed
+    description: "Key lookup function now uses the map key instead of the account name so name and key are not enforced to concidentally match again (key of terraform can be different than real name again/still)."

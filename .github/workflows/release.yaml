@@ -1,26 +1,13 @@
-name: "[terraform] Create Module Release"
+name: "Create Module Release"
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       module:
         description: "Module to release"
         required: true
-        type: choice
-        options:
-          - azure-application-gateway
-          - azure-bing-search
-          - azure-defender
-          - azure-document-intelligence
-          - azure-entra-app-registration
-          - azure-kubernetes-service
-          - azure-openai
-          - azure-postgresql
-          - azure-redis
-          - azure-speech-service
-          - azure-storage-account
-          - azure-unique-secrets-bundle
-          
+        type: string
+
 jobs:
   create-release:
     runs-on: ubuntu-latest

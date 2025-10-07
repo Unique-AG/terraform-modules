@@ -1,0 +1,26 @@
+name: "Release Azure PostgreSQL"
+
+on:
+  workflow_dispatch: # we allow manual runs as there are edge cases todo so (e.g. missed updating only the GitHub workflow or similar)
+  push:
+    branches:
+      - main
+    paths:
+      - modules/azure-postgresql/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-postgresql/**
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/immutable-artifact.yaml
+    with:
+      module: azure-postgresql
+  release:
+    if: ${{ github.event.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/release.yaml
+    with:
+      module: azure-postgresql

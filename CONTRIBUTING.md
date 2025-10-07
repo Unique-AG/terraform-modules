@@ -23,4 +23,4 @@ Any breaking changes to a module (backwards incompatible) require a major versio
 
 ## Release
 
-To release a module, you can use the `[terraform] Create Module Release` workflow. For now sadly this action is manual we we would need some form of recurring action to automatically release changed modules. To be added later when we see this thing here flies 🕊️
+Modules are automatically released after merge given that `module.yaml` was modified (which should have been). If not, each release workflow has a dispatch handle.

@@ -1,9 +1,9 @@
 locals {
   model_version_endpoints = [
-    for account in azurerm_cognitive_account.aca : {
+    for account_key, account in azurerm_cognitive_account.aca : {
       "endpoint" : account.endpoint,
       "location" : account.location,
-      "key" : var.cognitive_accounts[account.name].model_definitions_auth_strategy_injected == "ApiKey" ? (account.primary_access_key != null ? account.primary_access_key : local.key_placeholder) : "WORKLOAD_IDENTITY", # to be a real enum, this would need to be adjusted to support more than two values (switch instead of if/else so to say)
+      "key" : var.cognitive_accounts[account_key].model_definitions_auth_strategy_injected == "ApiKey" ? (account.primary_access_key != null ? account.primary_access_key : local.key_placeholder) : "WORKLOAD_IDENTITY", # to be a real enum, this would need to be adjusted to support more than two values (switch instead of if/else so to say)
       "models" : [
         for deployment in azurerm_cognitive_deployment.deployments : {
           "modelName" : deployment.model[0].name,
