@@ -363,9 +363,11 @@ resource "azurerm_application_gateway" "appgw" {
   # Defines how incoming requests are routed from the listener to the backend
   # 🔧 Fully controlled by AGIC, only here to satisfy initial terraform
   request_routing_rule {
-    name               = "${var.name_prefix}-rqrt"
-    http_listener_name = "${var.name_prefix}-httplstn"
-    rule_type          = "Basic"
+    backend_address_pool_name  = "${var.name_prefix}-beap"
+    backend_http_settings_name = "${var.name_prefix}-be-htst"
+    http_listener_name         = "${var.name_prefix}-httplstn"
+    name                       = "${var.name_prefix}-rqrt"
+    rule_type                  = "Basic"
   }
 
   # REWRITE RULE SET - Rewrites requests and responses in flight
