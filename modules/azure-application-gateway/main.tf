@@ -344,8 +344,8 @@ resource "azurerm_application_gateway" "appgw" {
   backend_http_settings {
     name                  = "${var.name_prefix}-be-htst"
     cookie_based_affinity = "Disabled"
-    port                  = 443
-    protocol              = "Https"
+    port                  = 80
+    protocol              = "Http"
   }
 
   # HTTP LISTENER - Traffic reception point
@@ -356,7 +356,7 @@ resource "azurerm_application_gateway" "appgw" {
     name                           = "${var.name_prefix}-httplstn"
     frontend_ip_configuration_name = local.active_frontend_ip_configuration_name
     frontend_port_name             = "${var.name_prefix}-feport"
-    protocol                       = "Https"
+    protocol                       = "Http"
   }
 
   # REQUEST ROUTING RULE - Traffic routing logic
