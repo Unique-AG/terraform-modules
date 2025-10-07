@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: fixed
-    description: "Key lockup function now uses the map key instead of the account name which is unknown on initial apply."
+    description: "Key lookup function now uses the map key instead of the account name which is unknown on initial apply."
