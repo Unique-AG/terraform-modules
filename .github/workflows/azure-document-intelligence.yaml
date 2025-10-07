@@ -1,0 +1,20 @@
+name: "Release Azure Document Intelligence"
+
+on:
+  workflow_dispatch: # we allow manual runs as there are edge cases todo so (e.g. missed updating only the GitHub workflow or similar)
+  push:
+    branches:
+      - main
+    paths:
+      - modules/azure-document-intelligence/module.yaml
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/immutable-artifact.yaml
+    with:
+      module: azure-document-intelligence
+  release:
+    uses: ./.github/workflows/release.yaml
+    with:
+      module: azure-document-intelligence
