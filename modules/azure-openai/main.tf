@@ -69,7 +69,7 @@ resource "azurerm_cognitive_deployment" "deployments" {
 resource "azurerm_private_endpoint" "pe" {
   for_each            = { for k, v in var.cognitive_accounts : k => v if try(v.private_endpoint != null, false) }
   name                = "${each.key}-pe"
-  location            = each.value.location
+  location            = each.value.private_endpoint.vnet_location != null ? each.value.private_endpoint.vnet_location : each.value.location
   resource_group_name = var.resource_group_name
   subnet_id           = each.value.private_endpoint.subnet_id
 

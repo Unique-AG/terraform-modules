@@ -1,9 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.3.1
+version: 2.4.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: fixed
-    description: "Key lookup function now uses the map key instead of the account name so name and key are not enforced to concidentally match again (key of terraform can be different than real name again/still)."
+  - kind: changed
+    description: "Supports private endpoint locations to be provisioned in the location of the VNet. Change is backwards compatible and default to the location of the cognitive account."
