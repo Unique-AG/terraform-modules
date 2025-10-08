@@ -31,6 +31,7 @@ variable "cognitive_accounts" {
     public_network_access_enabled            = optional(bool, false)
     private_endpoint = optional(object({
       subnet_id           = string
+      vnet_location       = optional(string)
       private_dns_zone_id = string
     }))
     custom_subdomain_name = string
