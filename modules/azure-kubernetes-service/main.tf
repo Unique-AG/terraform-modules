@@ -57,6 +57,24 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
   }
 
+  # Enable Prometheus
+  dynamic "monitor_metrics" {
+    for_each = var.azure_prometheus_grafana_monitor.enabled ? [1] : []
+    content {
+      annotations_allowed = true
+      labels_allowed      = true
+    }
+  }
+
+  # Disable Prometheus
+  dynamic "monitor_metrics" {
+    for_each = !var.azure_prometheus_grafana_monitor.enabled ? [1] : []
+    content {
+      annotations_allowed = null
+      labels_allowed      = null
+    }
+  }
+
   storage_profile {
     blob_driver_enabled = true
   }
