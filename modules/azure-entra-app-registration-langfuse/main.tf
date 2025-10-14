@@ -79,3 +79,9 @@ resource "azuread_app_role_assignment" "default_access" {
   principal_object_id = each.value
   resource_object_id  = azuread_service_principal.langfuse.object_id
 }
+
+resource "azuread_service_principal_delegated_permission_grant" "msgraph_consent" {
+  service_principal_object_id          = azuread_service_principal.langfuse.object_id
+  resource_service_principal_object_id = azuread_service_principal.msgraph.object_id
+  claim_values                         = ["profile", "User.Read", "openid", "email"]
+}

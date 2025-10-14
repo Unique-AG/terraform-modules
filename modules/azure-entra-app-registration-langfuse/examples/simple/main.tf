@@ -21,4 +21,7 @@ module "langfuse_app_with_secret" {
 
   redirect_uris = ["https://yourapplication.com/api/auth/callback/azure-ad"]
   homepage_url  = "https://yourapplication.com"
+
+  # Assign groups - all members will have access
+  allowed_groups = ["11111111-1111-1111-1111-111111111111"]
 }
