@@ -1,9 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.3.0
+version: 2.4.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: added
-    description: "Backward compatible exposure of the key inside the model definitions."
+  - kind: changed
+    description: "Supports private endpoint locations to be provisioned in the location of the VNet. Change is backwards compatible and default to the location of the cognitive account."
