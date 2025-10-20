@@ -1,0 +1,9 @@
+name: azure-entra-sp-for-rbac
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-sp-for-rbac
+  - https://learn.microsoft.com/en-us/cli/azure/azure-cli-sp-tutorial-1
+  - https://opencost.io/docs/configuration/azure
+version: 1.0.0-rc.1
+changes:
+  - kind: added
+    description: "module azure-entra-sp-for-rbac"
