@@ -110,14 +110,6 @@ variable "storage_management_policy_default" {
     blob_to_deleted_after_last_modified_days = null
   }
 
-  validation {
-    condition = (
-      var.storage_management_policy_default == null ||
-      var.storage_management_policy_default.blob_to_archive_after_last_modified_days == null ||
-      contains(["LRS", "GRS", "RA-GRS"], var.account_replication_type)
-    )
-    error_message = "Archive tier (blob_to_archive_after_last_modified_days) is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. Either set blob_to_archive_after_last_modified_days to null or change account_replication_type to LRS, GRS, or RA-GRS."
-  }
 }
 
 variable "containers" {

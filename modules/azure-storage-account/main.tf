@@ -4,8 +4,9 @@ locals {
   store_connection_strings = var.connection_settings != null
 }
 
-# Random string for unique resource names
+# Random string for unique resource names (only when backup vault is needed)
 resource "random_string" "suffix" {
+  count   = var.backup_vault != null ? 1 : 0
   length  = 6
   lower   = true
   upper   = false
@@ -204,7 +205,7 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
 # Data Protection Backup Vault
 resource "azurerm_data_protection_backup_vault" "backup_vault" {
   count                        = var.backup_vault != null ? 1 : 0
-  name                         = "${var.backup_vault.name}-${random_string.suffix.result}"
+  name                         = "${var.backup_vault.name}-${random_string.suffix[0].result}"
   location                     = coalesce(var.backup_vault.location, var.location)
   resource_group_name          = coalesce(var.backup_vault.resource_group_name, var.resource_group_name)
   datastore_type               = var.backup_vault.datastore_type
