@@ -96,7 +96,7 @@ variable "customer_managed_key" {
 }
 
 variable "storage_management_policy_default" {
-  description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
+  description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies. Note: Archive tier is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. The module will automatically skip archive tier for unsupported replication types."
   type = object({
     blob_to_cool_after_last_modified_days    = optional(number, 10)
     blob_to_cold_after_last_modified_days    = optional(number, 50)
@@ -108,6 +108,15 @@ variable "storage_management_policy_default" {
     blob_to_cold_after_last_modified_days    = 50
     blob_to_archive_after_last_modified_days = null
     blob_to_deleted_after_last_modified_days = null
+  }
+
+  validation {
+    condition = (
+      var.storage_management_policy_default == null ||
+      var.storage_management_policy_default.blob_to_archive_after_last_modified_days == null ||
+      contains(["LRS", "GRS", "RA-GRS"], var.account_replication_type)
+    )
+    error_message = "Archive tier (blob_to_archive_after_last_modified_days) is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. Either set blob_to_archive_after_last_modified_days to null or change account_replication_type to LRS, GRS, or RA-GRS."
   }
 }
 

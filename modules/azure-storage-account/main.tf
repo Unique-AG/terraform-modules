@@ -4,6 +4,14 @@ locals {
   store_connection_strings = var.connection_settings != null
 }
 
+# Random string for unique resource names
+resource "random_string" "suffix" {
+  length  = 6
+  lower   = true
+  upper   = false
+  special = false
+}
+
 resource "azurerm_storage_account" "storage_account" {
   name                = var.name
   location            = var.location
@@ -144,10 +152,15 @@ resource "azurerm_storage_management_policy" "default" {
     }
     actions {
       base_blob {
-        tier_to_cool_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cool_after_last_modified_days
-        tier_to_cold_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cold_after_last_modified_days
-        tier_to_archive_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_archive_after_last_modified_days
-        delete_after_days_since_modification_greater_than          = var.storage_management_policy_default.blob_to_deleted_after_last_modified_days
+        tier_to_cool_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_cool_after_last_modified_days
+        tier_to_cold_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_cold_after_last_modified_days
+        # Archive tier is only supported for LRS, GRS, and RA-GRS replication types
+        # It is NOT supported for ZRS, GZRS, or RA-GZRS
+        tier_to_archive_after_days_since_modification_greater_than = (
+          var.storage_management_policy_default.blob_to_archive_after_last_modified_days != null &&
+          contains(["LRS", "GRS", "RA-GRS"], var.account_replication_type)
+        ) ? var.storage_management_policy_default.blob_to_archive_after_last_modified_days : null
+        delete_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_deleted_after_last_modified_days
       }
     }
   }
@@ -191,7 +204,7 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
 # Data Protection Backup Vault
 resource "azurerm_data_protection_backup_vault" "backup_vault" {
   count                        = var.backup_vault != null ? 1 : 0
-  name                         = var.backup_vault.name
+  name                         = "${var.backup_vault.name}-${random_string.suffix.result}"
   location                     = coalesce(var.backup_vault.location, var.location)
   resource_group_name          = coalesce(var.backup_vault.resource_group_name, var.resource_group_name)
   datastore_type               = var.backup_vault.datastore_type

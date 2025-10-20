@@ -41,12 +41,11 @@ You can learn in the [Design principles](../../DESIGN.md) about the `perimeter` 
 ## [Examples](./examples)
 
 ## Backups
-> [!IMPORTANT]
-> A module holding a `azurerm_data_protection_backup_vault` will be provided in an upcoming release.
 
-This module does not and will not abstract a Backup Vault because the backup vault highly depends on the Storage Account itself introducing a chicken-egg/_apply first_ problem.
+This module supports creating an Azure Data Protection Backup Vault for the storage account. To enable backups, provide the `backup_vault` variable with your desired configuration.
 
-The base for this decision is laid out in [Design principles](../../DESIGN.md) as well.
+> [!NOTE]
+> When using the module multiple times, each instance will automatically create a backup vault with a unique name by appending a random suffix to the base name. This ensures no naming conflicts occur between different module instances.
 
 ## Networking
 
@@ -63,12 +62,14 @@ True to the [Design principles](../../DESIGN.md), Network limitations should not
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3 |
 
 ## Modules
 
@@ -91,6 +92,7 @@ No modules.
 | [azurerm_storage_account_customer_managed_key.storage_account_cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_customer_managed_key) | resource |
 | [azurerm_storage_container.container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) | resource |
 | [azurerm_storage_management_policy.default](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_management_policy) | resource |
+| [random_string.suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 
 ## Inputs
 
@@ -122,7 +124,7 @@ No modules.
 | <a name="input_self_cmk"></a> [self\_cmk](#input\_self\_cmk) | Details for the self customer managed key. | <pre>object({<br/>    key_name                  = string<br/>    key_vault_id              = string<br/>    key_type                  = optional(string, "RSA-HSM")<br/>    key_size                  = optional(number, 2048)<br/>    key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])<br/>    user_assigned_identity_id = string<br/><br/>  })</pre> | `null` | no |
 | <a name="input_shared_access_key_enabled"></a> [shared\_access\_key\_enabled](#input\_shared\_access\_key\_enabled) | Enable shared access key for the storage account. | `bool` | `true` | no |
 | <a name="input_storage_account_tags"></a> [storage\_account\_tags](#input\_storage\_account\_tags) | Additional tags that apply only to the main storage account. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
-| <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. | <pre>object({<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, null)<br/>    blob_to_deleted_after_last_modified_days = optional(number, null)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": null,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": null<br/>}</pre> | no |
+| <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. Note: Archive tier is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. The module will automatically skip archive tier for unsupported replication types. | <pre>object({<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, null)<br/>    blob_to_deleted_after_last_modified_days = optional(number, null)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": null,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": null<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resources. | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -144,6 +146,22 @@ No modules.
 - This module as of now is not supporting [`azurerm_key_vault_managed_hardware_security_module` (HSM-backend Key Vaults)](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/key_vault_managed_hardware_security_module).
 - Neither change feed nor versioning are currently supported by this module. If you need these features, please open an issue. They are omitted for brevity and simplicity not because we do not want to support them.
 - Future versions will ship with built-in [`azurerm_storage_container_immutability_policy`](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/storage_container_immutability_policy).
+
+## Archive Tier Support
+
+The Archive access tier is **only supported** for the following replication types:
+- **LRS** (Locally Redundant Storage)
+- **GRS** (Geo-Redundant Storage)
+- **RA-GRS** (Read-Access Geo-Redundant Storage)
+
+The Archive tier is **NOT supported** for:
+- **ZRS** (Zone-Redundant Storage) - Default in this module
+- **GZRS** (Geo-Zone-Redundant Storage)
+- **RA-GZRS** (Read-Access Geo-Zone-Redundant Storage)
+
+**Why?** Archive tier storage is designed for cold data with longer retrieval times and doesn't require synchronous zone or regional redundancy. ZRS and related types replicate data synchronously across availability zones, which conflicts with how the Archive tier works.
+
+**The module automatically handles this** by skipping the `tier_to_archive_after_days_since_modification_greater_than` setting when using unsupported replication types. If you need Archive tier support, change the `account_replication_type` to `LRS`, `GRS`, or `RA-GRS`.
 
 ## Compatibility
 
