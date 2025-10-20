@@ -12,7 +12,7 @@ resource "time_rotating" "sp_for_rbac_password" {
 
 resource "azuread_application_password" "sp_for_rbac_password" {
   application_id = azuread_application.sp_for_rbac.id
-  display_name   = var.client_secret_generation_config.secret_name
+  display_name   = var.display_name
   rotate_when_changed = {
     rotation = time_rotating.sp_for_rbac_password.id
   }
