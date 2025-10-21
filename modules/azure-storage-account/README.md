@@ -181,6 +181,9 @@ Users that have given a name to the backup vault before `4.0.0` will need to set
 
 > [!CAUTION]
 > This upgrade is heavily breaking and users have two options outlined below.
+> ```
+>   ~ account_replication_type           = "LRS" -> "ZRS" # forces replacement
+> ```
 
 #### Manually perform the change of `account_replication_type` mostly
 The new defaults in `3.0.0` make the account more resilient by default. Changing these properties via Terraform though leads to recreation. To circumvent that you can:
@@ -201,5 +204,5 @@ Manually adjust the `account_replication_type` to your previous value.
 #### Other changes
 Some minor variable changes must be performed, including.
 
-- `deleted_retain_days` got removed - remove it
-- `container_deleted_retain_days` got removed - remove it
+- `deleted_retain_days` got moved to `data_protection_settings.blob_soft_delete_retention_days`
+- `container_deleted_retain_days` got moved to `data_protection_settings.container_soft_delete_retention_days`
