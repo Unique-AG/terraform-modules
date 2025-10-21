@@ -41,7 +41,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_accounts"></a> [accounts](#input\_accounts) | values for the cognitive accounts | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "FormRecognizer")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>    }))<br/>  }))</pre> | n/a | yes |
+| <a name="input_accounts"></a> [accounts](#input\_accounts) | values for the cognitive accounts | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "FormRecognizer")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>      vnet_location       = optional(string)<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_doc_intelligence_name"></a> [doc\_intelligence\_name](#input\_doc\_intelligence\_name) | The name prefix for the cognitive accounts | `string` | n/a | yes |
 | <a name="input_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#input\_endpoint\_definitions\_secret\_name) | Name of the secret for the endpoint definitions | `string` | `"azure-document-intelligence-endpoint-definitions"` | no |
 | <a name="input_endpoints_secret_name"></a> [endpoints\_secret\_name](#input\_endpoints\_secret\_name) | Name of the secret for the endpoints | `string` | `"azure-document-intelligence-endpoints"` | no |
@@ -62,6 +62,10 @@ No modules.
 | <a name="output_keys_secret_names"></a> [keys\_secret\_names](#output\_keys\_secret\_names) | List of names of the secrets containing the primary access key to connect to the endpoints. Returns null if Key Vault integration is disabled |
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
 <!-- END_TF_DOCS -->
+
+### `accounts.*.private_endpoint.vnet_location`
+
+With `>=3.1.0` Private Endpoints can be provisioned in a separate location. Supplying the variable is mandatory if the VNet resides in another location than the Cognitive Account itself.
 
 ## Compatibility
 

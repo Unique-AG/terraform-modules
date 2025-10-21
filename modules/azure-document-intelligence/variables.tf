@@ -9,6 +9,7 @@ variable "accounts" {
     private_endpoint = optional(object({
       private_dns_zone_id = string
       subnet_id           = string
+      vnet_location       = optional(string)
     }))
   }))
   description = "values for the cognitive accounts"
