@@ -266,7 +266,7 @@ variable "backup_vault" {
     immutability               = optional(string, "Disabled")
     soft_delete                = optional(string, "On")
     tags                       = optional(map(string), {})
-    use_random_suffix          = optional(bool, false)
+    random_suffix_enabled      = optional(bool, true)
   })
 
   default = {

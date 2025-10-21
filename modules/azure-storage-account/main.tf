@@ -205,7 +205,7 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
 # Data Protection Backup Vault
 resource "azurerm_data_protection_backup_vault" "backup_vault" {
   count                        = var.backup_vault != null ? 1 : 0
-  name                         = var.backup_vault.use_random_suffix ? "${var.backup_vault.name}-${random_string.suffix[0].result}" : var.backup_vault.name
+  name                         = var.backup_vault.random_suffix_enabled ? "${var.backup_vault.name}-${random_string.suffix[0].result}" : var.backup_vault.name
   location                     = coalesce(var.backup_vault.location, var.location)
   resource_group_name          = coalesce(var.backup_vault.resource_group_name, var.resource_group_name)
   datastore_type               = var.backup_vault.datastore_type
