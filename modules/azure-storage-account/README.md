@@ -176,3 +176,30 @@ The Archive tier is **NOT supported** for:
 Only users that have set `backup_vault.name` explictily are affected by this upgrade as the module now appends a random suffix to the backup vault by default. This behaviour can be modified by setting `backup_vault.random_suffix_enabled` respectively.
 
 Users that have given a name to the backup vault before `4.0.0` will need to set `backup_vault.random_suffix_enabled = false` to avoid breaking changes.
+
+### ~> `3.0.0`
+
+> [!CAUTION]
+> This upgrade is heavily breaking and users have two options outlined below.
+
+#### Manually perform the change of `account_replication_type` mostly
+The new defaults in `3.0.0` make the account more resilient by default. Changing these properties via Terraform though leads to recreation. To circumvent that you can:
+
+1. Upgrade in code
+1. Run `terraform plan` and inspect diff
+1. Perform changes on the account manually in the portal with the matching permissions
+1. Repeat plan and inspection until no major diff or recreation remains
+1. Apply and be in sync
+
+> [!IMPORTANT]
+> You are the owner of your infrastructure and liable for your data. Unique waives liability for wrongly executed upgrades that result in damage or data loss.
+
+#### Upgrade variables to reflect current state
+
+Manually adjust the `account_replication_type` to your previous value.
+
+#### Other changes
+Some minor variable changes must be performed, including.
+
+- `deleted_retain_days` got removed - remove it
+- `container_deleted_retain_days` got removed - remove it
