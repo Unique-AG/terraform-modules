@@ -205,18 +205,18 @@ variable "shared_access_key_enabled" {
 variable "data_protection_settings" {
   description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
   type = object({
-    versioning_enabled                   = optional(bool, true)
     blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
-    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     change_feed_retention_days           = optional(number, 7)  # 0-146000 days
+    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     point_in_time_restore_days           = optional(number, 7)
+    versioning_enabled                   = optional(bool, true)
   })
   default = {
-    versioning_enabled                   = true
     blob_soft_delete_retention_days      = 30
-    container_soft_delete_retention_days = 30
     change_feed_retention_days           = 7
+    container_soft_delete_retention_days = 30
     point_in_time_restore_days           = 7
+    versioning_enabled                   = true
   }
   #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#restore_policy-1
   validation {
