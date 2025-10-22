@@ -241,12 +241,10 @@ variable "data_protection_settings" {
     condition = (
       !var.is_nfs_mountable ||
       (!var.data_protection_settings.versioning_enabled &&
-        var.data_protection_settings.blob_soft_delete_retention_days == -1 &&
-        var.data_protection_settings.container_soft_delete_retention_days == -1 &&
         var.data_protection_settings.change_feed_retention_days == -1 &&
       var.data_protection_settings.point_in_time_restore_days == -1)
     )
-    error_message = "When is_nfs_mountable (HNS) is enabled, all data protection settings must be disabled: versioning_enabled must be false, and all retention days must be set to -1."
+    error_message = "When is_nfs_mountable (HNS) is enabled, all data protection settings must be disabled: versioning_enabled must be false, and change_feed_retention_days and point_in_time_restore_days must be set to -1."
   }
 }
 
