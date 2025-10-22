@@ -197,7 +197,7 @@ variable "private_endpoint" {
 }
 
 variable "shared_access_key_enabled" {
-  description = "Enable shared access key for the storage account."
+  description = "Enable shared access key for the storage account. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1)."
   type        = bool
   default     = true
 }
@@ -235,6 +235,11 @@ variable "data_protection_settings" {
       var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days
     )
     error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days, or set to -1 to disable."
+  }
+
+  validation {
+    condition     = !var.is_nfs_mountable || !var.data_protection_settings.versioning_enabled
+    error_message = "versioning_enabled cannot be true when is_nfs_mountable (HNS) is enabled. Azure does not support blob versioning with hierarchical namespace enabled."
   }
 }
 
