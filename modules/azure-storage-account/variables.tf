@@ -314,6 +314,10 @@ variable "backup_vault" {
     ], var.backup_vault.soft_delete)
     error_message = "soft_delete must be one of: AlwaysOn, Off, On."
   }
+  validation {
+    condition     = !var.is_nfs_mountable || var.backup_vault == null
+    error_message = "backup_vault must be disabled (set to null) when is_nfs_mountable is true, as HNS storage accounts cannot be backed up yet."
+  }
 }
 
 variable "backup_policy" {
