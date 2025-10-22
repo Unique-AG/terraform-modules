@@ -3,5 +3,5 @@ sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
 version: 2.2.1
 changes:
-  - kind: added
+  - kind: fixed
     description: "Defender for AI can be disabled by setting the ai_defender_settings variable to null."
