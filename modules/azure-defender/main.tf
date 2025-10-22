@@ -31,7 +31,7 @@ locals {
       resource_type = "Containers"
       config        = var.containers_defender_settings
     }
-    ], length(var.ai_defender_settings) > 0 ? [
+    ], var.ai_defender_settings != null ? [
     {
       resource_type = "AI"
       config        = var.ai_defender_settings
