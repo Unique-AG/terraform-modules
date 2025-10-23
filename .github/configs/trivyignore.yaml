@@ -4,14 +4,20 @@ misconfigurations:
     statement: Example value
     paths:
       - modules/azure-storage-account/examples/audit_logs/main.tf
+      - modules/azure-storage-account/examples/observability_logs/main.tf
+      - modules/azure-storage-account/examples/secure_by_default/main.tf
   - id: AVD-AZU-0014 # https://avd.aquasec.com/misconfig/avd-azu-0014 - Ensure Key Expiry
     statement: Example value
     paths:
       - modules/azure-storage-account/examples/audit_logs/main.tf
+      - modules/azure-storage-account/examples/observability_logs/main.tf
+      - modules/azure-storage-account/examples/secure_by_default/main.tf
   - id: AVD-AZU-0016 # https://avd.aquasec.com/misconfig/avd-azu-0016 - No Purge
     statement: Example value
     paths:
       - modules/azure-storage-account/examples/audit_logs/main.tf
+      - modules/azure-storage-account/examples/observability_logs/main.tf
+      - modules/azure-storage-account/examples/secure_by_default/main.tf
       - modules/azure-unique-secrets-bundle/examples/simple/main.tf
   - id: AVD-AZU-0017 # https://avd.aquasec.com/misconfig/avd-azu-0017 - Ensure Secret Expiry
     statement: Rotating these values entails complexity that users must consider and handle. Clients enforcing this should use Azure Policy.
