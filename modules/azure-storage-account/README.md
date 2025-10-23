@@ -63,10 +63,18 @@ As of today mostly used internally at Unique AI, this [`example`](./examples/obs
 
 ## Backups
 
-This module supports creating an Azure Data Protection Backup Vault for the storage account. To enable backups, provide the `backup_vault` variable with your desired configuration.
+This module supports creates Azure Data Protection Backup Vault for the storage account as well as backup configurations.
 
 > [!NOTE]
 > When using the module multiple times, each instance will automatically create a backup vault with a unique name by appending a random suffix to the base name. This ensures no naming conflicts occur between different module instances.
+
+### Not supported for all configurations
+
+Terraform validations ensure that only when backups are supported they will be created.
+
+### 🛑 Automated tear-down blocked
+
+The automatic creation of backup vaults leads to a dead-lock when the module shall be deprovisioned with terraform. Terraform can not self-destruct this module due to the protection of the backups. Use appropriate RBAC and human permissions to delete the instance, the policy and the vault if needed. It goes without saying, this destroys backups 🤨
 
 ## Networking
 
