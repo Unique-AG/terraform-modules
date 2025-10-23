@@ -1,9 +1,9 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 3.0.3
+version: 3.1.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: fixed
-    description: "Create key vault secrets only for accounts with local_auth_enabled set to true"
+  - kind: changed
+    description: "Supports private endpoint locations to be provisioned in the location of the VNet. Change is backwards compatible and default to the location of the cognitive account."
