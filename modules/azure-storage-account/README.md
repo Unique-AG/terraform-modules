@@ -38,7 +38,28 @@ You can learn in the [Design principles](../../DESIGN.md) about the `perimeter` 
     + Contributor of the resource group
 - Read [Blob Storage feature support in Azure Storage accounts](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-feature-support-in-storage-accounts) to understand which combinations of values make sense and are supported
 
-## [Examples](./examples)
+## Use Cases Unique AI
+
+You can find basic examples in the [examples](./examples) folder. As this module is mostly used to deploy Unique AI, some specific configurations might be required per use case. Unique on purpose does not offer a selected module per use case as of today as keeping 4 modules (or 4 wrapper modules) updated is more error-prone and a configuration and management hell.
+
+### Unique AI Ingestion Storage
+
+The most relevant use case and straight forward. You can use the [`secure_by_default`](./examples/secure_by_default/main.tf) variant to start.
+
+### Unique AI Ingestion Cache Store
+
+The cache stores files temporarily until shortly after they are ingested. You can use the [`secure_by_default`](./examples/secure_by_default/main.tf) variant to start but then adjust the `storage_management_policy_default` to your `cache` time preferences, namely the `blob_to_deleted_after_last_modified_days`.
+
+### Audit Log Storage
+
+Clients wishing to store Unique Audit Logs can refer to the [`audit_logs`](./examples/audit_logs/main.tf) example. The key difference is the `is_nfs_mountable` flag and the specific storage time of 5 years (change that to whatever your compliance policies dictate).
+
+> [!WARNING]
+> Audit Logs can grow quite quickly, so will the costs. You might want to adjust the `account_replication_type` and adjust the `storage_management_policy_default` `*archive*` properties to move audit logs into an `archived` state reducing the costs.
+
+### Observability Artefacts
+
+As of today mostly used internally at Unique AI, this [`example`](./examples/observability_logs/main.tf) acts as storage for [Loki and Tempo](https://grafana.com/go/webinar/getting-started-with-grafana-lgtm-stack/). These workloads support workload identity access and thus the configuration differs from our normal config <!-- Unique internal fix ref to support identities as well: UN-14227 -->.
 
 ## Backups
 
@@ -162,6 +183,8 @@ The Archive tier is **NOT supported** for:
 **Why?** Archive tier storage is designed for cold data with longer retrieval times and doesn't require synchronous zone or regional redundancy. ZRS and related types replicate data synchronously across availability zones, which conflicts with how the Archive tier works.
 
 **The module automatically handles this** by skipping the `tier_to_archive_after_days_since_modification_greater_than` setting when using unsupported replication types. If you need Archive tier support, change the `account_replication_type` to `LRS`, `GRS`, or `RA-GRS`.
+
+**Compatibility with Unique AI:** Unique AI can currently not handle archived content/files/blobs gracefully, see [Use Cases Unique AI](#use-cases-unique-ai) for more information.
 
 ## Compatibility
 
