@@ -49,14 +49,13 @@ module "sa" {
   source     = "../.."
   depends_on = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
 
-  name                      = "stauditlogs"
+  name                      = "stobservability"
   access_tier               = "Hot"
   account_replication_type  = "LRS"
   location                  = "switzerlandnorth"
   resource_group_name       = "my-resource-group"
   shared_access_key_enabled = false # 4.0.0 or later versions will eventually fix this for good
 
-  is_nfs_mountable = true # so it can be attached to pods
 
   identity_ids = [
     azurerm_user_assigned_identity.storage_account_keyvault_key_reader_audit_logs.id
@@ -69,32 +68,29 @@ module "sa" {
   }
 
   containers = {
-    for container in [
-      "configuration-backend",
-      "node-app-repository",
-      "node-chat",
-      "node-ingestion-worker-chat",
-      "node-ingestion-worker",
-      "node-ingestion",
-      "node-scope-management",
-      ] : container => {
+    sc-obs-chunk = {
+      access_type = "private"
+    }
+    sc-obs-ruler = {
+      access_type = "private"
+    }
+    sc-obs-admin = {
       access_type = "private"
     }
   }
 
-  backup_vault = null # backup vaults don't support NFS/HNS
 
   data_protection_settings = {
-    change_feed_retention_days = -1    # cant be active when versioning is disabled
-    point_in_time_restore_days = -1    # cant be active when versioning is disabled
-    versioning_enabled         = false # NFS cant use versioning
+    blob_soft_delete_retention_days      = 7
+    container_soft_delete_retention_days = 7
+    point_in_time_restore_days           = 6
   }
 
   storage_management_policy_default = {
     enabled                                  = true
-    blob_to_cool_after_last_modified_days    = 1
-    blob_to_cold_after_last_modified_days    = 7
-    blob_to_archive_after_last_modified_days = 90
+    blob_to_cool_after_last_modified_days    = 30
+    blob_to_cold_after_last_modified_days    = 90
+    blob_to_archive_after_last_modified_days = 730  # 2 years
     blob_to_deleted_after_last_modified_days = 1825 # 5 years
   }
 

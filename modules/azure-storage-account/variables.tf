@@ -96,7 +96,7 @@ variable "customer_managed_key" {
 }
 
 variable "storage_management_policy_default" {
-  description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies."
+  description = "A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage_account_id to implement your own policies. Note: Archive tier is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. The module will automatically skip archive tier for unsupported replication types."
   type = object({
     blob_to_cool_after_last_modified_days    = optional(number, 10)
     blob_to_cold_after_last_modified_days    = optional(number, 50)
@@ -109,6 +109,7 @@ variable "storage_management_policy_default" {
     blob_to_archive_after_last_modified_days = null
     blob_to_deleted_after_last_modified_days = null
   }
+
 }
 
 variable "containers" {
@@ -196,7 +197,7 @@ variable "private_endpoint" {
 }
 
 variable "shared_access_key_enabled" {
-  description = "Enable shared access key for the storage account."
+  description = "Enable shared access key for the storage account. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1)."
   type        = bool
   default     = true
 }
@@ -204,18 +205,18 @@ variable "shared_access_key_enabled" {
 variable "data_protection_settings" {
   description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
   type = object({
-    versioning_enabled                   = optional(bool, true)
     blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
-    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     change_feed_retention_days           = optional(number, 7)  # 0-146000 days
+    container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     point_in_time_restore_days           = optional(number, 7)
+    versioning_enabled                   = optional(bool, true)
   })
   default = {
-    versioning_enabled                   = true
     blob_soft_delete_retention_days      = 30
-    container_soft_delete_retention_days = 30
     change_feed_retention_days           = 7
+    container_soft_delete_retention_days = 30
     point_in_time_restore_days           = 7
+    versioning_enabled                   = true
   }
   #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#restore_policy-1
   validation {
@@ -234,6 +235,16 @@ variable "data_protection_settings" {
       var.data_protection_settings.point_in_time_restore_days < var.data_protection_settings.blob_soft_delete_retention_days
     )
     error_message = "point_in_time_restore_days must be less than blob_soft_delete_retention_days, or set to -1 to disable."
+  }
+
+  validation {
+    condition = (
+      !var.is_nfs_mountable ||
+      (!var.data_protection_settings.versioning_enabled &&
+        var.data_protection_settings.change_feed_retention_days == -1 &&
+      var.data_protection_settings.point_in_time_restore_days == -1)
+    )
+    error_message = "When is_nfs_mountable (HNS) is enabled, all data protection settings must be disabled: versioning_enabled must be false, and change_feed_retention_days and point_in_time_restore_days must be set to -1."
   }
 }
 
@@ -265,6 +276,7 @@ variable "backup_vault" {
     immutability               = optional(string, "Disabled")
     soft_delete                = optional(string, "On")
     tags                       = optional(map(string), {})
+    random_suffix_enabled      = optional(bool, true)
   })
 
   default = {
@@ -301,6 +313,10 @@ variable "backup_vault" {
       "AlwaysOn", "Off", "On"
     ], var.backup_vault.soft_delete)
     error_message = "soft_delete must be one of: AlwaysOn, Off, On."
+  }
+  validation {
+    condition     = !var.is_nfs_mountable || var.backup_vault == null
+    error_message = "backup_vault must be disabled (set to null) when is_nfs_mountable is true, as HNS storage accounts cannot be backed up yet."
   }
 }
 
