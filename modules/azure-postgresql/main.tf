@@ -209,10 +209,10 @@ resource "azurerm_monitor_metric_alert" "postgres_metric_alerts" {
 
 resource "azurerm_management_lock" "can_not_delete_server" {
   count      = var.management_lock != null ? 1 : 0
-  name       = try(var.management_lock.explicit_name, "TerraformModuleLock-CanNotDelete")
+  name       = var.management_lock.name
   scope      = azurerm_postgresql_flexible_server.apfs.id
   lock_level = "CanNotDelete"
-  notes      = try(var.management_lock.explicit_notes, "Lock from the terraform module that prevents deletion of the Database Server. The lock, once created, can't be destroyed by the module itself with terraform, only manually via the Portal or other manual, PIM-enabled, means.")
+  notes      = var.management_lock.notes
   lifecycle {
     prevent_destroy = true
   }

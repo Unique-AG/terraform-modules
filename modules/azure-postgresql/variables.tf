@@ -376,11 +376,18 @@ variable "metric_alerts_external_action_group_ids" {
 }
 
 variable "management_lock" {
-  description = "Management lock properties for the PostgreSQL server. Once created, the lock can't be destroyed by code, only manually via the Portal or other manual, PIM-enabled, means."
+  description = "Management lock properties for the PostgreSQL server. Once created, the lock can't be destroyed by code, only manually via the Portal or other manual, PIM-enabled, means. Null disables the lock."
   type = object({
-    explicit_name  = optional(string, null)
-    explicit_notes = optional(string, null)
+    name  = optional(string)
+    notes = optional(string)
   })
-  default  = {}
-  nullable = true
+  default = {
+    name  = "TerraformModuleLock-CanNotDelete"
+    notes = "Lock from the terraform module that prevents deletion of the Database Server. The lock, once created, can't be destroyed by the module itself with terraform, only manually via the Portal or other manual, PIM-enabled, means."
+  }
+
+  validation {
+    condition     = var.management_lock == null || (var.management_lock.name != null && var.management_lock.notes != null)
+    error_message = "When management_lock is not null, both name and notes must be set."
+  }
 }
