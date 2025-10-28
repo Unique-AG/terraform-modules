@@ -15,3 +15,5 @@ changes:
     description: "metric_alerts_external_action_group_ids is no longer optional. Users wanting no alerts must set it to an empty list."
   - kind: changed
     description: "default alerts example is removed as the primary example now enables notified alerts by defaults."
+  - kind: changed
+    description: "maintenance_window is now defaulted to 03:15 on Sunday Night UTC. Users wanting to use the System-Managed window must explicitly set it to null."

@@ -391,3 +391,12 @@ variable "management_lock" {
     error_message = "When management_lock is not null, both name and notes must be set."
   }
 }
+
+variable "maintenance_window" {
+  description = "Maintenance window properties for the PostgreSQL server. Null sets the window to System-Managed."
+  type = object({
+    day_of_week  = optional(number, 0)  # The day of week for maintenance window, where the week starts on a Sunday, i.e. Sunday = 0, Monday = 1.
+    start_hour   = optional(number, 3)  # The start hour for maintenance window.
+    start_minute = optional(number, 15) # The start minute for maintenance window.
+  })
+}
