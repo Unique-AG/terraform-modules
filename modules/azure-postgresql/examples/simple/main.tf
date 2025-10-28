@@ -90,6 +90,7 @@ module "apfs" {
   # Default alerts are automatically enabled:
   # - CPU > 80% for 30 minutes (Warning)
   # - Memory > 90% for 1 hour (Error)
+  # - Database is (not) alive (Error)
   # Set metric_alerts = {} to disable all alerts
   # Fallback Action Group applied to all alerts that don't define their own
   metric_alerts_external_action_group_ids = [
