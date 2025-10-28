@@ -395,8 +395,13 @@ variable "management_lock" {
 variable "maintenance_window" {
   description = "Maintenance window properties for the PostgreSQL server. Null sets the window to System-Managed."
   type = object({
-    day_of_week  = optional(number, 0)  # The day of week for maintenance window, where the week starts on a Sunday, i.e. Sunday = 0, Monday = 1.
-    start_hour   = optional(number, 3)  # The start hour for maintenance window.
-    start_minute = optional(number, 15) # The start minute for maintenance window.
+    day_of_week  = optional(number)
+    start_hour   = optional(number)
+    start_minute = optional(number)
   })
+  default = {
+    day_of_week  = 0
+    start_hour   = 3
+    start_minute = 15
+  }
 }
