@@ -324,7 +324,7 @@ variable "metric_alerts" {
       description = "Alert when Database Is Alive metric drops to 0."
       severity    = 1
       frequency   = "PT5M"
-      window_size = "PT1H"
+      window_size = "PT15M"
       enabled     = true
       criteria = {
         metric_name = "is_db_alive"
