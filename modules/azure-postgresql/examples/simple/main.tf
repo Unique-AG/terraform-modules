@@ -33,6 +33,23 @@ resource "azurerm_subnet" "example" {
   }
 }
 
+# Action group for notifications
+resource "azurerm_monitor_action_group" "postgresql_alerts" {
+  name                = "ag-postgresql-example-alerts"
+  resource_group_name = azurerm_resource_group.example.name
+  short_name          = "psqlalerts"
+
+  email_receiver {
+    name          = "dba-team"
+    email_address = "dba-team@contoso.com"
+  }
+
+  email_receiver {
+    name          = "platform-team"
+    email_address = "platform-team@contoso.com"
+  }
+}
+
 resource "azurerm_private_dns_zone" "example" {
   name                = "example.postgres.database.azure.com"
   resource_group_name = azurerm_resource_group.example.name
@@ -74,6 +91,10 @@ module "apfs" {
   # - CPU > 80% for 30 minutes (Warning)
   # - Memory > 90% for 1 hour (Error)
   # Set metric_alerts = {} to disable all alerts
+  # Fallback Action Group applied to all alerts that don't define their own
+  metric_alerts_external_action_group_ids = [
+    azurerm_monitor_action_group.postgresql_alerts.id
+  ]
 
   tags = {
     environment = "example"

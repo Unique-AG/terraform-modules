@@ -57,9 +57,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     }
   }
   lifecycle {
-    ignore_changes = [
-      zone
-    ]
+    ignore_changes = [zone, storage_mb]
   }
 }
 
@@ -70,7 +68,7 @@ resource "azurerm_postgresql_flexible_server_configuration" "parameters" {
   value     = each.value
 }
 
-resource "azurerm_postgresql_flexible_server_database" "indestructible_database_server" {
+resource "azurerm_postgresql_flexible_server_database" "destroy_prevented_database" {
   for_each = { for key, val in var.databases :
   key => val if val.prevent_destroy }
   name      = each.value.name
@@ -82,7 +80,12 @@ resource "azurerm_postgresql_flexible_server_database" "indestructible_database_
   }
 }
 
-resource "azurerm_postgresql_flexible_server_database" "destructible_database_server" {
+moved {
+  from = azurerm_postgresql_flexible_server_database.indestructible_database_server
+  to   = azurerm_postgresql_flexible_server_database.destroy_prevented_database
+}
+
+resource "azurerm_postgresql_flexible_server_database" "destroyable_database" {
   for_each = { for key, val in var.databases :
   key => val if !val.prevent_destroy }
   name      = each.value.name
@@ -92,6 +95,11 @@ resource "azurerm_postgresql_flexible_server_database" "destructible_database_se
   lifecycle {
     prevent_destroy = "false"
   }
+}
+
+moved {
+  from = azurerm_postgresql_flexible_server_database.destructible_database_server
+  to   = azurerm_postgresql_flexible_server_database.destroyable_database
 }
 
 resource "azurerm_key_vault_key" "psql-account-byok" {
@@ -197,4 +205,15 @@ resource "azurerm_monitor_metric_alert" "postgres_metric_alerts" {
   }
 
   tags = var.tags
+}
+
+resource "azurerm_management_lock" "can_not_delete_server" {
+  count      = var.management_lock != null ? 1 : 0
+  name       = try(var.management_lock.explicit_name, "TerraformModuleLock-CanNotDelete")
+  scope      = azurerm_postgresql_flexible_server.apfs.id
+  lock_level = "CanNotDelete"
+  notes      = try(var.management_lock.explicit_notes, "Lock from the terraform module that prevents deletion of the Database Server. The lock, once created, can't be destroyed by the module itself with terraform, only manually via the Portal or other manual, PIM-enabled, means.")
+  lifecycle {
+    prevent_destroy = true
+  }
 }

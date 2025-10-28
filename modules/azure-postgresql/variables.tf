@@ -318,6 +318,21 @@ variable "metric_alerts" {
         threshold   = 90
       }
     }
+
+    default_absence_alert = {
+      name        = "PostgreSQL Heartbeat Absent"
+      description = "Alert when Database Is Alive metric drops to 0."
+      severity    = 1
+      frequency   = "PT5M"
+      window_size = "PT1H"
+      enabled     = true
+      criteria = {
+        metric_name = "is_db_alive"
+        aggregation = "Maximum"
+        operator    = "LessThan"
+        threshold   = 1
+      }
+    }
   }
 
   validation {
@@ -358,5 +373,14 @@ variable "metric_alerts" {
 variable "metric_alerts_external_action_group_ids" {
   description = "List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action_group_ids. If an alert defines actions or action_group_ids, those take precedence."
   type        = list(string)
-  default     = []
+}
+
+variable "management_lock" {
+  description = "Management lock properties for the PostgreSQL server. Once created, the lock can't be destroyed by code, only manually via the Portal or other manual, PIM-enabled, means."
+  type = object({
+    explicit_name  = optional(string, null)
+    explicit_notes = optional(string, null)
+  })
+  default  = {}
+  nullable = true
 }
