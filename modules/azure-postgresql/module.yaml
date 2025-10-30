@@ -1,9 +1,13 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 3.0.1
+version: 3.1.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: fixed
     description: "maintenance_window variable is now actively used not just there as placeholder."
+  - kind: changed
+    description: "secrets are now tagged so they can be touched if needed without changing the value."
+  - kind: changed
+    description: "secrets are compliant with trivy misconfiguration requirements featuring an expiry date as well as a content type."
