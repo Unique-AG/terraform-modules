@@ -23,6 +23,12 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   delegated_subnet_id = var.delegated_subnet_id
   private_dns_zone_id = var.private_dns_zone_id
 
+  maintenance_window {
+    day_of_week  = var.maintenance_window.day_of_week
+    start_hour   = var.maintenance_window.start_hour
+    start_minute = var.maintenance_window.start_minute
+  }
+
   dynamic "customer_managed_key" {
     for_each = local.self_cmk ? [1] : []
     content {

@@ -131,6 +131,12 @@ variable "postgresql_server_tags" {
   default     = {}
 }
 
+variable "secrets_tags" {
+  description = "Tags that apply to the secrets. Can be used to trigger a terraform refresh of the secrets."
+  type        = map(string)
+  default     = {}
+}
+
 variable "databases" {
   description = "Map of databases and its properties"
   type = map(

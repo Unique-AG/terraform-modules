@@ -1,19 +1,13 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 3.0.0
+version: 3.1.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: changed
-    description: "by default, the module will now create a CanNotDelete lock on the PostgreSQL server to prevent (accidental) deletion. The lock can't be destroyed by code, only manually. See variable description."
-  - kind: changed
-    description: "indestructible_database_server is moved to destroy_prevented_database and destructible_database_server is moved to destroyable_database to be extremely clear on what is meant by the resources."
   - kind: fixed
-    description: "auto_grow_enabled no longer leads to server recreation when the server has grown once and automation wants to revert this growth as its seen as drift."
+    description: "maintenance_window variable is now actively used not just there as placeholder."
   - kind: changed
-    description: "metric_alerts_external_action_group_ids is no longer optional. Users wanting no alerts must set it to an empty list."
+    description: "secrets are now tagged so they can be touched if needed without changing the value."
   - kind: changed
-    description: "default alerts example is removed as the primary example now enables notified alerts by defaults."
-  - kind: changed
-    description: "maintenance_window is now defaulted to 03:15 on Sunday Night UTC. Users wanting to use the System-Managed window must explicitly set it to null."
+    description: "secrets are compliant with trivy misconfiguration requirements featuring an expiry date as well as a content type."
