@@ -7,36 +7,56 @@ locals {
 }
 
 resource "azurerm_key_vault_secret" "host" {
-  count        = local.create_vault_secrets ? 1 : 0
-  name         = local.host_secret_name
-  value        = azurerm_postgresql_flexible_server.apfs.fqdn
-  key_vault_id = var.key_vault_id
+  count = local.create_vault_secrets ? 1 : 0
+
+  content_type    = "text/plain"
+  expiration_date = "2099-12-31T23:59:59Z"
+  key_vault_id    = var.key_vault_id
+  name            = local.host_secret_name
+  tags            = var.secrets_tags
+  value           = azurerm_postgresql_flexible_server.apfs.fqdn
 }
 
 resource "azurerm_key_vault_secret" "port" {
-  count        = local.create_vault_secrets ? 1 : 0
-  name         = local.port_secret_name
-  value        = "5432"
-  key_vault_id = var.key_vault_id
+  count = local.create_vault_secrets ? 1 : 0
+
+  content_type    = "text/plain"
+  expiration_date = "2099-12-31T23:59:59Z"
+  key_vault_id    = var.key_vault_id
+  name            = local.port_secret_name
+  tags            = var.secrets_tags
+  value           = "5432"
 }
 
 resource "azurerm_key_vault_secret" "username" {
-  count        = local.create_vault_secrets ? 1 : 0
-  name         = local.username_secret_name
-  value        = var.administrator_login
-  key_vault_id = var.key_vault_id
+  count = local.create_vault_secrets ? 1 : 0
+
+  content_type    = "text/plain"
+  expiration_date = "2099-12-31T23:59:59Z"
+  key_vault_id    = var.key_vault_id
+  name            = local.username_secret_name
+  tags            = var.secrets_tags
+  value           = var.administrator_login
 }
 
 resource "azurerm_key_vault_secret" "password" {
-  count        = local.create_vault_secrets ? 1 : 0
-  name         = local.password_secret_name
-  value        = var.admin_password
-  key_vault_id = var.key_vault_id
+  count = local.create_vault_secrets ? 1 : 0
+
+  content_type    = "text/plain"
+  expiration_date = "2099-12-31T23:59:59Z"
+  key_vault_id    = var.key_vault_id
+  name            = local.password_secret_name
+  tags            = var.secrets_tags
+  value           = var.admin_password
 }
 
 resource "azurerm_key_vault_secret" "database_connection_strings" {
-  for_each     = local.create_vault_secrets ? var.databases : {}
-  name         = "${var.database_connection_string_secret_prefix}${each.value.name}"
-  value        = "postgresql://${var.administrator_login}:${var.admin_password}@${azurerm_postgresql_flexible_server.apfs.fqdn}/${each.value.name}"
-  key_vault_id = var.key_vault_id
+  for_each = local.create_vault_secrets ? var.databases : {}
+
+  content_type    = "text/plain"
+  expiration_date = "2099-12-31T23:59:59Z"
+  key_vault_id    = var.key_vault_id
+  name            = "${var.database_connection_string_secret_prefix}${each.value.name}"
+  tags            = var.secrets_tags
+  value           = "postgresql://${var.administrator_login}:${var.admin_password}@${azurerm_postgresql_flexible_server.apfs.fqdn}/${each.value.name}"
 }
