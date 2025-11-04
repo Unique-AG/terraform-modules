@@ -75,9 +75,9 @@ variable "storage_accounts_defender_settings" {
       {
         name = "OnUploadMalwareScanning"
         additional_extension_properties = {
-          "AutomatedResponse"            = "None"
-          CapGBPerMonthPerStorageAccount = "1000"
+          AutomatedResponse              = "None"
           BlobScanResultsOptions         = "BlobIndexTags"
+          CapGBPerMonthPerStorageAccount = "1000"
         }
       },
       {
