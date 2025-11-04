@@ -2,6 +2,32 @@ locals {
   uses_cmk                 = var.customer_managed_key != null && var.self_cmk == null
   self_cmk                 = var.self_cmk != null && var.customer_managed_key == null
   store_connection_strings = var.connection_settings != null
+
+  # When backup is enabled, Azure Backup automatically adds 5 days to soft delete and change feed retention
+  # to ensure reliable backup and restore operations (as per Microsoft documentation)
+  is_backup_enabled = var.backup_vault != null
+
+  # Calculate effective retention values considering backup requirements
+  # If backup is enabled, ensure minimum retention is backup retention + buffer
+  backup_retention_days = local.is_backup_enabled ? var.backup_vault.retention_duration_in_days : 0
+
+  # Soft delete retention: max of configured value or (backup retention + 5 days)
+  effective_blob_soft_delete_days = local.is_backup_enabled ? max(
+    var.data_protection_settings.blob_soft_delete_retention_days,
+    local.backup_retention_days + var.backup_vault.backup_buffer_days
+  ) : var.data_protection_settings.blob_soft_delete_retention_days
+
+  # Change feed retention: max of configured value or (backup retention + 5 days)
+  effective_change_feed_days = local.is_backup_enabled ? max(
+    var.data_protection_settings.change_feed_retention_days,
+    local.backup_retention_days + var.backup_vault.backup_buffer_days
+  ) : var.data_protection_settings.change_feed_retention_days
+
+  # Point-in-time restore should not exceed soft delete retention
+  effective_point_in_time_days = local.is_backup_enabled ? min(
+    var.data_protection_settings.point_in_time_restore_days,
+    local.effective_blob_soft_delete_days - 1
+  ) : var.data_protection_settings.point_in_time_restore_days
 }
 
 # Random string for unique resource names (only when backup vault is needed)
@@ -37,8 +63,8 @@ resource "azurerm_storage_account" "storage_account" {
   is_hns_enabled = var.is_nfs_mountable
 
   blob_properties {
-    change_feed_enabled           = var.data_protection_settings.change_feed_retention_days > 0
-    change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
+    change_feed_enabled           = local.effective_change_feed_days > 0
+    change_feed_retention_in_days = local.effective_change_feed_days > 0 ? local.effective_change_feed_days : null
     versioning_enabled            = var.data_protection_settings.versioning_enabled
     dynamic "cors_rule" {
       for_each = var.cors_rules
@@ -59,16 +85,16 @@ resource "azurerm_storage_account" "storage_account" {
     }
 
     dynamic "delete_retention_policy" {
-      for_each = var.data_protection_settings.blob_soft_delete_retention_days > 0 ? [1] : []
+      for_each = local.effective_blob_soft_delete_days > 0 ? [1] : []
       content {
-        days                     = var.data_protection_settings.blob_soft_delete_retention_days
+        days                     = local.effective_blob_soft_delete_days
         permanent_delete_enabled = false
       }
     }
     dynamic "restore_policy" {
-      for_each = var.data_protection_settings.point_in_time_restore_days > 0 ? [1] : []
+      for_each = local.effective_point_in_time_days > 0 ? [1] : []
       content {
-        days = var.data_protection_settings.point_in_time_restore_days
+        days = local.effective_point_in_time_days
       }
     }
   }

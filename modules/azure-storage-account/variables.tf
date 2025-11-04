@@ -203,7 +203,7 @@ variable "shared_access_key_enabled" {
 }
 
 variable "data_protection_settings" {
-  description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
+  description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore. Note: When backup is enabled, retention values will be automatically adjusted to meet Azure Backup requirements (minimum backup_retention + 5 days)."
   type = object({
     blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
     change_feed_retention_days           = optional(number, 7)  # 0-146000 days
@@ -261,7 +261,7 @@ variable "infrastructure_encryption_enabled" {
 }
 
 variable "backup_vault" {
-  description = "Configuration for Azure Data Protection Backup Vault. If provided, creates a backup vault and configures backup for the storage account."
+  description = "Configuration for Azure Data Protection Backup Vault. If provided, creates a backup vault and configures backup for the storage account. When enabled, storage account retention settings will be automatically adjusted to ensure reliable backup operations (soft delete and change feed retention will be set to at least backup_retention + 5 days)."
   type = object({
     name                         = optional(string, "storage-backup-vault")
     location                     = optional(string)
@@ -277,6 +277,7 @@ variable "backup_vault" {
     soft_delete                = optional(string, "On")
     tags                       = optional(map(string), {})
     random_suffix_enabled      = optional(bool, true)
+    backup_buffer_days         = optional(number, 5)
   })
 
   default = {
