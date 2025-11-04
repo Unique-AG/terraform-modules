@@ -24,8 +24,13 @@ locals {
   ) : var.data_protection_settings.change_feed_retention_days
 
   # Point-in-time restore should not exceed soft delete retention
+  # When backup is enabled, ensure it meets backup requirements (at least backup_retention + buffer - 1)
+  # but still respect the Azure constraint that it must be < blob_soft_delete_retention
   effective_point_in_time_days = local.is_backup_enabled ? min(
-    var.data_protection_settings.point_in_time_restore_days,
+    max(
+      var.data_protection_settings.point_in_time_restore_days,
+      local.backup_retention_days + var.backup_vault.backup_buffer_days - 1
+    ),
     local.effective_blob_soft_delete_days - 1
   ) : var.data_protection_settings.point_in_time_restore_days
 }
