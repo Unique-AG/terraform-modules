@@ -1,7 +1,7 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.2.1
+version: 2.2.2
 changes:
   - kind: fixed
-    description: "Defender for AI can be disabled by setting the ai_defender_settings variable to null."
+    description: "Foreverdiff due to additional_extension_properties.AutomatedResponse on Storage Accounts"
