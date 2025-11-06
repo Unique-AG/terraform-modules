@@ -25,7 +25,7 @@ locals {
         model_version          = deployment.model_version
         model_format           = deployment.model_format
         sku_capacity           = deployment.sku_capacity
-        sku_type               = deployment.sku_type
+        sku_name               = deployment.sku_name
         rai_policy_name        = deployment.rai_policy_name
         version_upgrade_option = deployment.version_upgrade_option
       }
