@@ -9,8 +9,8 @@ locals {
           "deploymentName" : deployment.name,
           "modelName" : deployment.model[0].name,
           "modelVersion" : deployment.model[0].version,
-          var.endpoint_definitions_secret.sku_capacity_field_name : deployment.sku[0].capacity,
-          var.endpoint_definitions_secret.sku_name_field_name : deployment.sku[0].name
+          "${var.endpoint_definitions_secret.sku_capacity_field_name}" : deployment.sku[0].capacity,
+          "${var.endpoint_definitions_secret.sku_name_field_name}" : deployment.sku[0].name
         } if deployment.cognitive_account_id == account.id
       ]
     }
