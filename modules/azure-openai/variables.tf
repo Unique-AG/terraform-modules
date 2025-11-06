@@ -17,6 +17,7 @@ variable "cognitive_accounts" {
   description = "Map of cognitive accounts, refer to the README for more details."
   type = map(object({
     custom_subdomain_name                    = string
+    extra_tags                               = optional(map(string), {})
     kind                                     = optional(string, "OpenAI")
     local_auth_enabled                       = optional(bool, false)
     location                                 = string

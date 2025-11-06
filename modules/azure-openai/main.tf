@@ -44,7 +44,7 @@ resource "azurerm_cognitive_account" "aca" {
   public_network_access_enabled = each.value.public_network_access_enabled
   resource_group_name           = var.resource_group_name
   sku_name                      = each.value.sku_name
-  tags                          = var.tags
+  tags                          = merge(var.tags, each.value.extra_tags)
 }
 
 resource "azurerm_cognitive_deployment" "deployments" {

@@ -6,7 +6,7 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "⚠️ `cognitive_account_tags` variable. Cognitive account tagging now uses `var.tags` directly. Field served no useful purpose."
+    description: "⚠️ `cognitive_account_tags` variable. Accounts can get additional tags via the nested `extra_tags` field."
   - kind: changed
     description: "⚠️ `endpoint_definitions_secret_name` variable. Use `endpoint_definitions_secret.name` instead."
   - kind: changed
