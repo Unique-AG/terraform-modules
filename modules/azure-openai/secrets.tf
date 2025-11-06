@@ -24,10 +24,10 @@ resource "azurerm_key_vault_secret" "endpoint" {
   for_each = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
 
   content_type    = "text/plain"
-  expiration_date = var.primary_access_key_secret.expiration_date
+  expiration_date = var.endpoint_secret.expiration_date
   key_vault_id    = var.key_vault_id
   name            = "${each.key}${var.endpoint_secret.name_suffix}"
-  tags            = merge(var.tags, var.primary_access_key_secret.extra_tags)
+  tags            = merge(var.tags, var.endpoint_secret.extra_tags)
   value           = each.value.endpoint
 }
 

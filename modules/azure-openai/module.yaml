@@ -5,7 +5,19 @@ version: 3.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
+  - kind: removed
+    description: "⚠️ BREAKING: Removed `cognitive_account_tags` variable. Cognitive account tagging now uses `var.tags` directly. Field served no useful purpose."
+  - kind: removed
+    description: "⚠️ BREAKING: Removed `endpoint_definitions_secret_name` variable. Use `endpoint_definitions_secret.name` instead."
+  - kind: removed
+    description: "⚠️ BREAKING: Removed `endpoints_secret_name` variable. Use `endpoint_secret.name_suffix` instead."
+  - kind: removed
+    description: "⚠️ BREAKING: Removed `*_secret_name_suffix` variables. Secret naming is now configured via structured objects (`primary_access_key_secret`, `endpoint_secret`, `endpoint_definitions_secret`)."
   - kind: changed
-    description: "model_version_endpoints now contains Tokens Per Minute (TPM) field."
-  - kind: fixed
-    description: "Removed unused variable endpoints_secret_name."
+    description: "⚠️ BREAKING: Secret variables restructured from simple strings to objects with `name`/`name_suffix`, `expiration_date`, and `extra_tags` fields. Affects `primary_access_key_secret`, `endpoint_secret`, and `endpoint_definitions_secret`."
+  - kind: added
+    description: "Extended `model_version_endpoints` to include per-deployment fields for usage tier (`usageTier`) and Tokens Per Minute (`tpmThousands`) via `endpoint_definitions_secret` field names."
+  - kind: added
+    description: "Key Vault secrets now include metadata: `content_type`, `expiration_date`, and `tags` for improved compliance and management."
+  - kind: added
+    description: "Configurable secret names for key, endpoint, and model_version_endpoints secrets via structured variables with `name`/`name_suffix` fields."
