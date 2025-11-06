@@ -38,7 +38,7 @@ variable "cognitive_accounts" {
       name                   = string
       rai_policy_name        = optional(string, "Microsoft.Default")
       sku_capacity           = number
-      sku_type               = optional(string, "Standard")
+      sku_name               = optional(string, "Standard")
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
 
@@ -98,11 +98,13 @@ variable "endpoint_secret" {
 variable "endpoint_definitions_secret" {
   description = "Name of the secret for the endpoint definitions"
   type = object({
-    expiration_date         = optional(string, "2099-12-31T23:59:59Z")
-    extra_tags              = optional(map(string), {})
-    name                    = optional(string, "azure-openai-endpoint-definitions")
-    sku_capacity_field_name = optional(string, "tpmThousands")
-    sku_name_field_name     = optional(string, "usageTier")
+    expiration_date = optional(string, "2099-12-31T23:59:59Z")
+    extra_tags      = optional(map(string), {})
+    name            = optional(string, "azure-openai-endpoint-definitions")
+
+    # https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits
+    sku_capacity_field_name = optional(string, "tpmThousands") # the sku_capacity field is very technical, to further process the field, we use the correct unit name
+    sku_name_field_name     = optional(string, "usageTier")    # the sku_name field is very technical, to further process the field, we use the correct term from the Azure Docs
   })
   default = {}
 }

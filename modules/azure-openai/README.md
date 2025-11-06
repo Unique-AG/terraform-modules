@@ -40,8 +40,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cognitive_accounts"></a> [cognitive\_accounts](#input\_cognitive\_accounts) | Map of cognitive accounts, refer to the README for more details. | <pre>map(object({<br/>    custom_subdomain_name                    = string<br/>    kind                                     = optional(string, "OpenAI")<br/>    local_auth_enabled                       = optional(bool, false)<br/>    location                                 = string<br/>    model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")<br/>    name                                     = string<br/>    public_network_access_enabled            = optional(bool, false)<br/>    sku_name                                 = optional(string, "S0")<br/><br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>      vnet_location       = optional(string)<br/>    }))<br/><br/>    cognitive_deployments = list(object({<br/>      model_format           = optional(string, "OpenAI")<br/>      model_name             = string<br/>      model_version          = string<br/>      name                   = string<br/>      rai_policy_name        = optional(string, "Microsoft.Default")<br/>      sku_capacity           = number<br/>      sku_type               = optional(string, "Standard")<br/>      version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    }))<br/><br/>  }))</pre> | n/a | yes |
-| <a name="input_endpoint_definitions_secret"></a> [endpoint\_definitions\_secret](#input\_endpoint\_definitions\_secret) | Name of the secret for the endpoint definitions | <pre>object({<br/>    expiration_date         = optional(string, "2099-12-31T23:59:59Z")<br/>    extra_tags              = optional(map(string), {})<br/>    name                    = optional(string, "azure-openai-endpoint-definitions")<br/>    sku_capacity_field_name = optional(string, "tpmThousands")<br/>    sku_name_field_name     = optional(string, "usageTier")<br/>  })</pre> | `{}` | no |
+| <a name="input_cognitive_accounts"></a> [cognitive\_accounts](#input\_cognitive\_accounts) | Map of cognitive accounts, refer to the README for more details. | <pre>map(object({<br/>    custom_subdomain_name                    = string<br/>    kind                                     = optional(string, "OpenAI")<br/>    local_auth_enabled                       = optional(bool, false)<br/>    location                                 = string<br/>    model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")<br/>    name                                     = string<br/>    public_network_access_enabled            = optional(bool, false)<br/>    sku_name                                 = optional(string, "S0")<br/><br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>      vnet_location       = optional(string)<br/>    }))<br/><br/>    cognitive_deployments = list(object({<br/>      model_format           = optional(string, "OpenAI")<br/>      model_name             = string<br/>      model_version          = string<br/>      name                   = string<br/>      rai_policy_name        = optional(string, "Microsoft.Default")<br/>      sku_capacity           = number<br/>      sku_name               = optional(string, "Standard")<br/>      version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    }))<br/><br/>  }))</pre> | n/a | yes |
+| <a name="input_endpoint_definitions_secret"></a> [endpoint\_definitions\_secret](#input\_endpoint\_definitions\_secret) | Name of the secret for the endpoint definitions | <pre>object({<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    extra_tags      = optional(map(string), {})<br/>    name            = optional(string, "azure-openai-endpoint-definitions")<br/><br/>    # https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits<br/>    sku_capacity_field_name = optional(string, "tpmThousands") # the sku_capacity field is very technical, to further process the field, we use the correct unit name<br/>    sku_name_field_name     = optional(string, "usageTier")    # the sku_name field is very technical, to further process the field, we use the correct term from the Azure Docs<br/>  })</pre> | `{}` | no |
 | <a name="input_endpoint_secret"></a> [endpoint\_secret](#input\_endpoint\_secret) | Configuration for the endpoint secret | <pre>object({<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    extra_tags      = optional(map(string), {})<br/>    name_suffix     = optional(string, "-endpoint")<br/>  })</pre> | `{}` | no |
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in a Key Vault | `any` | `null` | no |
 | <a name="input_primary_access_key_secret"></a> [primary\_access\_key\_secret](#input\_primary\_access\_key\_secret) | Configuration for the primary access key secret. Created per account and is populated with a placeholder if model\_definitions\_auth\_strategy\_injected is 'ApiKey' and local\_auth\_enabled is false. | <pre>object({<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    extra_tags      = optional(map(string), {})<br/>    name_suffix     = optional(string, "-key")<br/>  })</pre> | `{}` | no |
@@ -114,5 +114,18 @@ With `>=2.4.0` Private Endpoints can be provisioned in a separate location. Supp
    }
    endpoint_definitions_secret = {
      name = "azure-openai-endpoint-definitions"
+   }
+   ```
+
+3. **Update SKU type to name**: Rename sku_type to sku_name.
+   ```hcl
+   # Before
+   {
+     sku_type    = "Standard"
+   }
+   
+   # After
+   {
+     sku_name    = "Standard"
    }
    ```
