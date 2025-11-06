@@ -1,9 +1,11 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.4.0
+version: 3.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "Supports private endpoint locations to be provisioned in the location of the VNet. Change is backwards compatible and default to the location of the cognitive account."
+    description: "model_version_endpoints now contains Tokens Per Minute (TPM) field."
+  - kind: fixed
+    description: "Removed unused variable endpoints_secret_name."

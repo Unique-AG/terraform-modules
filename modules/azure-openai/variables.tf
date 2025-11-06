@@ -13,36 +13,32 @@ variable "tags" {
   default     = {}
 }
 
-variable "cognitive_account_tags" {
-  description = "Additional tags that apply only to the cognitive account. These will be merged with the general tags variable."
-  type        = map(string)
-  default     = {}
-}
-
 variable "cognitive_accounts" {
   description = "Map of cognitive accounts, refer to the README for more details."
   type = map(object({
-    name                                     = string
-    location                                 = string
+    custom_subdomain_name                    = string
     kind                                     = optional(string, "OpenAI")
-    sku_name                                 = optional(string, "S0")
     local_auth_enabled                       = optional(bool, false)
+    location                                 = string
     model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")
+    name                                     = string
     public_network_access_enabled            = optional(bool, false)
+    sku_name                                 = optional(string, "S0")
+
     private_endpoint = optional(object({
+      private_dns_zone_id = string
       subnet_id           = string
       vnet_location       = optional(string)
-      private_dns_zone_id = string
     }))
-    custom_subdomain_name = string
+
     cognitive_deployments = list(object({
-      name                   = string
+      model_format           = optional(string, "OpenAI")
       model_name             = string
       model_version          = string
-      model_format           = optional(string, "OpenAI")
+      name                   = string
+      rai_policy_name        = optional(string, "Microsoft.Default")
       sku_capacity           = number
       sku_type               = optional(string, "Standard")
-      rai_policy_name        = optional(string, "Microsoft.Default")
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
 
@@ -75,23 +71,38 @@ variable "cognitive_accounts" {
 }
 
 variable "key_vault_id" {
-  description = "The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in the Key Vault"
+  description = "The ID of the Key Vault where to store the secrets. If not set, the secrets will not be stored in a Key Vault"
   default     = null
 }
 
-variable "endpoint_definitions_secret_name" {
+variable "primary_access_key_secret" {
+  description = "Configuration for the primary access key secret. Created per account and is populated with a placeholder if model_definitions_auth_strategy_injected is 'ApiKey' and local_auth_enabled is false."
+  type = object({
+    expiration_date = optional(string, "2099-12-31T23:59:59Z")
+    extra_tags      = optional(map(string), {})
+    name_suffix     = optional(string, "-key")
+  })
+  default = {}
+}
+
+variable "endpoint_secret" {
+  description = "Configuration for the endpoint secret"
+  type = object({
+    expiration_date = optional(string, "2099-12-31T23:59:59Z")
+    extra_tags      = optional(map(string), {})
+    name_suffix     = optional(string, "-endpoint")
+  })
+  default = {}
+}
+
+variable "endpoint_definitions_secret" {
   description = "Name of the secret for the endpoint definitions"
-  default     = "azure-openai-endpoint-definitions"
-}
-variable "endpoints_secret_name" {
-  description = "Name of the secret for the endpoints"
-  default     = "azure-openai-endpoints"
-}
-variable "primary_access_key_secret_name_suffix" {
-  description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
-  default     = "-key"
-}
-variable "endpoint_secret_name_suffix" {
-  description = "The suffix of the secret name where the Cognitive Account Endpoint is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
-  default     = "-endpoint"
+  type = object({
+    expiration_date         = optional(string, "2099-12-31T23:59:59Z")
+    extra_tags              = optional(map(string), {})
+    name                    = optional(string, "azure-openai-endpoint-definitions")
+    sku_capacity_field_name = optional(string, "tpmThousands")
+    sku_name_field_name     = optional(string, "usageTier")
+  })
+  default = {}
 }
