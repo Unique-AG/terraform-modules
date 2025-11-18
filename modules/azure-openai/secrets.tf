@@ -17,9 +17,9 @@ resource "azurerm_key_vault_secret" "key" {
 
 # Store the endpoint for each cognitive account in Key Vault
 resource "azurerm_key_vault_secret" "endpoint" {
-  for_each     = local.create_vault_secrets ? azurerm_cognitive_account.aca : {}
+  for_each     = local.create_vault_secrets ? var.cognitive_accounts : {}
   name         = "${each.key}${var.endpoint_secret_name_suffix}"
-  value        = each.value.endpoint
+  value        = azurerm_cognitive_account.aca[each.key].endpoint
   key_vault_id = var.key_vault_id
 }
 

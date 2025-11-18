@@ -1,7 +1,7 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.2.2
+version: 2.3.0
 changes:
-  - kind: fixed
-    description: "Foreverdiff due to additional_extension_properties.AutomatedResponse on Storage Accounts"
+  - kind: added
+    description: "Support for Event Hub export"

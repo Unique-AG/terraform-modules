@@ -3,6 +3,15 @@
 
 This Terraform code configures Azure Defender for a subscription, enabling various security features and settings.
 
+## Pre-requisites
+- Contributor access to the subscription (required for Defender configuration)
+- For Defender export to Event Hub: Contributor access to create security automation resources
+
+## Features
+- Configure Defender plans for various Azure services (Cloud Posture, Storage, VMs, Key Vaults, ARM, Databases, Containers, AI)
+- Security contact configuration
+- **Optional: Continuous export to Event Hub** (alerts, assessments, secure scores)
+
 ## Default settings
 
 This module is secure by default, activating paid Defender features. While this provides comprehensive security coverage, it is important to note that enabling these Defender features will incur additional costs.

@@ -183,3 +183,28 @@ variable "ai_defender_settings" {
   })
   default = {}
 }
+
+variable "eventhub_export" {
+  description = "Configuration for exporting Defender for Cloud alerts and assessments to Event Hub."
+  type = object({
+    name                = string
+    location            = string
+    resource_group_name = string
+    eventhub = object({
+      name                    = string
+      resource_group_name     = string
+      namespace_name          = string
+      authorization_rule_name = string
+    })
+    export_alerts        = optional(bool, true)
+    export_assessments   = optional(bool, true)
+    export_secure_scores = optional(bool, false)
+    alert_severities     = optional(list(string), ["High", "Medium", "Low"])
+    assessment_statuses  = optional(list(string), ["Unhealthy", "Healthy"])
+  })
+  default = null
+  validation {
+    condition     = var.eventhub_export == null || var.eventhub_export.export_alerts || var.eventhub_export.export_assessments || var.eventhub_export.export_secure_scores
+    error_message = "At least one of export_alerts, export_assessments, or export_secure_scores must be enabled."
+  }
+}
