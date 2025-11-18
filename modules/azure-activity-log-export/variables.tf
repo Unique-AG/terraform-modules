@@ -10,10 +10,10 @@ variable "subscription_id" {
 
 variable "eventhub" {
   description = "Event Hub configuration for Activity Log export."
-  type        = object({
-    name = string
-    resource_group_name = string
-    namespace_name = string
+  type = object({
+    name                    = string
+    resource_group_name     = string
+    namespace_name          = string
     authorization_rule_name = string
   })
   nullable = false
@@ -33,4 +33,3 @@ variable "categories" {
     "ResourceHealth"
   ]
 }
-

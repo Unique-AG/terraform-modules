@@ -1,6 +1,6 @@
 output "namespace" {
   description = "Details of the Event Hub namespace."
-  value = azurerm_eventhub_namespace.namespace
+  value       = azurerm_eventhub_namespace.namespace
 }
 
 output "namespace_authorization_rules" {

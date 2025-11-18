@@ -155,12 +155,12 @@ resource "azurerm_eventhub_consumer_group" "consumer_group" {
 }
 
 resource "azuread_application" "sp_data_receiver" {
-  count = var.receiver_service_principal == null ? 0 : 1
+  count        = var.receiver_service_principal == null ? 0 : 1
   display_name = var.receiver_service_principal.display_name
 }
 
 resource "azuread_service_principal" "sp_data_receiver" {
-  count = var.receiver_service_principal == null ? 0 : 1
+  count     = var.receiver_service_principal == null ? 0 : 1
   client_id = azuread_application.sp_data_receiver[0].client_id
 }
 
