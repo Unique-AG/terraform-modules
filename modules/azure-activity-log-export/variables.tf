@@ -25,11 +25,7 @@ variable "categories" {
   default = [
     "Administrative",
     "Security",
-    "ServiceHealth",
     "Alert",
-    "Recommendation",
     "Policy",
-    "Autoscale",
-    "ResourceHealth"
   ]
 }
