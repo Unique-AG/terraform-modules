@@ -4,23 +4,29 @@ output "namespace" {
 }
 
 output "namespace_authorization_rules" {
-  description = "Authorization rules created at the namespace scope."
-  value = merge(
-    var.namespace.create_listen_rule ? {
-      listen = azurerm_eventhub_namespace_authorization_rule.listen[0]
-    } : {},
-    var.namespace.create_send_rule ? {
-      send = azurerm_eventhub_namespace_authorization_rule.send[0]
-    } : {},
-    var.namespace.create_manage_rule ? {
-      manage = azurerm_eventhub_namespace_authorization_rule.manage[0]
-    } : {},
-    {
-      for key, rule in azurerm_eventhub_namespace_authorization_rule.custom :
-      key => rule
+  description = "Authorization rules created at the namespace scope (only id, name, and resource group name)."
+  value = {
+    for key, rule in merge(
+      var.namespace.create_listen_rule ? {
+        listen = azurerm_eventhub_namespace_authorization_rule.listen[0]
+      } : {},
+      var.namespace.create_send_rule ? {
+        send = azurerm_eventhub_namespace_authorization_rule.send[0]
+      } : {},
+      var.namespace.create_manage_rule ? {
+        manage = azurerm_eventhub_namespace_authorization_rule.manage[0]
+      } : {},
+      {
+        for key, rule in azurerm_eventhub_namespace_authorization_rule.custom :
+        key => rule
+      }
+    ) :
+    key => {
+      id                  = rule.id
+      name                = rule.name
+      resource_group_name = rule.resource_group_name
     }
-  )
-  sensitive = true
+  }
 }
 
 output "eventhubs" {
