@@ -153,20 +153,3 @@ resource "azurerm_eventhub_consumer_group" "consumer_group" {
   resource_group_name = var.resource_group_name
   user_metadata       = each.value.user_metadata
 }
-
-resource "azuread_application" "sp_data_receiver" {
-  count        = var.receiver_service_principal == null ? 0 : 1
-  display_name = var.receiver_service_principal.display_name
-}
-
-resource "azuread_service_principal" "sp_data_receiver" {
-  count     = var.receiver_service_principal == null ? 0 : 1
-  client_id = azuread_application.sp_data_receiver[0].client_id
-}
-
-resource "azurerm_role_assignment" "sp_data_receiver" {
-  count                = var.receiver_service_principal == null ? 0 : 1
-  scope                = azurerm_eventhub_namespace.namespace.id
-  role_definition_name = "Azure Event Hubs Data Receiver"
-  principal_id         = azuread_service_principal.sp_data_receiver[0].object_id
-}

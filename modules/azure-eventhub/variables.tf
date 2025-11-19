@@ -114,11 +114,3 @@ variable "eventhubs" {
     }
   }
 }
-
-variable "receiver_service_principal" {
-  description = "Configuration for creating a service principal with Azure Event Hubs Data Receiver role. If not set, no service principal will be created."
-  type = object({
-    display_name = string
-  })
-  default = null
-}
