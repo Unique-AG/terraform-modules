@@ -13,7 +13,7 @@
 ## Important notes
 - This module requires an existing Event Hub namespace and authorization rule
 - The diagnostic setting is created at the subscription level
-- Activity Logs are subscription-wide and cannot be filtered by resource
+- Activity Logs are subscription-wide by design and cannot be filtered by resource (use Azure Resource Logs for resource-specific diagnostics)
 
 ## Module
 
