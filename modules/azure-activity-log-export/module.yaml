@@ -1,0 +1,8 @@
+name: azure-activity-log-export
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-activity-log-export
+version: 1.0.0
+changes:
+  - kind: added
+    description: "Initial release of Azure Activity Log Export module, extracted from azure-eventhub module for better separation of concerns."
+
