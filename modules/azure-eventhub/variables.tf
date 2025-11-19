@@ -20,7 +20,7 @@ variable "namespace" {
     name                          = string
     sku                           = optional(string, "Standard")
     capacity                      = optional(number)
-    auto_inflate_enabled          = optional(bool, false)
+    auto_inflate_enabled          = optional(bool, true)
     maximum_throughput_units      = optional(number)
     minimum_tls_version           = optional(string, "1.2")
     public_network_access_enabled = optional(bool, true)
