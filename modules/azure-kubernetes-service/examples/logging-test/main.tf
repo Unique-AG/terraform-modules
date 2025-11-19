@@ -107,7 +107,25 @@ module "aks" {
     resource_group_name = azurerm_resource_group.aks_rg.name
   }
   retention_in_days = 30
-  log_table_plan    = "Basic"
+
+  log_analytics_table_configuration = {
+    plan   = "Basic"
+    tables = ["ContainerLogV2"]
+  }
+
+  monitor_data_collection_rule = {
+    container_insights_collection_interval       = "30m"
+    container_insights_enable_container_log_v2   = true
+    container_insights_namespaces                = [] # do not collect logs, I have my own solution for that
+    container_insights_namespaces_filtering_mode = "Include"
+    explicit_name                                = "my-dcr"
+  }
+
+  monitor_diagnostic_settings = {
+    enabled_log_categories    = ["kube-scheduler"]
+    enabled_metric_categories = [] # no metrics, I have my own solution for that
+    explicit_name             = "my-ds"
+  }
 
   network_profile = {
     network_plugin          = "azure"
