@@ -23,8 +23,8 @@ variable "namespace" {
     auto_inflate_enabled          = optional(bool, true)
     maximum_throughput_units      = optional(number)
     minimum_tls_version           = optional(string, "1.2")
-    public_network_access_enabled = optional(bool, true)
-    local_authentication_enabled  = optional(bool, true)
+    public_network_access_enabled = optional(bool, true) # Intended for EXTERNAL consumers to access the Event Hub namespace
+    local_authentication_enabled  = optional(bool, true) # Not possible to use authorization rules otherwise
     identity = optional(object({
       type         = string
       identity_ids = optional(list(string), [])

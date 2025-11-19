@@ -12,4 +12,3 @@ output "name" {
   description = "The name of the diagnostic setting."
   value       = azurerm_monitor_diagnostic_setting.activity_log_export.name
 }
-

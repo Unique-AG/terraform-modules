@@ -15,6 +15,8 @@
 ## Important notes
 - The number of partitions cannot be increased after creation if the SKU is standard
 - For Defender for Cloud export, use the `azure-defender` module with the `eventhub_export` variable
+- `public_network_access_enabled` is intended for EXTERNAL consumers to access the Event Hub namespace
+- `local_authentication_enabled` must be set to `true` if you need to use authorization rules (connection strings). This is the only method currenlty supported if you want to use activity log export.
 
 ## Module
 
