@@ -23,6 +23,12 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   delegated_subnet_id = var.delegated_subnet_id
   private_dns_zone_id = var.private_dns_zone_id
 
+  maintenance_window {
+    day_of_week  = var.maintenance_window.day_of_week
+    start_hour   = var.maintenance_window.start_hour
+    start_minute = var.maintenance_window.start_minute
+  }
+
   dynamic "customer_managed_key" {
     for_each = local.self_cmk ? [1] : []
     content {
@@ -57,9 +63,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     }
   }
   lifecycle {
-    ignore_changes = [
-      zone
-    ]
+    ignore_changes = [zone, storage_mb]
   }
 }
 
@@ -70,7 +74,7 @@ resource "azurerm_postgresql_flexible_server_configuration" "parameters" {
   value     = each.value
 }
 
-resource "azurerm_postgresql_flexible_server_database" "indestructible_database_server" {
+resource "azurerm_postgresql_flexible_server_database" "destroy_prevented_database" {
   for_each = { for key, val in var.databases :
   key => val if val.prevent_destroy }
   name      = each.value.name
@@ -82,7 +86,12 @@ resource "azurerm_postgresql_flexible_server_database" "indestructible_database_
   }
 }
 
-resource "azurerm_postgresql_flexible_server_database" "destructible_database_server" {
+moved {
+  from = azurerm_postgresql_flexible_server_database.indestructible_database_server
+  to   = azurerm_postgresql_flexible_server_database.destroy_prevented_database
+}
+
+resource "azurerm_postgresql_flexible_server_database" "destroyable_database" {
   for_each = { for key, val in var.databases :
   key => val if !val.prevent_destroy }
   name      = each.value.name
@@ -92,6 +101,11 @@ resource "azurerm_postgresql_flexible_server_database" "destructible_database_se
   lifecycle {
     prevent_destroy = "false"
   }
+}
+
+moved {
+  from = azurerm_postgresql_flexible_server_database.destructible_database_server
+  to   = azurerm_postgresql_flexible_server_database.destroyable_database
 }
 
 resource "azurerm_key_vault_key" "psql-account-byok" {
@@ -197,4 +211,15 @@ resource "azurerm_monitor_metric_alert" "postgres_metric_alerts" {
   }
 
   tags = var.tags
+}
+
+resource "azurerm_management_lock" "can_not_delete_server" {
+  count      = var.management_lock != null ? 1 : 0
+  name       = var.management_lock.name
+  scope      = azurerm_postgresql_flexible_server.apfs.id
+  lock_level = "CanNotDelete"
+  notes      = var.management_lock.notes
+  lifecycle {
+    prevent_destroy = true
+  }
 }
