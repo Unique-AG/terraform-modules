@@ -1,19 +1,23 @@
+# `azure-entra-sp-create-for-rbac`
+
+This is the terraform variant of the often seen [`az ad sp create-for-rbac`](https://learn.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az-ad-sp-create-for-rbac).
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
-| <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3.6 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azuread"></a> [azuread](#provider\_azuread) | ~> 3.6 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_azuread"></a> [azuread](#provider\_azuread) | ~> 3 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
 | <a name="provider_time"></a> [time](#provider\_time) | ~> 0.13 |
 
 ## Modules
@@ -43,7 +47,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_client_id"></a> [client\_id](#output\_client\_id) | The client ID of the underlying Azure Entra App Registration. |
-| <a name="output_client_id_key_vault_secret_id"></a> [client\_id\_key\_vault\_secret\_id](#output\_client\_id\_key\_vault\_secret\_id) | The ID of the Key Vault secret containing the client ID. |
-| <a name="output_client_secret_key_vault_secret_id"></a> [client\_secret\_key\_vault\_secret\_id](#output\_client\_secret\_key\_vault\_secret\_id) | The ID of the Key Vault secret containing the client secret. |
 | <a name="output_object_id"></a> [object\_id](#output\_object\_id) | The object ID of the matching Service Principal to be used for effective role assignments. |
 <!-- END_TF_DOCS -->
