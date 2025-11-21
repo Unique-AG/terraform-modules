@@ -6,21 +6,21 @@ on:
     branches:
       - main
     paths:
-      - modules/azure-entra-sp-create-for-rbac/module.yaml
+      - modules/azure-entra-sp-for-rbac/module.yaml
   pull_request:
     branches:
       - main
     paths:
-      - modules/azure-entra-sp-create-for-rbac/**
+      - modules/azure-entra-sp-for-rbac/**
 
 jobs:
   validate:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/immutable-artifact.yaml
     with:
-      module: azure-entra-sp-create-for-rbac
+      module: azure-entra-sp-for-rbac
   release:
     if: ${{ github.event.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/release.yaml
     with:
-      module: azure-entra-sp-create-for-rbac
+      module: azure-entra-sp-for-rbac

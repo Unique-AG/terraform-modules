@@ -1,4 +1,4 @@
-# `azure-entra-sp-create-for-rbac`
+# `azure-entra-sp-for-rbac`
 
 This is the terraform variant of the often seen [`az ad sp create-for-rbac`](https://learn.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az-ad-sp-create-for-rbac).
 
