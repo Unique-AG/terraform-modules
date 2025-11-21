@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -56,6 +56,6 @@ jobs:
 
       # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
       - name: Upload Sarif results
-        uses: github/codeql-action/upload-sarif@181d5eefc20863364f96762470ba6f862bdef56b #v3.29.2
+        uses: github/codeql-action/upload-sarif@0499de31b99561a6d14a36a5f662c2a54f91beee #v4.31.2
         with:
           sarif_file: trivy.sarif
