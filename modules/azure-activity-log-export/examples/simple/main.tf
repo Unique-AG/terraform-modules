@@ -17,10 +17,9 @@ module "activity_log_export" {
   name            = "activity-log-to-eventhub"
   subscription_id = data.azurerm_subscription.current.subscription_id
 
+  # Event Hub can be in the same or different subscription
   eventhub = {
-    name                    = "eventhub-001"
-    resource_group_name     = "rg-eventhub-example"
-    namespace_name          = "eventhub-namespace-001"
-    authorization_rule_name = "eventhub-namespace-001-send"
+    name                  = "eventhub-001"
+    authorization_rule_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/rg-eventhub-example/providers/Microsoft.EventHub/namespaces/eventhub-namespace-001/authorizationRules/eventhub-namespace-001-send"
   }
 }
