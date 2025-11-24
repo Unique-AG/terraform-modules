@@ -185,26 +185,43 @@ variable "ai_defender_settings" {
 }
 
 variable "eventhub_export" {
-  description = "Configuration for exporting Defender for Cloud alerts and assessments to Event Hub."
+  description = "Configuration for exporting Defender for Cloud data to Event Hub."
   type = object({
     name                = string
     location            = string
     resource_group_name = string
     eventhub = object({
-      name                    = string
-      resource_group_name     = string
-      namespace_name          = string
-      authorization_rule_name = string
+      id                = string
+      connection_string = string
     })
-    export_alerts        = optional(bool, true)
-    export_assessments   = optional(bool, true)
-    export_secure_scores = optional(bool, false)
-    alert_severities     = optional(list(string), ["High", "Medium", "Low"])
-    assessment_statuses  = optional(list(string), ["Unhealthy", "Healthy"])
+    sources = optional(map(object({
+      event_source  = string
+      property_path = optional(string, "")
+      labels        = optional(list(string), [])
+    })), {
+      alert = {
+        event_source  = "Alerts"
+        property_path = "properties.metadata.severity"
+        labels        = ["High", "Medium", "Low"]
+      }
+      assessment = {
+        event_source  = "Assessments"
+        property_path = "properties.status.code"
+        labels        = ["Unhealthy", "Healthy"]
+      }
+    })
   })
-  default = null
+  default   = null
+  sensitive = true
   validation {
-    condition     = var.eventhub_export == null || var.eventhub_export.export_alerts || var.eventhub_export.export_assessments || var.eventhub_export.export_secure_scores
-    error_message = "At least one of export_alerts, export_assessments, or export_secure_scores must be enabled."
+    condition     = var.eventhub_export == null || length(var.eventhub_export.sources) > 0
+    error_message = "At least one source must be configured in the sources map."
+  }
+  validation {
+    condition = var.eventhub_export == null || alltrue([
+      for key, source in var.eventhub_export.sources :
+      length(source.labels) == 0 || (length(source.labels) > 0 && source.property_path != "")
+    ])
+    error_message = "If labels are specified, property_path must also be provided for filtering."
   }
 }

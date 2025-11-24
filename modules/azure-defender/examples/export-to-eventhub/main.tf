@@ -12,6 +12,14 @@ resource "azurerm_resource_group" "example" {
   location = "East US"
 }
 
+# Data source to retrieve the connection string for the Event Hub authorization rule
+# This can be in the same or different subscription (requires appropriate provider configuration)
+data "azurerm_eventhub_namespace_authorization_rule" "send" {
+  name                = "eventhub-namespace-001-send"
+  resource_group_name = "rg-eventhub-example"
+  namespace_name      = "eventhub-namespace-001"
+}
+
 module "defender" {
   source = "../../"
 
@@ -33,16 +41,28 @@ module "defender" {
     name                = "defender-to-eventhub"
     location            = azurerm_resource_group.example.location
     resource_group_name = azurerm_resource_group.example.name
+    # Event Hub can be in the same or different subscription
     eventhub = {
-      name                    = "eventhub-001"
-      resource_group_name     = "rg-eventhub-example"
-      namespace_name          = "eventhub-namespace-001"
-      authorization_rule_name = "eventhub-namespace-001-send"
+      id                = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/rg-eventhub-example/providers/Microsoft.EventHub/namespaces/eventhub-namespace-001/eventhubs/eventhub-001"
+      connection_string = data.azurerm_eventhub_namespace_authorization_rule.send.primary_connection_string
     }
-    export_alerts        = true
-    export_assessments   = true
-    export_secure_scores = false
-    alert_severities     = ["High", "Medium"]
-    assessment_statuses  = ["Unhealthy"]
+    # sources defaults to both alerts and assessments with standard severity/status filters
+    # To customize, override the sources:
+    # sources = {
+    #   alert = {
+    #     event_source  = "Alerts"
+    #     property_path = "properties.metadata.severity"
+    #     labels        = ["High", "Medium"]
+    #   }
+    #   assessment = {
+    #     event_source  = "Assessments"
+    #     property_path = "properties.status.code"
+    #     labels        = ["Unhealthy"]
+    #   }
+    #   secure_score = {
+    #     event_source = "SecureScores"
+    #     # SecureScores don't support filtering, so no property_path or labels needed
+    #   }
+    # }
   }
 }
