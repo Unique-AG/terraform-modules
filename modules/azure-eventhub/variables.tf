@@ -73,9 +73,6 @@ variable "namespace" {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$", var.namespace.name))
     error_message = "The namespace name can contain only letters, numbers and hyphens, must start with a letter, end with a letter or number, and be between 6 and 50 characters long."
   }
-  default = {
-    name = "eventhub-namespace-001"
-  }
 }
 
 variable "eventhubs" {
@@ -113,10 +110,5 @@ variable "eventhubs" {
   validation {
     condition     = var.eventhubs != null && length(var.eventhubs) > 0
     error_message = "At least one event hub must be defined."
-  }
-  default = {
-    eventhub-001 = {
-      name = "eventhub-001"
-    }
   }
 }

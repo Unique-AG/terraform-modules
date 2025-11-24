@@ -7,12 +7,9 @@ output "namespace_authorization_rules" {
   description = "Authorization rules created at the namespace scope (only id, name, and resource group name)."
   value = {
     for key, rule in azurerm_eventhub_namespace_authorization_rule.rules :
-    key => {
-      id                  = rule.id
-      name                = rule.name
-      resource_group_name = rule.resource_group_name
-    }
+    key => rule
   }
+  sensitive = true
 }
 
 output "eventhubs" {

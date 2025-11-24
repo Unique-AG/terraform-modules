@@ -9,4 +9,13 @@ module "eventhub" {
   location            = azurerm_resource_group.eventhub.location
   resource_group_name = azurerm_resource_group.eventhub.name
 
+  namespace = {
+    name = "eventhub-namespace-001"
+  }
+
+  eventhubs = {
+    eventhub-001 = {
+      name = "eventhub-001"
+    }
+  }
 }
