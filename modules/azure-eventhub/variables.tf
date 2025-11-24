@@ -46,10 +46,26 @@ variable "namespace" {
         ignore_missing_virtual_network_service_endpoint = optional(bool, false)
       })), [])
     }))
-    create_listen_rule = optional(bool, true)
-    create_send_rule   = optional(bool, true)
-    create_manage_rule = optional(bool, false)
-    tags               = optional(map(string), {})
+    authorization_rules = optional(map(object({
+      name   = string
+      listen = optional(bool, false)
+      send   = optional(bool, false)
+      manage = optional(bool, false)
+    })), {
+      listen = {
+        name   = "listen"
+        listen = true
+        send   = false
+        manage = false
+      }
+      send = {
+        name   = "send"
+        listen = false
+        send   = true
+        manage = false
+      }
+    })
+    extra_tags = optional(map(string), {})
   })
   validation {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$", var.namespace.name))
@@ -58,17 +74,6 @@ variable "namespace" {
   default = {
     name = "eventhub-namespace-001"
   }
-}
-
-variable "namespace_authorization_rules" {
-  description = "Map of custom authorization rules to create at the namespace level."
-  type = map(object({
-    name   = string
-    listen = optional(bool, false)
-    send   = optional(bool, false)
-    manage = optional(bool, false)
-  }))
-  default = {}
 }
 
 variable "eventhubs" {
@@ -95,7 +100,6 @@ variable "eventhubs" {
       name          = string
       user_metadata = optional(string)
     })), {})
-    tags = optional(map(string), {})
   }))
   validation {
     condition = alltrue([

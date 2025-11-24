@@ -2,7 +2,7 @@
 locals {
   namespace_tags = merge(
     var.tags,
-    var.namespace.tags
+    var.namespace.extra_tags
   )
 
   namespace_network_rules = var.namespace.network_rules
@@ -100,41 +100,8 @@ resource "azurerm_eventhub" "eventhub" {
   }
 }
 
-resource "azurerm_eventhub_namespace_authorization_rule" "listen" {
-  count = var.namespace.create_listen_rule ? 1 : 0
-
-  name                = "${var.namespace.name}-listen"
-  namespace_name      = azurerm_eventhub_namespace.namespace.name
-  resource_group_name = var.resource_group_name
-  listen              = true
-  send                = false
-  manage              = false
-}
-
-resource "azurerm_eventhub_namespace_authorization_rule" "send" {
-  count = var.namespace.create_send_rule ? 1 : 0
-
-  name                = "${var.namespace.name}-send"
-  namespace_name      = azurerm_eventhub_namespace.namespace.name
-  resource_group_name = var.resource_group_name
-  listen              = false
-  send                = true
-  manage              = false
-}
-
-resource "azurerm_eventhub_namespace_authorization_rule" "manage" {
-  count = var.namespace.create_manage_rule ? 1 : 0
-
-  name                = "${var.namespace.name}-manage"
-  namespace_name      = azurerm_eventhub_namespace.namespace.name
-  resource_group_name = var.resource_group_name
-  listen              = true
-  send                = true
-  manage              = true
-}
-
-resource "azurerm_eventhub_namespace_authorization_rule" "custom" {
-  for_each = var.namespace_authorization_rules
+resource "azurerm_eventhub_namespace_authorization_rule" "rules" {
+  for_each = var.namespace.authorization_rules
 
   name                = each.value.name
   namespace_name      = azurerm_eventhub_namespace.namespace.name

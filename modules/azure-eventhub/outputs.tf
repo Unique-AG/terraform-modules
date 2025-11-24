@@ -6,21 +6,7 @@ output "namespace" {
 output "namespace_authorization_rules" {
   description = "Authorization rules created at the namespace scope (only id, name, and resource group name)."
   value = {
-    for key, rule in merge(
-      var.namespace.create_listen_rule ? {
-        listen = azurerm_eventhub_namespace_authorization_rule.listen[0]
-      } : {},
-      var.namespace.create_send_rule ? {
-        send = azurerm_eventhub_namespace_authorization_rule.send[0]
-      } : {},
-      var.namespace.create_manage_rule ? {
-        manage = azurerm_eventhub_namespace_authorization_rule.manage[0]
-      } : {},
-      {
-        for key, rule in azurerm_eventhub_namespace_authorization_rule.custom :
-        key => rule
-      }
-    ) :
+    for key, rule in azurerm_eventhub_namespace_authorization_rule.rules :
     key => {
       id                  = rule.id
       name                = rule.name
