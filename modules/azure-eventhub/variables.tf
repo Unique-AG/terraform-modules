@@ -53,7 +53,7 @@ variable "namespace" {
       listen = optional(bool, false)
       send   = optional(bool, false)
       manage = optional(bool, false)
-    })), {
+      })), {
       listen = {
         name   = "listen"
         listen = true

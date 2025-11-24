@@ -198,7 +198,7 @@ variable "eventhub_export" {
       event_source  = string
       property_path = optional(string, "")
       labels        = optional(list(string), [])
-    })), {
+      })), {
       alert = {
         event_source  = "Alerts"
         property_path = "properties.metadata.severity"
