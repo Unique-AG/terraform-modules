@@ -21,7 +21,7 @@ variable "namespace" {
     sku                           = optional(string, "Standard")
     capacity                      = optional(number)
     auto_inflate_enabled          = optional(bool, true)
-    maximum_throughput_units      = optional(number)
+    maximum_throughput_units      = optional(number, 40) # Maximum allow is 40
     minimum_tls_version           = optional(string, "1.2")
     public_network_access_enabled = optional(bool, true) # Intended for EXTERNAL consumers to access the Event Hub namespace
     local_authentication_enabled  = optional(bool, true) # Not possible to use authorization rules otherwise
