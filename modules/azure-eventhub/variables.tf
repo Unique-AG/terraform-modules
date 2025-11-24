@@ -85,12 +85,12 @@ variable "eventhubs" {
     status            = optional(string, "Active")
     capture_description = optional(object({
       enabled             = bool
-      encoding            = optional(string)
+      encoding            = string
       interval_in_seconds = optional(number)
       size_limit_in_bytes = optional(number)
       skip_empty_archives = optional(bool, true)
       destination = object({
-        name                = optional(string, "EventHubArchive.AzureBlockBlob")
+        name                = optional(string, "EventHubArchive.AzureBlockBlob") # At this time the only supported value is EventHubArchive.AzureBlockBlob
         storage_account_id  = string
         blob_container_name = string
         archive_name_format = optional(string, "{Namespace}_{EventHub}_{PartitionId}_{Year}_{Month}_{Day}_{Hour}_{Minute}")

@@ -18,6 +18,13 @@
 - `public_network_access_enabled` is intended for EXTERNAL consumers to access the Event Hub namespace
 - `local_authentication_enabled` must be set to `true` if you need to use authorization rules (connection strings). This is the only method currenlty supported if you want to use activity log export.
 
+## Archive Authentication
+When using the Event Hub archive feature to export data to blob storage, authentication is handled via **Managed Identity**:
+- The Event Hub namespace must have a System-Assigned or User-Assigned Managed Identity enabled (configured via the `identity` variable)
+- The managed identity must be granted the `Storage Blob Data Contributor` role on the target storage account
+- No access keys, SAS tokens, or connection strings are required - authentication is automatic using the managed identity
+- This is a secure, key-less authentication method that follows Azure best practices
+
 ## Module
 
 <!-- BEGIN_TF_DOCS -->
