@@ -202,12 +202,7 @@ variable "eventhub_export" {
       alert = {
         event_source  = "Alerts"
         property_path = "properties.metadata.severity"
-        labels        = ["High", "Medium", "Low"]
-      }
-      assessment = {
-        event_source  = "Assessments"
-        property_path = "properties.status.code"
-        labels        = ["Unhealthy", "Healthy"]
+        labels        = ["High", "Medium"]
       }
     })
   })
