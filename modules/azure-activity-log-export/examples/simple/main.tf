@@ -15,7 +15,7 @@ module "activity_log_export" {
   source = "../../"
 
   name            = "activity-log-to-eventhub"
-  subscription_id = data.azurerm_subscription.current.subscription_id
+  subscription_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}"
 
   # Event Hub can be in the same or different subscription
   eventhub = {
