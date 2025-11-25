@@ -639,13 +639,8 @@ variable "monitor_diagnostic_settings" {
     explicit_name                  = optional(string, null)
     log_analytics_destination_type = optional(string, "Dedicated")
     enabled_log_categories = optional(list(string), [
-      "cloud-controller-manager",
-      "cluster-autoscaler",
-      "csi-azuredisk-controller",
-      "csi-azurefile-controller",
-      "csi-snapshot-controller",
       "kube-audit-admin",
-      "kube-scheduler",
+      "kube-audit",
     ])
     enabled_metric_categories = optional(list(string), ["AllMetrics"])
   })
@@ -660,8 +655,7 @@ variable "monitor_data_collection_rule" {
     container_insights_namespaces_filtering_mode = optional(string, "Exclude")
     container_insights_namespaces = optional(list(string), [
       "kube-system",
-      "gatekeeper-system",
-      "azure-arc"
+      "gatekeeper-system"
     ])
     container_insights_enable_container_log_v2 = optional(bool, true)
   })

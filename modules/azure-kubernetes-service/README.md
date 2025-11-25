@@ -6,25 +6,27 @@
     + Contributor of the resource group
 
 ## SKUs
-The Azure portal is unreliable to list all available SKUS to choose from (especially matching the Availibility Zones).
+The Azure portal is unreliable to list all available SKUs to choose from (especially matching the Availability Zones).
 ```
 az vm list-skus --location <region> --zone --output table
 az vm list-skus --location switzerlandnorth --zone --output table
 ```
-Listing the SKUs specifically gives you insights wether your planned SKU is available for each zone.
+Listing the SKUs specifically gives you insights whether your planned SKU is available for each zone.
 
 ## Examples
 
-The module includes two example configurations:
+The module includes four example configurations:
 
 1. **Simple Example** (`./examples/simple/`): Basic AKS cluster with default settings
 2. **Custom Node Pools Example** (`./examples/custom-pools/`): Advanced configuration with multiple node pools
+3. **Logging Test Example** (`./examples/logging-test/`): Demonstrates custom logging configuration with monitor data collection rules and diagnostic settings
+4. **Prometheus Alerts Example** (`./examples/prometheus-alerts/`): Shows how to configure Prometheus monitoring with custom alert rules and Grafana integration
 
 To run an example:
 
 1. Navigate to the example directory:
    ```bash
-   cd modules/azure-kubernetes-service/examples/simple  # or custom-pools
+   cd modules/azure-kubernetes-service/examples/simple  # or custom-pools, logging-test, prometheus-alerts
    ```
 
 2. Initialize and apply:
@@ -32,6 +34,11 @@ To run an example:
    terraform init
    terraform plan
    terraform apply
+   ```
+   
+   For the prometheus-alerts example, you can optionally use a tfvars file:
+   ```bash
+   terraform apply -var-file="prometheus-rules.tfvars.example"
    ```
 
 3. When done:
@@ -76,19 +83,25 @@ network_profile = {
 
 2. These outbound configuration options are mutually exclusive - you can only specify one of them.
 
+3. When `network_data_plane` is set to `"cilium"`, `network_plugin` must be set to `"azure"`.
+
+4. When `network_policy` is set to `"azure"`, `network_plugin` must be set to `"azure"`.
+
+5. When `network_policy` is set to `"cilium"`, `network_data_plane` must be set to `"cilium"`.
+
 ### Subnet Configuration
 The module supports separate subnets for nodes and pods:
 
 - **Default Node Pool**:
   - Node subnet: `default_subnet_nodes_id`
-  - Pod subnet: `default_subnet_pods_id` (optional,defaults to node subnet for backwards compatibility)
+  - Pod subnet: `default_subnet_pods_id` (optional, defaults to node subnet for backwards compatibility)
 
 - **Additional Node Pools**:
   - Each node pool can have its own subnet configuration through `node_pool_settings`
   - Supports separate subnets for nodes and pods per pool
   - Falls back to default subnets if not specified
 
-If desired to merge node and pod subnets (not recommended for production but maybe for test and very small clusters), set `segregated_node_and_pod_subnets_enabled` to `false`, defaults to `true`.
+If desired to merge node and pod subnets (not recommended for production but may be acceptable for test and very small clusters), set `segregated_node_and_pod_subnets_enabled` to `false`. This defaults to `true`.
 
 ### Outbound Traffic
 The cluster supports two outbound traffic configurations:
@@ -124,25 +137,64 @@ The cluster supports two outbound traffic configurations:
      ```
 
 ### Private Cluster
-The cluster can be deployed as a private cluster with the following options:
+The cluster is deployed as a private cluster by default with the following options:
 
-- `private_cluster_enabled`: Enable/disable private cluster
-- `private_dns_zone_id`: Specify private DNS zone for the cluster
-- `private_cluster_public_fqdn_enabled`: Control public FQDN visibility
+- `private_cluster_enabled`: Enable/disable private cluster (defaults to `true`)
+- `private_dns_zone_id`: Specify private DNS zone for the cluster (defaults to `"None"`)
+- `private_cluster_public_fqdn_enabled`: Control public FQDN visibility (defaults to `true`)
 
 ### API Server Access
 Control access to the Kubernetes API server:
 
-- `api_server_authorized_ip_ranges`: Specify allowed IP ranges
-- When using private cluster, this is required for management access
+- `api_server_authorized_ip_ranges`: Specify allowed IP ranges (defaults to `null`, which means no IP restrictions)
 
 ### Network Security
 The module includes several security features:
 
-- Azure Policy integration (`azure_policy_enabled`)
-- Microsoft Defender integration
-- Network policy support (Azure or Calico)
-- Private cluster deployment option
+- Azure Policy integration (`azure_policy_enabled`, defaults to `true`)
+- Microsoft Defender integration (optional via `defender_log_analytics_workspace_id`)
+- Network policy support (Azure or Calico, configured via `network_profile.network_policy`)
+- Private cluster deployment (enabled by default)
+
+### Monitoring and Observability
+
+The module supports Prometheus and Grafana monitoring through the `azure_prometheus_grafana_monitor` variable. **Note: Monitoring is disabled by default** (`enabled = false`).
+
+When enabled, the module creates:
+- Azure Monitor Workspace for Prometheus metrics
+- Azure Managed Grafana instance
+- Data collection rules and endpoints
+- Optional alert rules (node, cluster, and pod level)
+- Optional recording rules
+
+To enable monitoring:
+
+```hcl
+azure_prometheus_grafana_monitor = {
+  enabled                = true
+  azure_monitor_location = "westeurope"
+  azure_monitor_rg_name  = "monitoring-rg"
+  grafana_major_version  = 11
+  identity = {
+    type = "SystemAssigned"
+  }
+}
+```
+
+Alert configuration can be added when monitoring is enabled:
+
+```hcl
+alert_configuration = {
+  email_receiver = {
+    email_address = "alerts@example.com"
+    name          = "aks-alerts-email"
+  }
+  action_group = {
+    short_name = "aks-alerts"
+    location   = "germanywestcentral"
+  }
+}
+```
 
 ### Best Practices
 1. Use separate subnets for nodes and pods when possible
@@ -151,6 +203,7 @@ The module includes several security features:
 4. Use user-defined routing when specific routing rules are required
 5. Configure appropriate API server access controls
 6. When using Load Balancer outbound type, carefully choose between managed IPs and existing IPs/prefixes based on your requirements
+7. Enable Prometheus and Grafana monitoring for production clusters to gain visibility into cluster health and performance
 
 # Module
 
@@ -227,8 +280,8 @@ No modules.
 | <a name="input_maintenance_window_node_os"></a> [maintenance\_window\_node\_os](#input\_maintenance\_window\_node\_os) | The maintenance window for node OS upgrades of the Kubernetes cluster. | <pre>object({<br/>    frequency    = optional(string, "Weekly")<br/>    interval     = optional(number, 1)<br/>    duration     = optional(number, 6)<br/>    day_of_week  = optional(string, "Sunday")<br/>    day_of_month = optional(number, null)<br/>    week_index   = optional(string, null)<br/>    start_time   = optional(string, "00:00")<br/>    utc_offset   = optional(string, "+00:00")<br/>    start_date   = optional(string, null)<br/>    not_allowed = optional(list(object({<br/>      start = string<br/>      end   = string<br/>    })), [])<br/>  })</pre> | `null` | no |
 | <a name="input_maintenance_window_start"></a> [maintenance\_window\_start](#input\_maintenance\_window\_start) | The start hour of the maintenance window. | `number` | `16` | no |
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
-| <a name="input_monitor_data_collection_rule"></a> [monitor\_data\_collection\_rule](#input\_monitor\_data\_collection\_rule) | Configures the data collection rule for the Kubernetes Cluster. This is used to collect metrics (Container Insights) and logs (Application Insights) from the cluster, its workloads respectively. Certain properties are reused from general variables. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                                = optional(string, null)<br/>    container_insights_collection_interval       = optional(string, "10m")<br/>    container_insights_namespaces_filtering_mode = optional(string, "Exclude")<br/>    container_insights_namespaces = optional(list(string), [<br/>      "kube-system",<br/>      "gatekeeper-system",<br/>      "azure-arc"<br/>    ])<br/>    container_insights_enable_container_log_v2 = optional(bool, true)<br/>  })</pre> | `{}` | no |
-| <a name="input_monitor_diagnostic_settings"></a> [monitor\_diagnostic\_settings](#input\_monitor\_diagnostic\_settings) | Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log\_analytics\_workspace'. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                  = optional(string, null)<br/>    log_analytics_destination_type = optional(string, "Dedicated")<br/>    enabled_log_categories = optional(list(string), [<br/>      "cloud-controller-manager",<br/>      "cluster-autoscaler",<br/>      "csi-azuredisk-controller",<br/>      "csi-azurefile-controller",<br/>      "csi-snapshot-controller",<br/>      "kube-audit-admin",<br/>      "kube-scheduler",<br/>    ])<br/>    enabled_metric_categories = optional(list(string), ["AllMetrics"])<br/>  })</pre> | `{}` | no |
+| <a name="input_monitor_data_collection_rule"></a> [monitor\_data\_collection\_rule](#input\_monitor\_data\_collection\_rule) | Configures the data collection rule for the Kubernetes Cluster. This is used to collect metrics (Container Insights) and logs (Application Insights) from the cluster, its workloads respectively. Certain properties are reused from general variables. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                                = optional(string, null)<br/>    container_insights_collection_interval       = optional(string, "10m")<br/>    container_insights_namespaces_filtering_mode = optional(string, "Exclude")<br/>    container_insights_namespaces = optional(list(string), [<br/>      "kube-system",<br/>      "gatekeeper-system"<br/>    ])<br/>    container_insights_enable_container_log_v2 = optional(bool, true)<br/>  })</pre> | `{}` | no |
+| <a name="input_monitor_diagnostic_settings"></a> [monitor\_diagnostic\_settings](#input\_monitor\_diagnostic\_settings) | Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log\_analytics\_workspace'. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                  = optional(string, null)<br/>    log_analytics_destination_type = optional(string, "Dedicated")<br/>    enabled_log_categories = optional(list(string), [<br/>      "kube-audit-admin",<br/>      "kube-audit",<br/>    ])<br/>    enabled_metric_categories = optional(list(string), ["AllMetrics"])<br/>  })</pre> | `{}` | no |
 | <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster. Note: managed\_outbound\_ip\_count, outbound\_ip\_address\_ids, and outbound\_ip\_prefix\_ids are mutually exclusive. | <pre>object({<br/>    network_data_plane        = optional(string)<br/>    network_plugin            = optional(string, "azure")<br/>    network_plugin_mode       = optional(string, null)<br/>    network_policy            = optional(string)<br/>    service_cidr              = optional(string, "172.20.0.0/16")<br/>    dns_service_ip            = optional(string, "172.20.0.10")<br/>    outbound_type             = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count = optional(number, null)<br/>    outbound_ip_address_ids   = optional(list(string), null)<br/>    outbound_ip_prefix_ids    = optional(list(string), null)<br/>    idle_timeout_in_minutes   = optional(number, 30)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
 | <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |
@@ -274,11 +327,272 @@ No modules.
 
 ### ~> `5.0.0`
 
-The monitoring and logging flags where overhauled. 
+The monitoring and logging flags were overhauled. 
 
-- ⚠️ `log_table_plan` has moved into `log_analytics_table_configuration` as `tables` field which also allows to set the table plan as `plan`.
+- ⚠️ `log_table_plan` has moved into `log_analytics_table_configuration` which now has a `plan` field and a `tables` field that allows you to specify which tables to apply the plan to.
 - `monitor_diagnostic_settings` allows explicitly setting up the diagnostic settings, defaulting to the `< 5.0.0` settings
 - `monitor_data_collection_rule` allows explicitly setting up the data collection rule, defaulting to the `< 5.0.0` settings
+
+### ~> `4.0.0`
+
+Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
+
+#### Network Profile Changes
+
+1. **Network Policy Default Removed**: The `network_policy` property no longer defaults to "azure". You must explicitly set it if needed:
+
+   ```hcl
+   # Before (3.2.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+     # network_policy defaulted to "azure"
+   }
+
+   # After (4.0.0)
+   network_profile = {
+     idle_timeout_in_minutes = 100
+     network_policy = "azure"  # Must be explicitly set
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+   This change enables support for [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli):
+
+   ```hcl
+   network_profile = {
+     network_plugin = "none"  # BYO CNI
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+   }
+   ```
+
+2. **Network Data Plane Support**: Added support for `network_data_plane` configuration:
+
+   ```hcl
+   network_profile = {
+     network_plugin     = "azure"
+     network_data_plane = "cilium"  # New option
+     network_policy     = "cilium"
+   }
+   ```
+
+#### Log Analytics Workspace Changes
+
+The `log_analytics_workspace_id` variable has been replaced with a more flexible `log_analytics_workspace` object:
+
+```hcl
+# Before (3.2.0)
+log_analytics_workspace_id = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+
+# After (4.0.0)
+log_analytics_workspace = {
+  id                  = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
+  location            = "westeurope"
+  resource_group_name = "monitoring-rg"
+}
+```
+
+Note: The new variable is optional/nullable, allowing for configurations without log analytics.
+
+#### Node Pool Settings Changes
+
+The `node_count` field was removed from the type definition of `node_pool_settings` (it is no longer accepted as input). The field is only used internally and controlled by `min_count` and `max_count` when autoscaling is enabled:
+
+```hcl
+# Before (3.2.0)
+node_pool_settings = {
+  stable = {
+    node_count           = 1  # This field was part of the type definition
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+
+# After (4.0.0)
+node_pool_settings = {
+  stable = {
+    # node_count is no longer accepted as input
+    auto_scaling_enabled = true
+    vm_size              = "Standard_D2s_v6"
+    min_count            = 2
+    max_count            = 5
+    # ... other settings
+  }
+}
+```
+
+#### Prometheus Alert Rules Changes
+
+Prometheus alert rule variables now default to `null` instead of pre-configured rules:
+
+```hcl
+# Before (3.2.0) - extensive default alert rules were provided
+# No configuration needed for basic alerts
+
+# After (4.0.0) - must explicitly configure if needed
+prometheus_node_alert_rules = [
+  {
+    alert      = "KubeNodeUnreachable"
+    enabled    = true
+    expression = "..."
+    # ... configure your specific alert rules
+  }
+]
+
+prometheus_cluster_alert_rules = [
+  # ... configure your cluster-level alerts
+]
+
+prometheus_pod_alert_rules = [
+  # ... configure your pod-level alerts
+]
+```
+
+#### Azure Prometheus Grafana Monitor Changes
+
+1. **Grafana Version**: Default major version changed from 10 to 11
+2. **Identity Configuration**: Added identity configuration options
+3. **Monitoring Disabled by Default**: The `enabled` flag now defaults to `false`
+
+```hcl
+# Before (3.2.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true
+  grafana_major_version = 10  # Default was 10
+  # ... other settings
+}
+
+# After (4.0.0)
+azure_prometheus_grafana_monitor = {
+  enabled               = true  # Must be explicitly enabled (defaults to false)
+  grafana_major_version = 11    # Default is now 11
+  identity = {
+    type = "SystemAssigned"  # New identity configuration
+  }
+  # ... other settings
+}
+```
+
+#### Alert Configuration (New Feature)
+
+Version 4.0.0 introduces optional alert configuration:
+
+```hcl
+alert_configuration = {
+  email_receiver = {
+    email_address = "alerts@example.com"
+    name         = "aks-alerts-email"
+  }
+  action_group = {
+    short_name = "aks-alerts"
+    location   = "germanywestcentral"
+  }
+}
+```
+
+#### Migration Steps
+
+1. **Update Network Profile**: Explicitly set `network_policy` if you were relying on the default "azure" value
+
+2. **Replace Log Analytics Configuration**: Convert `log_analytics_workspace_id` to the new object format
+
+3. **Remove node_count**: Remove the `node_count` field from your `node_pool_settings` configuration (it's no longer accepted as input)
+
+4. **Configure Prometheus Alerts**: If you were using the default alert rules, you'll need to explicitly configure them or set them to `null`
+
+5. **Update Grafana Version**: If you need Grafana v10, explicitly set `grafana_major_version = 10`
+
+6. **Review Resource Naming**: Monitor-related resources have updated naming patterns, which may affect existing deployments
+
+#### Example Migration
+
+```hcl
+# Before (3.2.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace_id = "/subscriptions/.../workspaces/my-workspace"
+  
+  network_profile = {
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+    # network_policy defaulted to "azure"
+  }
+  
+  node_pool_settings = {
+    stable = {
+      node_count           = 1  # This field will be ignored in 4.0.0
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
+      os_disk_size_gb      = 100
+      mode                 = "User"
+      zones                = ["1", "3"]
+      node_labels          = {}
+      node_taints          = []
+      upgrade_settings = {
+        max_surge = "10%"
+      }
+    }
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled               = true
+    grafana_major_version = 10  # Explicitly set if you need v10 (default was 10 in 3.2.0)
+    # identity was not configurable
+  }
+}
+
+# After (4.0.0)
+module "aks" {
+  source = "path/to/azure-kubernetes-service"
+  
+  log_analytics_workspace = {
+    id                  = "/subscriptions/.../workspaces/my-workspace"
+    location            = "westeurope"
+    resource_group_name = "monitoring-rg"
+  }
+  
+  network_profile = {
+    network_policy          = "azure"  # Must be explicit
+    outbound_ip_address_ids = [azurerm_public_ip.example.id]
+  }
+  
+  node_pool_settings = {
+    stable = {
+      # node_count is no longer accepted
+      auto_scaling_enabled = true
+      vm_size              = "Standard_D2s_v6"
+      min_count            = 2
+      max_count            = 5
+      os_disk_size_gb      = 100
+      mode                 = "User"
+      zones                = ["1", "3"]
+      node_labels          = {}
+      node_taints          = []
+      upgrade_settings = {
+        max_surge = "10%"
+      }
+    }
+  }
+  
+  azure_prometheus_grafana_monitor = {
+    enabled               = true
+    grafana_major_version = 10  # Explicit if you need v10
+    identity = {
+      type = "SystemAssigned"
+    }
+  }
+  
+  # Configure alerts explicitly if needed
+  prometheus_node_alert_rules    = null
+  prometheus_cluster_alert_rules = null
+  prometheus_pod_alert_rules     = null
+}
+```
 
 ### ~> `3.0.0`
 
@@ -363,244 +677,3 @@ Version 3.0.0 introduces several breaking changes to improve subnet configuratio
    - Set `segregated_node_and_pod_subnets_enabled = false`
 
 4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
-
-### ~> `4.0.0`
-
-Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
-
-#### Network Profile Changes
-
-1. **Network Policy Default Removed**: The `network_policy` property no longer defaults to "azure". You must explicitly set it if needed:
-
-   ```hcl
-   # Before (3.2.0)
-   network_profile = {
-     idle_timeout_in_minutes = 100
-     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-     # network_policy defaulted to "azure"
-   }
-
-   # After (4.0.0)
-   network_profile = {
-     idle_timeout_in_minutes = 100
-     network_policy = "azure"  # Must be explicitly set
-     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-   }
-   ```
-
-   This change enables support for [Bring your own Container Network Interface (CNI) plugin with Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli):
-
-   ```hcl
-   network_profile = {
-     network_plugin = "none"  # BYO CNI
-     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-   }
-   ```
-
-2. **Network Data Plane Support**: Added support for `network_data_plane` configuration:
-
-   ```hcl
-   network_profile = {
-     network_plugin     = "azure"
-     network_data_plane = "cilium"  # New option
-     network_policy     = "cilium"
-   }
-   ```
-
-#### Log Analytics Workspace Changes
-
-The `log_analytics_workspace_id` variable has been replaced with a more flexible `log_analytics_workspace` object:
-
-```hcl
-# Before (3.2.0)
-log_analytics_workspace_id = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
-
-# After (4.0.0)
-log_analytics_workspace = {
-  id                  = "/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/my-workspace"
-  location            = "westeurope"
-  resource_group_name = "monitoring-rg"
-}
-```
-
-Note: The new variable is optional/nullable, allowing for configurations without log analytics.
-
-#### Node Pool Settings Changes
-
-The unused `node_count` variable has been removed from `node_pool_settings`:
-
-```hcl
-# Before (3.2.0)
-node_pool_settings = {
-  stable = {
-    node_count           = 1  # This was not used
-    auto_scaling_enabled = true
-    vm_size              = "Standard_D2s_v6"
-    min_count            = 2
-    max_count            = 5
-    # ... other settings
-  }
-}
-
-# After (4.0.0)
-node_pool_settings = {
-  stable = {
-    auto_scaling_enabled = true
-    vm_size              = "Standard_D2s_v6"
-    min_count            = 2
-    max_count            = 5
-    # ... other settings
-  }
-}
-```
-
-#### Prometheus Alert Rules Changes
-
-Prometheus alert rule variables now default to `null` instead of pre-configured rules:
-
-```hcl
-# Before (3.2.0) - extensive default alert rules were provided
-# No configuration needed for basic alerts
-
-# After (4.0.0) - must explicitly configure if needed
-prometheus_node_alert_rules = [
-  {
-    alert      = "KubeNodeUnreachable"
-    enabled    = true
-    expression = "..."
-    # ... configure your specific alert rules
-  }
-]
-
-prometheus_cluster_alert_rules = [
-  # ... configure your cluster-level alerts
-]
-
-prometheus_pod_alert_rules = [
-  # ... configure your pod-level alerts
-]
-```
-
-#### Azure Prometheus Grafana Monitor Changes
-
-1. **Grafana Version**: Default major version changed from 10 to 11
-2. **Identity Configuration**: Added identity configuration options
-
-```hcl
-# Before (3.2.0)
-azure_prometheus_grafana_monitor = {
-  enabled               = true
-  grafana_major_version = 10  # Default was 10
-  # ... other settings
-}
-
-# After (4.0.0)
-azure_prometheus_grafana_monitor = {
-  enabled               = true
-  grafana_major_version = 11  # Default is now 11
-  identity = {
-    type = "SystemAssigned"  # New identity configuration
-  }
-  # ... other settings
-}
-```
-
-#### Alert Configuration (New Feature)
-
-Version 4.0.0 introduces optional alert configuration:
-
-```hcl
-alert_configuration = {
-  email_receiver = {
-    email_address = "alerts@example.com"
-    name         = "aks-alerts-email"
-  }
-  action_group = {
-    short_name = "aks-alerts"
-    location   = "germanywestcentral"
-  }
-}
-```
-
-#### Migration Steps
-
-1. **Update Network Profile**: Explicitly set `network_policy` if you were relying on the default "azure" value
-
-2. **Replace Log Analytics Configuration**: Convert `log_analytics_workspace_id` to the new object format
-
-3. **Remove node_count**: Remove the `node_count` field from your `node_pool_settings`
-
-4. **Configure Prometheus Alerts**: If you were using the default alert rules, you'll need to explicitly configure them or set them to `null`
-
-5. **Update Grafana Version**: If you need Grafana v10, explicitly set `grafana_major_version = 10`
-
-6. **Review Resource Naming**: Monitor-related resources have updated naming patterns, which may affect existing deployments
-
-#### Example Migration
-
-```hcl
-# Before (3.2.0)
-module "aks" {
-  source = "path/to/azure-kubernetes-service"
-  
-  log_analytics_workspace_id = "/subscriptions/.../workspaces/my-workspace"
-  
-  network_profile = {
-    outbound_ip_address_ids = [azurerm_public_ip.example.id]
-    # network_policy defaulted to "azure"
-  }
-  
-  node_pool_settings = {
-    stable = {
-      node_count           = 1
-      auto_scaling_enabled = true
-      vm_size              = "Standard_D2s_v6"
-      min_count            = 2
-      max_count            = 5
-    }
-  }
-  
-  azure_prometheus_grafana_monitor = {
-    enabled = true
-    # grafana_major_version defaulted to 10
-  }
-}
-
-# After (4.0.0)
-module "aks" {
-  source = "path/to/azure-kubernetes-service"
-  
-  log_analytics_workspace = {
-    id                  = "/subscriptions/.../workspaces/my-workspace"
-    location            = "westeurope"
-    resource_group_name = "monitoring-rg"
-  }
-  
-  network_profile = {
-    network_policy          = "azure"  # Must be explicit
-    outbound_ip_address_ids = [azurerm_public_ip.example.id]
-  }
-  
-  node_pool_settings = {
-    stable = {
-      # node_count removed
-      auto_scaling_enabled = true
-      vm_size              = "Standard_D2s_v6"
-      min_count            = 2
-      max_count            = 5
-    }
-  }
-  
-  azure_prometheus_grafana_monitor = {
-    enabled               = true
-    grafana_major_version = 10  # Explicit if you need v10
-    identity = {
-      type = "SystemAssigned"
-    }
-  }
-  
-  # Configure alerts explicitly if needed
-  prometheus_node_alert_rules    = null
-  prometheus_cluster_alert_rules = null
-  prometheus_pod_alert_rules     = null
-}
