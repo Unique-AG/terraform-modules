@@ -196,6 +196,110 @@ alert_configuration = {
 }
 ```
 
+### Diagnostic Settings and Log Collection
+
+The module configures diagnostic settings to control which logs and metrics are sent to Log Analytics. By default, the module is configured for **minimal data collection** to reduce costs:
+
+**Default Configuration:**
+- **Logs**: Only `kube-audit` (basic security audit logs)
+- **Metrics**: None (empty list)
+- **Container Insights**: **Disabled by default** (set `container_insights_enabled = true` to enable)
+- **Managed Prometheus**: Disabled by default
+
+This minimal configuration significantly reduces costs while maintaining essential security audit logging.
+
+#### Enabling Container Insights
+
+Container Insights collects container logs, metrics, and inventory data. It is **disabled by default** to minimize costs:
+
+```hcl
+# Enable Container Insights (OMS agent)
+container_insights_enabled = true
+
+# Configure table plans for Container Insights tables
+log_analytics_table_configuration = {
+  plan = "Basic"  # or "Analytics" for full query capabilities
+  tables = ["ContainerLogV2", "AKSControlPlane"]
+}
+
+# Optionally configure data collection
+monitor_data_collection_rule = {
+  container_insights_collection_interval = "10m"
+  container_insights_namespaces_filtering_mode = "Exclude"
+  container_insights_namespaces = ["kube-system", "gatekeeper-system"]
+}
+```
+
+**Cost Impact**: Enabling Container Insights can add significant data ingestion costs:
+- ContainerLogV2 (application logs)
+- InsightsMetrics (performance metrics)
+- ContainerInventory, KubePodInventory, KubeNodeInventory (metadata)
+- Perf (performance counters)
+
+**Table Plan Options:**
+- `Basic`: Lower cost, limited queries (8 days retention, no KQL functions). Good for archival.
+- `Analytics`: Full query capabilities, higher cost. Good for active monitoring.
+
+#### Adding Additional Audit Logs
+
+If you need more verbose audit logging, you can add `kube-audit-admin`:
+
+```hcl
+monitor_diagnostic_settings = {
+  enabled_log_categories = [
+    "kube-audit",
+    "kube-audit-admin",  # Very verbose, logs every admin API call
+  ]
+  enabled_metric_categories = []
+}
+```
+
+**Warning**: `kube-audit-admin` is extremely verbose and can generate hundreds of GB per month in a busy cluster.
+
+**Available Log Categories:**
+- `kube-audit`: Kubernetes audit events
+- `kube-audit-admin`: Admin activity audit events
+- `kube-apiserver`: API server logs
+- `kube-controller-manager`: Controller manager logs
+- `kube-scheduler`: Scheduler logs
+- `cluster-autoscaler`: Cluster autoscaler logs
+- `cloud-controller-manager`: Cloud controller manager logs
+- `guard`: Azure AD Pod Identity logs
+- `csi-azuredisk-controller`: Azure Disk CSI driver logs
+- `csi-azurefile-controller`: Azure File CSI driver logs
+- `csi-snapshot-controller`: Snapshot controller logs
+
+**Available Metric Categories:**
+- `AllMetrics`: All available metrics (can be expensive)
+
+#### Dedicated Tables vs AzureDiagnostics
+
+The module uses **dedicated resource-specific tables** by default (`log_analytics_destination_type = "Dedicated"`). This is the recommended approach because:
+
+✅ **Benefits of Dedicated Tables:**
+- Better query performance
+- Clearer schema
+- Easier to analyze
+- Can apply different retention/plans per table
+- Tables: `AKSControlPlane`, `AKSAuditAdmin`, etc.
+
+❌ **Generic AzureDiagnostics Table:**
+- All resources mixed together
+- Harder to query
+- No per-resource control
+- Legacy approach (not recommended)
+
+To use the legacy AzureDiagnostics table (not recommended):
+```hcl
+monitor_diagnostic_settings = {
+  log_analytics_destination_type = null  # Forces AzureDiagnostics
+  enabled_log_categories = ["kube-audit"]
+}
+```
+
+**Note on Container Insights:**
+Container Insights (via the OMS agent addon) collects container and pod metrics/logs independently of the diagnostic settings. As of the latest version, Container Insights is **disabled by default** to reduce costs. Enable it explicitly with `container_insights_enabled = true` when needed.
+
 ### Best Practices
 1. Use separate subnets for nodes and pods when possible
 2. Enable network policies for enhanced security
@@ -203,7 +307,10 @@ alert_configuration = {
 4. Use user-defined routing when specific routing rules are required
 5. Configure appropriate API server access controls
 6. When using Load Balancer outbound type, carefully choose between managed IPs and existing IPs/prefixes based on your requirements
-7. Enable Prometheus and Grafana monitoring for production clusters to gain visibility into cluster health and performance
+7. **Start with minimal logging/monitoring** (defaults) and add only what you need to control costs
+8. Enable Container Insights (`container_insights_enabled = true`) only if you need container-level observability
+9. Avoid `kube-audit-admin` unless debugging - it generates massive amounts of data
+10. Enable Prometheus and Grafana monitoring for production clusters when you need detailed performance metrics
 
 # Module
 
@@ -260,6 +367,7 @@ No modules.
 | <a name="input_azure_policy_enabled"></a> [azure\_policy\_enabled](#input\_azure\_policy\_enabled) | Specifies whether Azure Policy is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. Toggling the enabled flag will cycle node-pools as the addon-will be un-/installed. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 11)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
+| <a name="input_container_insights_enabled"></a> [container\_insights\_enabled](#input\_container\_insights\_enabled) | Specifies whether Container Insights (OMS agent) is enabled for the Kubernetes Cluster. When disabled, container logs and metrics will not be collected. This can significantly reduce costs but will limit container-level observability. | `bool` | `false` | no |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
 | <a name="input_default_subnet_pods_id"></a> [default\_subnet\_pods\_id](#input\_default\_subnet\_pods\_id) | The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | `null` | no |
@@ -272,7 +380,7 @@ No modules.
 | <a name="input_kubernetes_default_node_zones"></a> [kubernetes\_default\_node\_zones](#input\_kubernetes\_default\_node\_zones) | The availability zones for the default node pool. | `list(string)` | <pre>[<br/>  "1",<br/>  "3"<br/>]</pre> | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked. | `string` | `null` | no |
 | <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled) | Specifies whether the local account is disabled for the Kubernetes Cluster. | `bool` | `true` | no |
-| <a name="input_log_analytics_table_configuration"></a> [log\_analytics\_table\_configuration](#input\_log\_analytics\_table\_configuration) | Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'. | <pre>object({<br/>    plan   = optional(string, "Basic")<br/>    tables = optional(list(string), ["ContainerLogV2", "AKSControlPlane"])<br/>  })</pre> | <pre>{<br/>  "plan": "Basic",<br/>  "tables": [<br/>    "ContainerLogV2",<br/>    "AKSControlPlane"<br/>  ]<br/>}</pre> | no |
+| <a name="input_log_analytics_table_configuration"></a> [log\_analytics\_table\_configuration](#input\_log\_analytics\_table\_configuration) | Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'. Note: ContainerLogV2 is only relevant when container\_insights\_enabled = true. AKSControlPlane is for diagnostic logs (kube-audit). | <pre>object({<br/>    plan   = optional(string, "Basic")<br/>    tables = optional(list(string), ["AKSControlPlane"])<br/>  })</pre> | <pre>{<br/>  "plan": "Basic",<br/>  "tables": [<br/>    "AKSControlPlane"<br/>  ]<br/>}</pre> | no |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | The Log Analytics Workspace configuration for monitoring and logging. | <pre>object({<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | `null` | no |
 | <a name="input_maintenance_window_auto_upgrade"></a> [maintenance\_window\_auto\_upgrade](#input\_maintenance\_window\_auto\_upgrade) | The maintenance window for automatic upgrades of the Kubernetes cluster. | <pre>object({<br/>    frequency    = optional(string, "Weekly")<br/>    interval     = optional(number, 2)<br/>    duration     = optional(number, 6)<br/>    day_of_week  = optional(string, "Sunday")<br/>    day_of_month = optional(number, null)<br/>    week_index   = optional(string, null)<br/>    start_time   = optional(string, "18:00")<br/>    utc_offset   = optional(string, "+00:00")<br/>    start_date   = optional(string, null)<br/>    not_allowed = optional(list(object({<br/>      start = string<br/>      end   = string<br/>    })), [])<br/>  })</pre> | `null` | no |
 | <a name="input_maintenance_window_day"></a> [maintenance\_window\_day](#input\_maintenance\_window\_day) | The day of the maintenance window. | `string` | `"Sunday"` | no |
@@ -281,7 +389,7 @@ No modules.
 | <a name="input_maintenance_window_start"></a> [maintenance\_window\_start](#input\_maintenance\_window\_start) | The start hour of the maintenance window. | `number` | `16` | no |
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
 | <a name="input_monitor_data_collection_rule"></a> [monitor\_data\_collection\_rule](#input\_monitor\_data\_collection\_rule) | Configures the data collection rule for the Kubernetes Cluster. This is used to collect metrics (Container Insights) and logs (Application Insights) from the cluster, its workloads respectively. Certain properties are reused from general variables. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                                = optional(string, null)<br/>    container_insights_collection_interval       = optional(string, "10m")<br/>    container_insights_namespaces_filtering_mode = optional(string, "Exclude")<br/>    container_insights_namespaces = optional(list(string), [<br/>      "kube-system",<br/>      "gatekeeper-system"<br/>    ])<br/>    container_insights_enable_container_log_v2 = optional(bool, true)<br/>  })</pre> | `{}` | no |
-| <a name="input_monitor_diagnostic_settings"></a> [monitor\_diagnostic\_settings](#input\_monitor\_diagnostic\_settings) | Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log\_analytics\_workspace'. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                  = optional(string, null)<br/>    log_analytics_destination_type = optional(string, "Dedicated")<br/>    enabled_log_categories = optional(list(string), [<br/>      "kube-audit-admin",<br/>      "kube-audit",<br/>    ])<br/>    enabled_metric_categories = optional(list(string), ["AllMetrics"])<br/>  })</pre> | `{}` | no |
+| <a name="input_monitor_diagnostic_settings"></a> [monitor\_diagnostic\_settings](#input\_monitor\_diagnostic\_settings) | Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log\_analytics\_workspace'. Open an issue to request making this configurable. | <pre>object({<br/>    explicit_name                  = optional(string, null)<br/>    log_analytics_destination_type = optional(string, "Dedicated")<br/>    enabled_log_categories = optional(list(string), [<br/>      "kube-audit",<br/>    ])<br/>    enabled_metric_categories = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster. Note: managed\_outbound\_ip\_count, outbound\_ip\_address\_ids, and outbound\_ip\_prefix\_ids are mutually exclusive. | <pre>object({<br/>    network_data_plane        = optional(string)<br/>    network_plugin            = optional(string, "azure")<br/>    network_plugin_mode       = optional(string, null)<br/>    network_policy            = optional(string)<br/>    service_cidr              = optional(string, "172.20.0.0/16")<br/>    dns_service_ip            = optional(string, "172.20.0.10")<br/>    outbound_type             = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count = optional(number, null)<br/>    outbound_ip_address_ids   = optional(list(string), null)<br/>    outbound_ip_prefix_ids    = optional(list(string), null)<br/>    idle_timeout_in_minutes   = optional(number, 30)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
 | <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |

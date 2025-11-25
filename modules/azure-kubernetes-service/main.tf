@@ -173,7 +173,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   dynamic "oms_agent" {
-    for_each = var.log_analytics_workspace != null ? [1] : []
+    for_each = var.log_analytics_workspace != null && var.container_insights_enabled ? [1] : []
     content {
       log_analytics_workspace_id      = var.log_analytics_workspace.id
       msi_auth_for_monitoring_enabled = true
@@ -195,14 +195,6 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     for_each = var.application_gateway_id != null ? [1] : []
     content {
       gateway_id = var.application_gateway_id
-    }
-  }
-
-  dynamic "monitor_metrics" {
-    for_each = var.azure_prometheus_grafana_monitor.enabled ? [1] : []
-    content {
-      annotations_allowed = true
-      labels_allowed      = true
     }
   }
 

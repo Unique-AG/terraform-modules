@@ -170,14 +170,14 @@ variable "log_analytics_workspace" {
 }
 
 variable "log_analytics_table_configuration" {
-  description = "Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'."
+  description = "Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'. Note: ContainerLogV2 is only relevant when container_insights_enabled = true. AKSControlPlane is for diagnostic logs (kube-audit)."
   type = object({
     plan   = optional(string, "Basic")
-    tables = optional(list(string), ["ContainerLogV2", "AKSControlPlane"])
+    tables = optional(list(string), ["AKSControlPlane"])
   })
   default = {
     plan   = "Basic"
-    tables = ["ContainerLogV2", "AKSControlPlane"]
+    tables = ["AKSControlPlane"]
   }
 }
 
@@ -640,9 +640,8 @@ variable "monitor_diagnostic_settings" {
     log_analytics_destination_type = optional(string, "Dedicated")
     enabled_log_categories = optional(list(string), [
       "kube-audit-admin",
-      "kube-audit",
     ])
-    enabled_metric_categories = optional(list(string), ["AllMetrics"])
+    enabled_metric_categories = optional(list(string), [])
   })
 }
 
@@ -659,4 +658,10 @@ variable "monitor_data_collection_rule" {
     ])
     container_insights_enable_container_log_v2 = optional(bool, true)
   })
+}
+
+variable "container_insights_enabled" {
+  description = "Specifies whether Container Insights (OMS agent) is enabled for the Kubernetes Cluster. When disabled, container logs and metrics will not be collected. This can significantly reduce costs but will limit container-level observability."
+  type        = bool
+  default     = true
 }

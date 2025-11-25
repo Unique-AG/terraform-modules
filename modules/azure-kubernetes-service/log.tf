@@ -41,7 +41,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
   Application monitoring (Container/application level)
 */
 resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
-  count               = var.log_analytics_workspace != null ? 1 : 0
+  count               = var.log_analytics_workspace != null && var.container_insights_enabled ? 1 : 0
   name                = var.monitor_data_collection_rule.explicit_name != null ? var.monitor_data_collection_rule.explicit_name : "${var.cluster_name}-ci-dcr"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
@@ -78,7 +78,7 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "ci_dcr_asc" {
-  count                   = var.log_analytics_workspace != null ? 1 : 0
+  count                   = var.log_analytics_workspace != null && var.container_insights_enabled ? 1 : 0
   name                    = var.monitor_data_collection_rule.explicit_name != null ? var.monitor_data_collection_rule.explicit_name : "${var.cluster_name}-ci-dcr-asc"
   target_resource_id      = azurerm_kubernetes_cluster.cluster.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr[0].id

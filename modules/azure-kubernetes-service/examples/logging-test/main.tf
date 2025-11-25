@@ -108,9 +108,12 @@ module "aks" {
   }
   retention_in_days = 30
 
+  # Enable Container Insights for container-level observability
+  container_insights_enabled = true
+
   log_analytics_table_configuration = {
     plan   = "Basic"
-    tables = ["ContainerLogV2"]
+    tables = ["ContainerLogV2", "AKSControlPlane"]
   }
 
   monitor_data_collection_rule = {
