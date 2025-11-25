@@ -190,7 +190,7 @@ variable "ssl_policy" {
     type = string
   })
   default = {
-    name = "AppGwSslPolicy20220101"
+    name = "AppGwSslPolicy20220101S"
     type = "Predefined"
   }
   nullable = false
@@ -204,6 +204,12 @@ variable "ssl_policy" {
 variable "tags" {
   description = "Tags to apply to resources."
   type        = map(string)
+}
+
+variable "application_gateway_tags" {
+  description = "Additional tags that apply only to the application gateway. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
 }
 
 variable "waf_policy_settings" {
@@ -503,4 +509,132 @@ variable "zones" {
   description = "Specifies a list of Availability Zones in which this Application Gateway should be located. Changing this forces a new Application Gateway to be created."
   type        = list(string)
   default     = null
+}
+
+variable "metric_alerts" {
+  description = "Map of metric alerts to create for the Application Gateway. By default includes 5xx error alerts. Set to {} to disable all default alerts."
+  type = map(object({
+    name                     = string
+    description              = optional(string, "")
+    severity                 = optional(number, 3)
+    frequency                = optional(string, "PT5M")
+    window_size              = optional(string, "PT15M")
+    enabled                  = optional(bool, true)
+    auto_mitigate            = optional(bool, true)
+    target_resource_type     = optional(string, null)
+    target_resource_location = optional(string, null)
+
+    # Static criteria (one of criteria, dynamic_criteria, or application_insights_web_test_location_availability_criteria must be specified)
+    criteria = optional(object({
+      metric_namespace       = optional(string, "microsoft.network/applicationgateways")
+      metric_name            = string
+      aggregation            = string
+      operator               = string
+      threshold              = number
+      skip_metric_validation = optional(bool, false)
+      dimension = optional(list(object({
+        name     = string
+        operator = string # Include, Exclude, StartsWith
+        values   = list(string)
+      })), [])
+    }))
+
+    # Dynamic criteria (alternative to static criteria)
+    dynamic_criteria = optional(object({
+      metric_namespace         = optional(string, "microsoft.network/applicationgateways")
+      metric_name              = string
+      aggregation              = string
+      operator                 = string
+      alert_sensitivity        = optional(string, "Medium")
+      evaluation_total_count   = optional(number, 4)
+      evaluation_failure_count = optional(number, 4)
+      ignore_data_before       = optional(string, null)
+      skip_metric_validation   = optional(bool, false)
+      dimension = optional(list(object({
+        name     = string
+        operator = string # Include, Exclude, StartsWith
+        values   = list(string)
+      })), [])
+    }))
+
+    # Application Insights web test location availability criteria (alternative to other criteria types)
+    application_insights_web_test_location_availability_criteria = optional(object({
+      web_test_id           = string
+      component_id          = string
+      failed_location_count = number
+    }))
+
+    # Actions configuration
+    actions = optional(list(object({
+      action_group_id    = string
+      webhook_properties = optional(map(string), {})
+    })), [])
+
+    # Backward compatibility - will be deprecated in favor of actions
+    action_group_ids = optional(list(string), [])
+  }))
+  default = {
+    default_5xx_error_alert = {
+      name        = "Application Gateway 5xx Error"
+      description = "Alert when 5xx errors are above 100 for more than 1 hour"
+      severity    = 1
+      frequency   = "PT1M"
+      window_size = "PT1H"
+      enabled     = true
+      criteria = {
+        metric_namespace = "microsoft.network/applicationgateways"
+        metric_name      = "ResponseStatus"
+        aggregation      = "Total"
+        operator         = "GreaterThan"
+        threshold        = 100
+        dimension = [{
+          name     = "HttpStatusGroup"
+          operator = "StartsWith"
+          values = [
+            "5xx",
+          ]
+        }]
+      }
+    }
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.metric_alerts :
+      (v.criteria != null && v.dynamic_criteria == null && v.application_insights_web_test_location_availability_criteria == null) ||
+      (v.criteria == null && v.dynamic_criteria != null && v.application_insights_web_test_location_availability_criteria == null) ||
+      (v.criteria == null && v.dynamic_criteria == null && v.application_insights_web_test_location_availability_criteria != null)
+    ])
+    error_message = "Each metric alert must specify exactly one of 'criteria', 'dynamic_criteria', or 'application_insights_web_test_location_availability_criteria'."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.metric_alerts :
+      contains([0, 1, 2, 3, 4], v.severity)
+    ])
+    error_message = "Severity must be one of: 0 (Critical), 1 (Error), 2 (Warning), 3 (Informational), 4 (Verbose)."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.metric_alerts :
+      contains(["PT1M", "PT5M", "PT15M", "PT30M", "PT1H"], v.frequency)
+    ])
+    error_message = "Frequency must be one of: PT1M, PT5M, PT15M, PT30M, PT1H."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.metric_alerts :
+      contains(["PT1M", "PT5M", "PT15M", "PT30M", "PT1H", "PT6H", "PT12H", "P1D"], v.window_size)
+    ])
+    error_message = "Window size must be one of: PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, P1D and must be greater than frequency."
+  }
+}
+
+variable "metric_alerts_external_action_group_ids" {
+  description = "List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action_group_ids. If an alert defines actions or action_group_ids, those take precedence."
+  type        = list(string)
+  default     = []
 }

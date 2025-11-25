@@ -1,0 +1,26 @@
+name: "Release Azure Bing Search"
+
+on:
+  workflow_dispatch: # we allow manual runs as there are edge cases todo so (e.g. missed updating only the GitHub workflow or similar)
+  push:
+    branches:
+      - main
+    paths:
+      - modules/azure-bing-search/module.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/azure-bing-search/**
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/immutable-artifact.yaml
+    with:
+      module: azure-bing-search
+  release:
+    if: ${{ github.event.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/release.yaml
+    with:
+      module: azure-bing-search

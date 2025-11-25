@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.5"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -7,6 +8,10 @@ terraform {
     random = {
       source  = "hashicorp/random"
       version = "~> 3"
+    }
+    age = {
+      source  = "clementblaise/age"
+      version = "~> 0.1.1"
     }
   }
 }

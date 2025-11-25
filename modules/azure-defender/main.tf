@@ -1,6 +1,6 @@
 
 locals {
-  defender_configs = [
+  defender_configs = concat([
     {
       resource_type = "CloudPosture"
       config        = var.cloud_posture_defender_settings
@@ -30,12 +30,13 @@ locals {
     {
       resource_type = "Containers"
       config        = var.containers_defender_settings
-    },
+    }
+    ], var.ai_defender_settings != null ? [
     {
       resource_type = "AI"
       config        = var.ai_defender_settings
     }
-  ]
+  ] : [])
   defender_configs_free_plan     = [for config in local.defender_configs : config if config.config.tier == "Free"]
   defender_configs_standard_plan = [for config in local.defender_configs : config if config.config.tier == "Standard"]
 }

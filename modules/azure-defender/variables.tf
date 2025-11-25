@@ -75,8 +75,9 @@ variable "storage_accounts_defender_settings" {
       {
         name = "OnUploadMalwareScanning"
         additional_extension_properties = {
-          CapGBPerMonthPerStorageAccount = "1000"
+          AutomatedResponse              = "None"
           BlobScanResultsOptions         = "BlobIndexTags"
+          CapGBPerMonthPerStorageAccount = "1000"
         }
       },
       {
@@ -172,6 +173,7 @@ variable "containers_defender_settings" {
 }
 
 variable "ai_defender_settings" {
+  description = "Settings for Defender for AI"
   type = object({
     tier = optional(string, "Standard")
     extensions = optional(list(object({

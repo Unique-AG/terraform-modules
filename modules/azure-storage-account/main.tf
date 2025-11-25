@@ -4,6 +4,15 @@ locals {
   store_connection_strings = var.connection_settings != null
 }
 
+# Random string for unique resource names (only when backup vault is needed)
+resource "random_string" "suffix" {
+  count   = var.backup_vault != null ? 1 : 0
+  length  = 6
+  lower   = true
+  upper   = false
+  special = false
+}
+
 resource "azurerm_storage_account" "storage_account" {
   name                = var.name
   location            = var.location
@@ -13,7 +22,7 @@ resource "azurerm_storage_account" "storage_account" {
   account_tier             = var.account_tier
   account_replication_type = var.account_replication_type
   access_tier              = var.access_tier
-  tags                     = var.tags
+  tags                     = merge(var.tags, var.storage_account_tags)
 
   # secure by default
   allow_nested_items_to_be_public   = false
@@ -27,7 +36,6 @@ resource "azurerm_storage_account" "storage_account" {
   nfsv3_enabled  = var.is_nfs_mountable
   is_hns_enabled = var.is_nfs_mountable
 
-  # enable access from browsers
   blob_properties {
     change_feed_enabled           = var.data_protection_settings.change_feed_retention_days > 0
     change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
@@ -144,10 +152,15 @@ resource "azurerm_storage_management_policy" "default" {
     }
     actions {
       base_blob {
-        tier_to_cool_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cool_after_last_modified_days
-        tier_to_cold_after_days_since_modification_greater_than    = var.storage_management_policy_default.blob_to_cold_after_last_modified_days
-        tier_to_archive_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_archive_after_last_modified_days
-        delete_after_days_since_modification_greater_than          = var.storage_management_policy_default.blob_to_deleted_after_last_modified_days
+        tier_to_cool_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_cool_after_last_modified_days
+        tier_to_cold_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_cold_after_last_modified_days
+        # Archive tier is only supported for LRS, GRS, and RA-GRS replication types
+        # It is NOT supported for ZRS, GZRS, or RA-GZRS
+        tier_to_archive_after_days_since_modification_greater_than = (
+          var.storage_management_policy_default.blob_to_archive_after_last_modified_days != null &&
+          contains(["LRS", "GRS", "RA-GRS"], var.account_replication_type)
+        ) ? var.storage_management_policy_default.blob_to_archive_after_last_modified_days : null
+        delete_after_days_since_modification_greater_than = var.storage_management_policy_default.blob_to_deleted_after_last_modified_days
       }
     }
   }
@@ -191,7 +204,7 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
 # Data Protection Backup Vault
 resource "azurerm_data_protection_backup_vault" "backup_vault" {
   count                        = var.backup_vault != null ? 1 : 0
-  name                         = var.backup_vault.name
+  name                         = var.backup_vault.random_suffix_enabled ? "${var.backup_vault.name}-${random_string.suffix[0].result}" : var.backup_vault.name
   location                     = coalesce(var.backup_vault.location, var.location)
   resource_group_name          = coalesce(var.backup_vault.resource_group_name, var.resource_group_name)
   datastore_type               = var.backup_vault.datastore_type

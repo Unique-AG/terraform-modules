@@ -125,6 +125,18 @@ variable "tags" {
   default     = {}
 }
 
+variable "postgresql_server_tags" {
+  description = "Additional tags that apply only to the PostgreSQL server. These will be merged with the general tags variable."
+  type        = map(string)
+  default     = {}
+}
+
+variable "secrets_tags" {
+  description = "Tags that apply to the secrets. Can be used to trigger a terraform refresh of the secrets."
+  type        = map(string)
+  default     = {}
+}
+
 variable "databases" {
   description = "Map of databases and its properties"
   type = map(
@@ -312,6 +324,21 @@ variable "metric_alerts" {
         threshold   = 90
       }
     }
+
+    default_absence_alert = {
+      name        = "PostgreSQL Heartbeat Absent"
+      description = "Alert when Database Is Alive metric drops to 0."
+      severity    = 1
+      frequency   = "PT5M"
+      window_size = "PT15M"
+      enabled     = true
+      criteria = {
+        metric_name = "is_db_alive"
+        aggregation = "Maximum"
+        operator    = "LessThan"
+        threshold   = 1
+      }
+    }
   }
 
   validation {
@@ -352,5 +379,35 @@ variable "metric_alerts" {
 variable "metric_alerts_external_action_group_ids" {
   description = "List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action_group_ids. If an alert defines actions or action_group_ids, those take precedence."
   type        = list(string)
-  default     = []
+}
+
+variable "management_lock" {
+  description = "Management lock properties for the PostgreSQL server. Once created, the lock can't be destroyed by code, only manually via the Portal or other manual, PIM-enabled, means. Null disables the lock."
+  type = object({
+    name  = optional(string)
+    notes = optional(string)
+  })
+  default = {
+    name  = "TerraformModuleLock-CanNotDelete"
+    notes = "Lock from the terraform module that prevents deletion of the Database Server. The lock, once created, can't be destroyed by the module itself with terraform, only manually via the Portal or other manual, PIM-enabled, means."
+  }
+
+  validation {
+    condition     = var.management_lock == null || (var.management_lock.name != null && var.management_lock.notes != null)
+    error_message = "When management_lock is not null, both name and notes must be set."
+  }
+}
+
+variable "maintenance_window" {
+  description = "Maintenance window properties for the PostgreSQL server. Null sets the window to System-Managed."
+  type = object({
+    day_of_week  = optional(number)
+    start_hour   = optional(number)
+    start_minute = optional(number)
+  })
+  default = {
+    day_of_week  = 0
+    start_hour   = 3
+    start_minute = 15
+  }
 }

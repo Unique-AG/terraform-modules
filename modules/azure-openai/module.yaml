@@ -1,9 +1,21 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 2.1.1
+version: 3.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
+  - kind: changed
+    description: "⚠️ `cognitive_account_tags` variable. Accounts can get additional tags via the nested `extra_tags` field."
+  - kind: changed
+    description: "⚠️ `endpoint_definitions_secret_name` variable. Use `endpoint_definitions_secret.name` instead."
+  - kind: changed
+    description: "⚠️ `endpoints_secret_name` variable. Use `endpoint_secret.name_suffix` instead."
+  - kind: changed
+    description: "⚠️ `*_secret_name_suffix` variables. Secret naming is now configured via structured objects (`primary_access_key_secret`, `endpoint_secret`, `endpoint_definitions_secret`)."
+  - kind: changed
+    description: "⚠️ `deployment.sku_type` field is renamed to `deployment.sku_name` to match the Azure API."
   - kind: added
-    description: "Outputs the cognitive services accounts properties for data sourcing."
+    description: "Extended `model_version_endpoints` to include per-deployment fields for usage tier (`usageTier`) and Tokens Per Minute (`tpmThousands`) via `endpoint_definitions_secret` field names."
+  - kind: added
+    description: "Key Vault secrets now include metadata: `content_type`, `expiration_date`, and `tags` for improved compliance and management."

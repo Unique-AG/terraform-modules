@@ -27,7 +27,7 @@ for module in "$BASE_DIR"/*; do
 
         # Run terraform init and validate
         echo "    Running terraform init"
-        terraform init -input=false || exit 1 # if any example error occurs, exit the script
+        terraform init -upgrade -input=false || exit 1 # if any example error occurs, exit the script
 
         echo "    Running terraform validate"
         terraform validate || exit 1 # if any example error occurs, exit the script
