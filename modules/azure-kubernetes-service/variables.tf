@@ -170,14 +170,14 @@ variable "log_analytics_workspace" {
 }
 
 variable "log_analytics_table_configuration" {
-  description = "Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'. Note: ContainerLogV2 is only relevant when container_insights_enabled = true. AKSControlPlane is for diagnostic logs (kube-audit)."
+  description = "Log Ingestion has a large cost impact. Use this to configure the log tables acc. to your needs. This flag only affects listed tables, all other tables will stay in their default, mostly 'Analytics'. Note: ContainerLogV2 is only relevant when container_insights_enabled = true. AKSControlPlane is for diagnostic logs (kube-audit). AKSAuditAdmin is for kube-audit-admin logs."
   type = object({
     plan   = optional(string, "Basic")
-    tables = optional(list(string), ["AKSControlPlane"])
+    tables = optional(list(string), ["ContainerLogV2", "AKSControlPlane", "AKSAuditAdmin"])
   })
   default = {
     plan   = "Basic"
-    tables = ["AKSControlPlane"]
+    tables = ["ContainerLogV2", "AKSControlPlane", "AKSAuditAdmin"]
   }
 }
 
@@ -633,7 +633,7 @@ variable "alert_configuration" {
 }
 
 variable "monitor_diagnostic_settings" {
-  description = "Configures the diagnostic settings for the Kubernetes Cluster. The log anayltics workspace is for now defaulted and reused from the general 'log_analytics_workspace'. Open an issue to request making this configurable."
+  description = "Configures the diagnostic settings for the Kubernetes Cluster. By default, enables kube-audit-admin for comprehensive audit logging (can be expensive). Consider using only 'kube-audit' for cost optimization. The log anayltics workspace is for now defaulted and reused from the general 'log_analytics_workspace'. Open an issue to request making this configurable."
   default     = {} # use all optional values as default
   type = object({
     explicit_name                  = optional(string, null)
@@ -661,7 +661,7 @@ variable "monitor_data_collection_rule" {
 }
 
 variable "container_insights_enabled" {
-  description = "Specifies whether Container Insights (OMS agent) is enabled for the Kubernetes Cluster. When disabled, container logs and metrics will not be collected. This can significantly reduce costs but will limit container-level observability."
+  description = "Specifies whether Container Insights (OMS agent) is enabled for the Kubernetes Cluster. When enabled (default), container logs and metrics will be collected, providing comprehensive observability. Disable to significantly reduce costs at the expense of container-level visibility."
   type        = bool
   default     = true
 }
