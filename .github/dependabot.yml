@@ -1,11 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
+    cooldown:
+      default-days: 14
     directory: /
     schedule:
       interval: weekly
 
   - package-ecosystem: terraform
+    cooldown:
+      default-days: 14
     directories:
       - modules/**/*
     schedule:
