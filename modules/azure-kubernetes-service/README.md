@@ -160,7 +160,7 @@ The module supports both activity log alerts and metric alerts through a unified
 
 The module includes two default alerts:
 - **aks_agent_pool_write_error**: Activity log alert for agent pool write failures, most commonly thrown when the cluster fails an automatic upgrade
-- **aks_unschedulable_pods**: Metric alert for unschedulable pods (severity 2)
+- **aks_unschedulable_pods**: Metric alert for unschedulable pods (severity 2), signaling an issue with cluster autoscaling which can mean that the pools maximum size is reached
 
 ### Simple Usage
 
