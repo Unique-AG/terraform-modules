@@ -693,7 +693,7 @@ variable "alerts" {
       description = "Alerts when there are unschedulable pods in the cluster, indicating insufficient capacity"
       severity    = 2
       frequency   = "PT5M"
-      window_size = "PT20M"
+      window_size = "PT30M"
       enabled     = true
       metric_criteria = {
         metric_namespace = "Microsoft.ContainerService/managedClusters"
