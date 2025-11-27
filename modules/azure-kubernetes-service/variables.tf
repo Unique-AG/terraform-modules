@@ -717,7 +717,6 @@ variable "alerts" {
 variable "default_action_group_ids" {
   description = "List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications."
   type        = list(string)
-  default     = []
   validation {
     condition     = var.default_action_group_ids == null || length(var.default_action_group_ids) > 0
     error_message = "At least one action group ID must be provided to receive alert notifications. If you don't want to use any action groups, set default_action_group_ids to null."
