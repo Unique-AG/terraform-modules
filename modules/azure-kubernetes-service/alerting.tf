@@ -3,7 +3,7 @@ locals {
   metric_alerts       = { for k, v in var.alerts : k => v if v.metric_criteria != null }
 
   # Convert default action group IDs to action objects for fallback
-  default_actions = [for id in var.default_action_group_ids : { action_group_id = id, webhook_properties = {} }]
+  default_actions = [for id in coalesce(var.default_action_group_ids, []) : { action_group_id = id, webhook_properties = {} }]
 }
 
 resource "azurerm_monitor_activity_log_alert" "this" {

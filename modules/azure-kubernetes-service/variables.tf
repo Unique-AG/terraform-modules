@@ -693,12 +693,12 @@ variable "alerts" {
       description = "Alerts when there are unschedulable pods in the cluster, indicating insufficient capacity"
       severity    = 2
       frequency   = "PT5M"
-      window_size = "PT15M"
+      window_size = "PT20M"
       enabled     = true
       metric_criteria = {
         metric_namespace = "Microsoft.ContainerService/managedClusters"
         metric_name      = "cluster_autoscaler_unschedulable_pods_count"
-        aggregation      = "Average"
+        aggregation      = "Minimum"
         operator         = "GreaterThan"
         threshold        = 0
       }
@@ -715,7 +715,11 @@ variable "alerts" {
 }
 
 variable "default_action_group_ids" {
-  description = "List of action group IDs to use for alerts that don't have explicit actions defined. This allows using the default alerts while specifying action groups once."
+  description = "List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications."
   type        = list(string)
   default     = []
+  validation {
+    condition     = var.default_action_group_ids == null || length(var.default_action_group_ids) > 0
+    error_message = "At least one action group ID must be provided to receive alert notifications. If you don't want to use any action groups, set default_action_group_ids to null."
+  }
 }
