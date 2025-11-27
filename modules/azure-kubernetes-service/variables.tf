@@ -637,16 +637,18 @@ variable "alert_configuration" {
 }
 
 variable "alerts" {
-  description = "Map of alerts to create for the AKS cluster. Supports activity log alerts, metric alerts, and auto-generated nodepool capacity alerts. Set to {} to disable all default alerts."
+  description = "Map of alerts to create for the AKS cluster. Supports both activity log alerts and metric alerts. Set to {} to disable all default alerts. The alert type is determined by which criteria block is specified (activity_log_criteria or metric_criteria)."
   type = map(object({
-    name        = optional(string)
+    name        = string
     description = optional(string, "")
     enabled     = optional(bool, true)
+
+    # For metric alerts only
     severity    = optional(number, 3)
     frequency   = optional(string, "PT5M")
     window_size = optional(string, "PT15M")
 
-    # Activity log alert criteria
+    # Activity log alert criteria (mutually exclusive with metric_criteria)
     activity_log_criteria = optional(object({
       operation_name = string
       category       = string
@@ -654,7 +656,7 @@ variable "alerts" {
       statuses       = optional(list(string), ["Failed"])
     }))
 
-    # Metric alert criteria
+    # Metric alert criteria (mutually exclusive with activity_log_criteria)
     metric_criteria = optional(object({
       metric_namespace       = optional(string, "Microsoft.ContainerService/managedClusters")
       metric_name            = string
@@ -669,20 +671,16 @@ variable "alerts" {
       })), [])
     }))
 
-    # Nodepool capacity alert criteria - auto-generates one alert per nodepool
-    # Uses kube_node_status_condition metric filtered by node name pattern
-    nodepool_capacity_criteria = optional(object({}))
-
     actions = optional(list(object({
       action_group_id    = string
       webhook_properties = optional(map(string), {})
     })))
   }))
-
   default = {
     aks_agent_pool_write_error = {
       name        = "AKS Agent Pool Write Error"
       description = "Alerts when agent pool write operations fail"
+      enabled     = true
       activity_log_criteria = {
         operation_name = "Microsoft.ContainerService/managedClusters/agentpools/write"
         category       = "Administrative"
@@ -690,25 +688,14 @@ variable "alerts" {
         statuses       = ["Failed"]
       }
     }
-    nodepool_at_max_capacity = {
-      name                       = "Nodepool At Max Capacity"
-      description                = "Alerts when a nodepool is running at maximum node count"
-      severity                   = 2
-      window_size                = "PT30M"
-      nodepool_capacity_criteria = {}
-    }
   }
 
   validation {
     condition = alltrue([
       for k, v in var.alerts :
-      length(compact([
-        v.activity_log_criteria != null ? "1" : "",
-        v.metric_criteria != null ? "1" : "",
-        v.nodepool_capacity_criteria != null ? "1" : ""
-      ])) == 1
+      (v.activity_log_criteria != null) != (v.metric_criteria != null)
     ])
-    error_message = "Each alert must specify exactly one of activity_log_criteria, metric_criteria, or nodepool_capacity_criteria."
+    error_message = "Each alert must specify exactly one of activity_log_criteria or metric_criteria, not both or neither."
   }
 }
 
