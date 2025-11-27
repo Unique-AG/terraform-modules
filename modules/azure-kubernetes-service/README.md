@@ -367,90 +367,18 @@ No modules.
 
 ## Upgrading
 
-### ~> `3.0.0`
+### ~> `5.0.0`
 
-Version 3.0.0 introduces several breaking changes to improve subnet configuration flexibility and network profile management:
+The `default_action_group_ids` variable now requires explicit configuration:
 
-#### Subnet Configuration Changes
+```hcl
+# Before - empty list was accepted
+default_action_group_ids = []
 
-1. The `subnet_nodes_id` variable has been replaced with `default_subnet_nodes_id`:
-   ```hcl
-   # Before
-   subnet_nodes_id = "subnet-id"
-
-   # After
-   default_subnet_nodes_id = "subnet-id"
-   ```
-
-2. Added support for pod subnet separation with new variables:
-   ```hcl
-   default_subnet_pods_id = "pod-subnet-id"  # Optional, recommended for production
-   segregated_node_and_pod_subnets_enabled = true  # Set to false to use single subnet for nodes and pods
-   ```
-
-3. Node pools can now specify their own subnet configurations:
-   ```hcl
-   node_pool_settings = {
-     pool1 = {
-       # ... existing settings ...
-       subnet_nodes_id = "custom-node-subnet-id"  # Optional
-       subnet_pods_id  = "custom-pod-subnet-id"   # Optional
-     }
-   }
-   ```
-
-#### Network Profile Changes
-
-1. The `outbound_ip_address_ids` variable has been removed and replaced with a comprehensive `network_profile` variable:
-   ```hcl
-   # Before
-   outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-
-   # After
-   network_profile = {
-     outbound_type           = "loadBalancer"
-     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-     network_plugin = "azure"
-     network_policy = "azure"
-     service_cidr   = "172.20.0.0/16"
-     dns_service_ip = "172.20.0.10"
-   }
-   ```
-
-2. The network profile now supports multiple outbound configurations:
-   - `managed_outbound_ip_count`
-   - `outbound_ip_address_ids`
-   - `outbound_ip_prefix_ids`
-
-   Note: These options are mutually exclusive, and one must be specified when using `outbound_type = "loadBalancer"`.
-
-#### Migration Steps
-
-1. Replace `subnet_nodes_id` with `default_subnet_nodes_id`
-
-2. Pod subnet separation:
-
-   **Option 1 - Pod subnet separation (recommended):**
-   - Use separate subnets for pods and nodes
-   - Add `default_subnet_pods_id`
-   - Ensure `segregated_node_and_pod_subnets_enabled = true` (this is the default value)
-   - Update node pool configurations to use the new subnet variables:
-     ```hcl
-     node_pool_settings = {
-       pool1 = {
-         # ... other settings ...
-         subnet_nodes_id = "custom-node-subnet-id"  # Optional
-         subnet_pods_id  = "custom-pod-subnet-id"   # Optional
-       }
-     }
-     ```
-
-   **Option 2 - No pod subnet separation:**
-   - Have pods use the same subnet as nodes
-   - Set `segregated_node_and_pod_subnets_enabled = false`
-
-4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
-
+# After - must provide action groups OR explicitly set to null
+default_action_group_ids = [azurerm_monitor_action_group.example.id]  # Option 1: Enable alerts
+default_action_group_ids = null                                        # Option 2: Disable alerts
+```
 ### ~> `4.0.0`
 
 Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
@@ -691,3 +619,89 @@ module "aks" {
   prometheus_cluster_alert_rules = null
   prometheus_pod_alert_rules     = null
 }
+```
+
+### ~> `3.0.0`
+
+Version 3.0.0 introduces several breaking changes to improve subnet configuration flexibility and network profile management:
+
+#### Subnet Configuration Changes
+
+1. The `subnet_nodes_id` variable has been replaced with `default_subnet_nodes_id`:
+   ```hcl
+   # Before
+   subnet_nodes_id = "subnet-id"
+
+   # After
+   default_subnet_nodes_id = "subnet-id"
+   ```
+
+2. Added support for pod subnet separation with new variables:
+   ```hcl
+   default_subnet_pods_id = "pod-subnet-id"  # Optional, recommended for production
+   segregated_node_and_pod_subnets_enabled = true  # Set to false to use single subnet for nodes and pods
+   ```
+
+3. Node pools can now specify their own subnet configurations:
+   ```hcl
+   node_pool_settings = {
+     pool1 = {
+       # ... existing settings ...
+       subnet_nodes_id = "custom-node-subnet-id"  # Optional
+       subnet_pods_id  = "custom-pod-subnet-id"   # Optional
+     }
+   }
+   ```
+
+#### Network Profile Changes
+
+1. The `outbound_ip_address_ids` variable has been removed and replaced with a comprehensive `network_profile` variable:
+   ```hcl
+   # Before
+   outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+
+   # After
+   network_profile = {
+     outbound_type           = "loadBalancer"
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+     network_plugin = "azure"
+     network_policy = "azure"
+     service_cidr   = "172.20.0.0/16"
+     dns_service_ip = "172.20.0.10"
+   }
+   ```
+
+2. The network profile now supports multiple outbound configurations:
+   - `managed_outbound_ip_count`
+   - `outbound_ip_address_ids`
+   - `outbound_ip_prefix_ids`
+
+   Note: These options are mutually exclusive, and one must be specified when using `outbound_type = "loadBalancer"`.
+
+#### Migration Steps
+
+1. Replace `subnet_nodes_id` with `default_subnet_nodes_id`
+
+2. Pod subnet separation:
+
+   **Option 1 - Pod subnet separation (recommended):**
+   - Use separate subnets for pods and nodes
+   - Add `default_subnet_pods_id`
+   - Ensure `segregated_node_and_pod_subnets_enabled = true` (this is the default value)
+   - Update node pool configurations to use the new subnet variables:
+     ```hcl
+     node_pool_settings = {
+       pool1 = {
+         # ... other settings ...
+         subnet_nodes_id = "custom-node-subnet-id"  # Optional
+         subnet_pods_id  = "custom-pod-subnet-id"   # Optional
+       }
+     }
+     ```
+
+   **Option 2 - No pod subnet separation:**
+   - Have pods use the same subnet as nodes
+   - Set `segregated_node_and_pod_subnets_enabled = false`
+
+4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
+

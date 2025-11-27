@@ -136,4 +136,7 @@ module "aks" {
       os_disk_size_gb = 30
     }
   }
+
+  # Disable default action groups for this example (no alert notifications)
+  default_action_group_ids = null
 }

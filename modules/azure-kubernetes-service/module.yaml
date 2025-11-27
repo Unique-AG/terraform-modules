@@ -1,7 +1,7 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 4.1.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
