@@ -142,4 +142,7 @@ module "aks" {
 
   # Alert configuration - can be provided via tfvars or command line
   alert_configuration = var.alert_configuration
+
+  # Disable default action groups for this example (no alert notifications)
+  default_action_group_ids = null
 } 

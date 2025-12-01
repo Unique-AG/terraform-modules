@@ -152,6 +152,87 @@ The module includes several security features:
 5. Configure appropriate API server access controls
 6. When using Load Balancer outbound type, carefully choose between managed IPs and existing IPs/prefixes based on your requirements
 
+## Alerts and Monitoring
+
+The module supports both activity log alerts and metric alerts through a unified `alerts` variable. The alert type is determined by which criteria block is specified (`activity_log_criteria` or `metric_criteria`). By default, the module includes sensible alert defaults that can be customized or disabled.
+
+### Default Alerts
+
+The module includes one default alert:
+- **aks_agent_pool_write_error**: Activity log alert for agent pool write failures, most commonly thrown when the cluster fails an automatic upgrade
+
+### Simple Usage
+
+The easiest way to use alerts is to just specify action groups - the default alerts are used automatically:
+
+```hcl
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+  
+  # Just specify action groups - default alerts are used automatically
+  default_action_group_ids = [azurerm_monitor_action_group.example.id]
+  
+  # ... other configuration ...
+}
+```
+
+### Custom Alerts
+
+You can add custom alerts or override defaults by specifying the `alerts` variable:
+
+```hcl
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+  
+  # Action groups apply to all alerts without explicit actions
+  default_action_group_ids = [azurerm_monitor_action_group.example.id]
+  
+  alerts = {
+    # Keep default alert
+    aks_agent_pool_write_error = {
+      name        = "AKS Agent Pool Write Error"
+      activity_log_criteria = {
+        operation_name = "Microsoft.ContainerService/managedClusters/agentpools/write"
+        category       = "Administrative"
+      }
+    }
+    # Add custom metric alert
+    high_node_cpu = {
+      name        = "High Node CPU Usage"
+      severity    = 2
+      metric_criteria = {
+        metric_name = "node_cpu_usage_percentage"
+        aggregation = "Average"
+        operator    = "GreaterThan"
+        threshold   = 80
+      }
+    }
+  }
+  
+  # ... other configuration ...
+}
+```
+
+### Disabling Alerts
+
+To disable all default alerts, set the variable to an empty map:
+
+```hcl
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+  
+  alerts = {}
+  
+  # ... other configuration ...
+}
+```
+
+### Prometheus Alerts
+
+The module also supports Prometheus-based alerts when `azure_prometheus_grafana_monitor` is enabled. See the [prometheus-alerts example](./examples/prometheus-alerts/) for more details.
+
+For complete examples, see [activity-log-alerts example](./examples/activity-log-alerts/).
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -181,6 +262,7 @@ No modules.
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_log_analytics_workspace_table.basic_log_table](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace_table) | resource |
 | [azurerm_monitor_action_group.aks_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
+| [azurerm_monitor_activity_log_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_activity_log_alert) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.cluster_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.kubernetes_recording_rules_rule_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.node_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
@@ -193,6 +275,7 @@ No modules.
 | [azurerm_monitor_data_collection_rule_association.ci_dcr_asc](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule_association) | resource |
 | [azurerm_monitor_data_collection_rule_association.monitor_dcr_asc](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule_association) | resource |
 | [azurerm_monitor_diagnostic_setting.aks_diagnostic_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) | resource |
+| [azurerm_monitor_metric_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_metric_alert) | resource |
 | [azurerm_monitor_workspace.monitor_workspace](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_workspace) | resource |
 
 ## Inputs
@@ -201,6 +284,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin_group_object_ids"></a> [admin\_group\_object\_ids](#input\_admin\_group\_object\_ids) | The object IDs of the admin groups for the Kubernetes Cluster. | `list(string)` | `[]` | no |
 | <a name="input_alert_configuration"></a> [alert\_configuration](#input\_alert\_configuration) | Configuration for AKS alerts and monitoring | <pre>object({<br/>    email_receiver = optional(object({<br/>      email_address = string<br/>      name          = optional(string, "aks-alerts-email")<br/>    }), null)<br/>    action_group = optional(object({<br/>      short_name = optional(string, "aks-alerts")<br/>      location   = optional(string, "germanywestcentral")<br/>    }), null)<br/>  })</pre> | `null` | no |
+| <a name="input_alerts"></a> [alerts](#input\_alerts) | Map of alerts to create for the AKS cluster. Supports both activity log alerts and metric alerts. Set to {} to disable all default alerts. The alert type is determined by which criteria block is specified (activity\_log\_criteria or metric\_criteria). | <pre>map(object({<br/>    name        = string<br/>    description = optional(string, "")<br/>    enabled     = optional(bool, true)<br/><br/>    # For metric alerts only<br/>    severity    = optional(number, 3)<br/>    frequency   = optional(string, "PT5M")<br/>    window_size = optional(string, "PT15M")<br/><br/>    # Activity log alert criteria (mutually exclusive with metric_criteria)<br/>    activity_log_criteria = optional(object({<br/>      operation_name = string<br/>      category       = string<br/>      levels         = optional(list(string), ["Error"])<br/>      statuses       = optional(list(string), ["Failed"])<br/>    }))<br/><br/>    # Metric alert criteria (mutually exclusive with activity_log_criteria)<br/>    metric_criteria = optional(object({<br/>      metric_namespace       = optional(string, "Microsoft.ContainerService/managedClusters")<br/>      metric_name            = string<br/>      aggregation            = string<br/>      operator               = string<br/>      threshold              = number<br/>      skip_metric_validation = optional(bool, false)<br/>      dimension = optional(list(object({<br/>        name     = string<br/>        operator = string # Include, Exclude, StartsWith<br/>        values   = list(string)<br/>      })), [])<br/>    }))<br/><br/>    actions = optional(list(object({<br/>      action_group_id    = string<br/>      webhook_properties = optional(map(string), {})<br/>    })))<br/>  }))</pre> | <pre>{<br/>  "aks_agent_pool_write_error": {<br/>    "activity_log_criteria": {<br/>      "category": "Administrative",<br/>      "levels": [<br/>        "Error"<br/>      ],<br/>      "operation_name": "Microsoft.ContainerService/managedClusters/agentpools/write",<br/>      "statuses": [<br/>        "Failed"<br/>      ]<br/>    },<br/>    "description": "Alerts when agent pool write operations fail",<br/>    "enabled": true,<br/>    "name": "AKS Agent Pool Write Error"<br/>  }<br/>}</pre> | no |
 | <a name="input_api_server_authorized_ip_ranges"></a> [api\_server\_authorized\_ip\_ranges](#input\_api\_server\_authorized\_ip\_ranges) | The IP ranges that are allowed to access the Kubernetes API server. | `list(string)` | `null` | no |
 | <a name="input_application_gateway_id"></a> [application\_gateway\_id](#input\_application\_gateway\_id) | The ID of the Application Gateway. | `string` | `null` | no |
 | <a name="input_automatic_upgrade_channel"></a> [automatic\_upgrade\_channel](#input\_automatic\_upgrade\_channel) | The automatic upgrade channel for the Kubernetes Cluster. | `string` | `"stable"` | no |
@@ -208,6 +292,7 @@ No modules.
 | <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 11)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
+| <a name="input_default_action_group_ids"></a> [default\_action\_group\_ids](#input\_default\_action\_group\_ids) | List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications. | `list(string)` | n/a | yes |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
 | <a name="input_default_subnet_pods_id"></a> [default\_subnet\_pods\_id](#input\_default\_subnet\_pods\_id) | The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | `null` | no |
 | <a name="input_defender_log_analytics_workspace_id"></a> [defender\_log\_analytics\_workspace\_id](#input\_defender\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace for Microsoft Defender | `string` | `null` | no |
@@ -271,90 +356,18 @@ No modules.
 
 ## Upgrading
 
-### ~> `3.0.0`
+### ~> `5.0.0`
 
-Version 3.0.0 introduces several breaking changes to improve subnet configuration flexibility and network profile management:
+The `default_action_group_ids` variable now requires explicit configuration:
 
-#### Subnet Configuration Changes
+```hcl
+# Before - empty list was accepted
+default_action_group_ids = []
 
-1. The `subnet_nodes_id` variable has been replaced with `default_subnet_nodes_id`:
-   ```hcl
-   # Before
-   subnet_nodes_id = "subnet-id"
-
-   # After
-   default_subnet_nodes_id = "subnet-id"
-   ```
-
-2. Added support for pod subnet separation with new variables:
-   ```hcl
-   default_subnet_pods_id = "pod-subnet-id"  # Optional, recommended for production
-   segregated_node_and_pod_subnets_enabled = true  # Set to false to use single subnet for nodes and pods
-   ```
-
-3. Node pools can now specify their own subnet configurations:
-   ```hcl
-   node_pool_settings = {
-     pool1 = {
-       # ... existing settings ...
-       subnet_nodes_id = "custom-node-subnet-id"  # Optional
-       subnet_pods_id  = "custom-pod-subnet-id"   # Optional
-     }
-   }
-   ```
-
-#### Network Profile Changes
-
-1. The `outbound_ip_address_ids` variable has been removed and replaced with a comprehensive `network_profile` variable:
-   ```hcl
-   # Before
-   outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-
-   # After
-   network_profile = {
-     outbound_type           = "loadBalancer"
-     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
-     network_plugin = "azure"
-     network_policy = "azure"
-     service_cidr   = "172.20.0.0/16"
-     dns_service_ip = "172.20.0.10"
-   }
-   ```
-
-2. The network profile now supports multiple outbound configurations:
-   - `managed_outbound_ip_count`
-   - `outbound_ip_address_ids`
-   - `outbound_ip_prefix_ids`
-
-   Note: These options are mutually exclusive, and one must be specified when using `outbound_type = "loadBalancer"`.
-
-#### Migration Steps
-
-1. Replace `subnet_nodes_id` with `default_subnet_nodes_id`
-
-2. Pod subnet separation:
-
-   **Option 1 - Pod subnet separation (recommended):**
-   - Use separate subnets for pods and nodes
-   - Add `default_subnet_pods_id`
-   - Ensure `segregated_node_and_pod_subnets_enabled = true` (this is the default value)
-   - Update node pool configurations to use the new subnet variables:
-     ```hcl
-     node_pool_settings = {
-       pool1 = {
-         # ... other settings ...
-         subnet_nodes_id = "custom-node-subnet-id"  # Optional
-         subnet_pods_id  = "custom-pod-subnet-id"   # Optional
-       }
-     }
-     ```
-
-   **Option 2 - No pod subnet separation:**
-   - Have pods use the same subnet as nodes
-   - Set `segregated_node_and_pod_subnets_enabled = false`
-
-4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
-
+# After - must provide action groups OR explicitly set to null
+default_action_group_ids = [azurerm_monitor_action_group.example.id]  # Option 1: Enable alerts
+default_action_group_ids = null                                        # Option 2: Disable alerts
+```
 ### ~> `4.0.0`
 
 Version 4.0.0 introduces several breaking changes to improve network configuration flexibility, monitoring capabilities, and simplify node pool management:
@@ -595,3 +608,89 @@ module "aks" {
   prometheus_cluster_alert_rules = null
   prometheus_pod_alert_rules     = null
 }
+```
+
+### ~> `3.0.0`
+
+Version 3.0.0 introduces several breaking changes to improve subnet configuration flexibility and network profile management:
+
+#### Subnet Configuration Changes
+
+1. The `subnet_nodes_id` variable has been replaced with `default_subnet_nodes_id`:
+   ```hcl
+   # Before
+   subnet_nodes_id = "subnet-id"
+
+   # After
+   default_subnet_nodes_id = "subnet-id"
+   ```
+
+2. Added support for pod subnet separation with new variables:
+   ```hcl
+   default_subnet_pods_id = "pod-subnet-id"  # Optional, recommended for production
+   segregated_node_and_pod_subnets_enabled = true  # Set to false to use single subnet for nodes and pods
+   ```
+
+3. Node pools can now specify their own subnet configurations:
+   ```hcl
+   node_pool_settings = {
+     pool1 = {
+       # ... existing settings ...
+       subnet_nodes_id = "custom-node-subnet-id"  # Optional
+       subnet_pods_id  = "custom-pod-subnet-id"   # Optional
+     }
+   }
+   ```
+
+#### Network Profile Changes
+
+1. The `outbound_ip_address_ids` variable has been removed and replaced with a comprehensive `network_profile` variable:
+   ```hcl
+   # Before
+   outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+
+   # After
+   network_profile = {
+     outbound_type           = "loadBalancer"
+     outbound_ip_address_ids = ["ip-id-1", "ip-id-2"]
+     network_plugin = "azure"
+     network_policy = "azure"
+     service_cidr   = "172.20.0.0/16"
+     dns_service_ip = "172.20.0.10"
+   }
+   ```
+
+2. The network profile now supports multiple outbound configurations:
+   - `managed_outbound_ip_count`
+   - `outbound_ip_address_ids`
+   - `outbound_ip_prefix_ids`
+
+   Note: These options are mutually exclusive, and one must be specified when using `outbound_type = "loadBalancer"`.
+
+#### Migration Steps
+
+1. Replace `subnet_nodes_id` with `default_subnet_nodes_id`
+
+2. Pod subnet separation:
+
+   **Option 1 - Pod subnet separation (recommended):**
+   - Use separate subnets for pods and nodes
+   - Add `default_subnet_pods_id`
+   - Ensure `segregated_node_and_pod_subnets_enabled = true` (this is the default value)
+   - Update node pool configurations to use the new subnet variables:
+     ```hcl
+     node_pool_settings = {
+       pool1 = {
+         # ... other settings ...
+         subnet_nodes_id = "custom-node-subnet-id"  # Optional
+         subnet_pods_id  = "custom-pod-subnet-id"   # Optional
+       }
+     }
+     ```
+
+   **Option 2 - No pod subnet separation:**
+   - Have pods use the same subnet as nodes
+   - Set `segregated_node_and_pod_subnets_enabled = false`
+
+4. Replace `outbound_ip_address_ids` with the new `network_profile` configuration
+

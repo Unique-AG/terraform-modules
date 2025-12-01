@@ -1,9 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 4.0.1
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Fixed the issue with the metric block"
+  - kind: added
+    description: "Default alert rules"

@@ -98,4 +98,7 @@ module "aks" {
       }
     }
   }
+
+  # Disable default action groups for this example (no alert notifications)
+  default_action_group_ids = null
 }
