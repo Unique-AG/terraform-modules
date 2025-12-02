@@ -16,16 +16,13 @@ resource "azurerm_security_center_automation" "eventhub_export" {
     content {
       event_source = source.value.event_source
       dynamic "rule_set" {
-        for_each = length(source.value.labels) > 0 ? [1] : []
+        for_each = source.value.labels
         content {
-          dynamic "rule" {
-            for_each = source.value.labels
-            content {
-              property_path  = source.value.property_path
-              operator       = "Equals"
-              expected_value = rule.value
-              property_type  = "String"
-            }
+          rule {
+            property_path  = source.value.property_path
+            operator       = "Equals"
+            expected_value = rule_set.value
+            property_type  = "String"
           }
         }
       }

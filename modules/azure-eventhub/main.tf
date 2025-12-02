@@ -45,6 +45,7 @@ resource "azurerm_eventhub_namespace" "namespace" {
     content {
       default_action                 = network_rulesets.value.default_action
       trusted_service_access_enabled = network_rulesets.value.trusted_service_access_enabled
+      public_network_access_enabled  = network_rulesets.value.public_network_access_enabled
       dynamic "ip_rule" {
         for_each = network_rulesets.value.ip_rules
         content {
