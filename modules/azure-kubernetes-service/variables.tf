@@ -635,3 +635,76 @@ variable "alert_configuration" {
   })
   default = null
 }
+
+variable "alerts" {
+  description = "Map of alerts to create for the AKS cluster. Supports both activity log alerts and metric alerts. Set to {} to disable all default alerts. The alert type is determined by which criteria block is specified (activity_log_criteria or metric_criteria)."
+  type = map(object({
+    name        = string
+    description = optional(string, "")
+    enabled     = optional(bool, true)
+
+    # For metric alerts only
+    severity    = optional(number, 3)
+    frequency   = optional(string, "PT5M")
+    window_size = optional(string, "PT15M")
+
+    # Activity log alert criteria (mutually exclusive with metric_criteria)
+    activity_log_criteria = optional(object({
+      operation_name = string
+      category       = string
+      levels         = optional(list(string), ["Error"])
+      statuses       = optional(list(string), ["Failed"])
+    }))
+
+    # Metric alert criteria (mutually exclusive with activity_log_criteria)
+    metric_criteria = optional(object({
+      metric_namespace       = optional(string, "Microsoft.ContainerService/managedClusters")
+      metric_name            = string
+      aggregation            = string
+      operator               = string
+      threshold              = number
+      skip_metric_validation = optional(bool, false)
+      dimension = optional(list(object({
+        name     = string
+        operator = string # Include, Exclude, StartsWith
+        values   = list(string)
+      })), [])
+    }))
+
+    actions = optional(list(object({
+      action_group_id    = string
+      webhook_properties = optional(map(string), {})
+    })))
+  }))
+  default = {
+    aks_agent_pool_write_error = {
+      name        = "AKS Agent Pool Write Error"
+      description = "Alerts when agent pool write operations fail"
+      enabled     = true
+      activity_log_criteria = {
+        operation_name = "Microsoft.ContainerService/managedClusters/agentpools/write"
+        category       = "Administrative"
+        levels         = ["Error"]
+        statuses       = ["Failed"]
+      }
+    }
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.alerts :
+      (v.activity_log_criteria != null) != (v.metric_criteria != null)
+    ])
+    error_message = "Each alert must specify exactly one of activity_log_criteria or metric_criteria, not both or neither."
+  }
+}
+
+variable "default_action_group_ids" {
+  description = "List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications."
+  type        = list(string)
+  validation {
+    condition     = var.default_action_group_ids == null || length(var.default_action_group_ids) > 0
+    error_message = "At least one action group ID must be provided to receive alert notifications. If you don't want to use any action groups, set default_action_group_ids to null."
+  }
+}
+
