@@ -7,8 +7,7 @@ on:
         description: "Module to release"
         required: true
         type: string
-    tag-separator:
-      module:
+      tag-separator:
         description: "Tag separator"
         required: false
         type: string
