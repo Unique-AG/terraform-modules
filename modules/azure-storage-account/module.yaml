@@ -1,13 +1,11 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 4.0.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: fixed
-    description: "Archive tier support in storage management policies. Archive tier is now automatically skipped for unsupported replication types (ZRS, GZRS, RA-GZRS) to prevent Azure API errors."
-  - kind: fixed
-    description: "Backup vault naming conflicts by adding random suffix to backup vault names to ensure uniqueness and prevent naming collisions."
-  - kind: added
-    description: "Validation for Archive tier support in storage_management_policy_default variable to provide clear error messages when using unsupported replication types."
+  - kind: changed
+    description: "Breaking ⚠️: shared_access_key_enabled now defaults to false."
+  - kind: changed
+    description: "Breaking ⚠️: Storage releases now ship with @ as tag separator to unify Uniques releases more."

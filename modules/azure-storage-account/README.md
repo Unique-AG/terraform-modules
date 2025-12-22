@@ -135,7 +135,7 @@ No modules.
 | <a name="input_backup_policy"></a> [backup\_policy](#input\_backup\_policy) | Configuration for the backup policy when backup\_vault is enabled. | <pre>object({<br/>    name                                   = optional(string, "default-blob-backup-policy")<br/>    operational_default_retention_duration = optional(string, "P2W")<br/>    vault_default_retention_duration       = optional(string)<br/>    backup_repeating_time_intervals        = optional(list(string), null)<br/>    time_zone                              = optional(string)<br/>    retention_rules = optional(list(object({<br/>      name     = string<br/>      priority = number<br/>      criteria = object({<br/>        absolute_criteria      = optional(string)<br/>        days_of_month          = optional(list(number))<br/>        days_of_week           = optional(list(string))<br/>        months_of_year         = optional(list(string))<br/>        scheduled_backup_times = optional(list(string))<br/>        weeks_of_month         = optional(list(string))<br/>      })<br/>      life_cycle = object({<br/>        data_store_type = optional(string, "VaultStore")<br/>        duration        = string<br/>      })<br/>    })), [])<br/>    tags = optional(map(string), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_backup_role_assignment_enabled"></a> [backup\_role\_assignment\_enabled](#input\_backup\_role\_assignment\_enabled) | Whether to create the role assignment for the backup vault to access the storage account. Set to false if you don't have permissions to create role assignments. | `bool` | `true` | no |
 | <a name="input_backup_vault"></a> [backup\_vault](#input\_backup\_vault) | Configuration for Azure Data Protection Backup Vault. If provided, creates a backup vault and configures backup for the storage account. | <pre>object({<br/>    name                         = optional(string, "storage-backup-vault")<br/>    location                     = optional(string)<br/>    resource_group_name          = optional(string)<br/>    datastore_type               = optional(string, "VaultStore")<br/>    redundancy                   = optional(string, "ZoneRedundant")<br/>    cross_region_restore_enabled = optional(bool, false)<br/>    identity = optional(object({<br/>      type = string<br/>    }), { type = "SystemAssigned" })<br/>    retention_duration_in_days = optional(number, 14)<br/>    immutability               = optional(string, "Disabled")<br/>    soft_delete                = optional(string, "On")<br/>    tags                       = optional(map(string), {})<br/>    random_suffix_enabled      = optional(bool, true)<br/>  })</pre> | <pre>{<br/>  "name": "storage-backup-vault"<br/>}</pre> | no |
-| <a name="input_connection_settings"></a> [connection\_settings](#input\_connection\_settings) | Object containing the connection strings and the Key Vault secret ID where the connection strings will be stored | <pre>object({<br/>    connection_string_1 = string<br/>    connection_string_2 = string<br/>    key_vault_id        = string<br/>    expiration_date     = optional(string, "2099-12-31T23:59:59Z")<br/>  })</pre> | `null` | no |
+| <a name="input_connection_settings"></a> [connection\_settings](#input\_connection\_settings) | Object containing the connection strings and the Key Vault secret ID where the connection strings will be stored. Requires shared\_access\_key\_enabled to be true. | <pre>object({<br/>    connection_string_1 = string<br/>    connection_string_2 = string<br/>    key_vault_id        = string<br/>    expiration_date     = optional(string, "2099-12-31T23:59:59Z")<br/>  })</pre> | `null` | no |
 | <a name="input_containers"></a> [containers](#input\_containers) | Map of containers to create in the storage account where the key is the name. | <pre>map(object({<br/>    access_type = optional(string, "private")<br/>  }))</pre> | `{}` | no |
 | <a name="input_cors_rules"></a> [cors\_rules](#input\_cors\_rules) | CORS rules for the storage account | <pre>list(object({<br/>    allowed_origins    = list(string)<br/>    allowed_methods    = list(string)<br/>    allowed_headers    = list(string)<br/>    exposed_headers    = list(string)<br/>    max_age_in_seconds = number<br/>  }))</pre> | `[]` | no |
 | <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_name                  = string<br/>    key_vault_id              = string<br/>    key_version               = optional(string, null)<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
@@ -151,7 +151,7 @@ No modules.
 | <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled) | Enable public network access for the storage account. | `bool` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group to put the resources in. | `string` | n/a | yes |
 | <a name="input_self_cmk"></a> [self\_cmk](#input\_self\_cmk) | Details for the self customer managed key. | <pre>object({<br/>    key_name                  = string<br/>    key_vault_id              = string<br/>    key_type                  = optional(string, "RSA-HSM")<br/>    key_size                  = optional(number, 2048)<br/>    key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])<br/>    user_assigned_identity_id = string<br/><br/>  })</pre> | `null` | no |
-| <a name="input_shared_access_key_enabled"></a> [shared\_access\_key\_enabled](#input\_shared\_access\_key\_enabled) | Enable shared access key for the storage account. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1). | `bool` | `true` | no |
+| <a name="input_shared_access_key_enabled"></a> [shared\_access\_key\_enabled](#input\_shared\_access\_key\_enabled) | Enable shared access key for the storage account. Defaults to false for improved security. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1). Additionally, connection\_settings cannot be used when this is disabled. | `bool` | `false` | no |
 | <a name="input_storage_account_tags"></a> [storage\_account\_tags](#input\_storage\_account\_tags) | Additional tags that apply only to the main storage account. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. Note: Archive tier is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. The module will automatically skip archive tier for unsupported replication types. | <pre>object({<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, null)<br/>    blob_to_deleted_after_last_modified_days = optional(number, null)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": null,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": null<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resources. | `map(string)` | `{}` | no |
@@ -201,6 +201,61 @@ The Archive tier is **NOT supported** for:
 | `> 2.1.0` | `unique.ai`: `~> 2025.16` |
 
 ## Upgrading
+
+### ~> `5.0.0`
+
+#### Tag separator changed to `@`
+
+Starting with version `5.0.0`, the git tag separator has changed from `-` to `@` to unify Unique's release conventions. The new format is `azure-storage-account@5.0.0` instead of the previous `azure-storage-account-5.0.0`.
+
+**Impact:** Update your Terraform module source references accordingly:
+
+```hcl
+# Old format (< 5.0.0)
+module "storage" {
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-storage-account?ref=azure-storage-account-4.0.0"
+}
+
+# New format (>= 5.0.0)
+module "storage" {
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-storage-account?ref=azure-storage-account@5.0.0"
+}
+```
+
+#### `shared_access_key_enabled` now defaults to `false`
+
+For improved security, `shared_access_key_enabled` now defaults to `false`. This is a **breaking change** for users who rely on:
+
+1. **Connection strings** - The `connection_settings` variable and `storage_account_connection_strings` output require shared access keys. If you use these, you must explicitly set `shared_access_key_enabled = true`.
+
+2. **SAS tokens** - Shared Access Signatures require shared access keys to be enabled.
+
+3. **Terraform operations on storage** - When `shared_access_key_enabled = false`, the Azure provider must use Azure Entra (Azure AD) authentication. Configure the provider as documented in the [azurerm provider docs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1).
+
+**Migration options:**
+
+**Option A: Keep shared access keys enabled (not recommended)**
+
+If you rely on connection strings or SAS tokens, explicitly enable shared access keys:
+
+```hcl
+module "sa" {
+  source = "..."
+
+  shared_access_key_enabled = true
+  # ... other configuration
+}
+```
+
+**Option B: Migrate to Azure Entra authentication (recommended)**
+
+1. Configure workloads to use Managed Identity or Workload Identity instead of connection strings
+2. Remove `connection_settings` from your module configuration
+3. Ensure your Terraform environment uses Azure Entra authentication for storage operations
+4. Apply the upgrade
+
+> [!NOTE]
+> The module now validates that `connection_settings` cannot be used when `shared_access_key_enabled = false`.
 
 ### ~> `4.0.0`
 
