@@ -75,18 +75,10 @@ module "sa" {
   }
 
   storage_management_policy_default = {
-    enabled                                  = true
     blob_to_cool_after_last_modified_days    = 14
     blob_to_cold_after_last_modified_days    = 30
     blob_to_archive_after_last_modified_days = 5 * 365
     blob_to_deleted_after_last_modified_days = 5 * 365
-  }
-
-  # unique internal fix ref to support identities as well: UN-14227
-  connection_settings = {
-    connection_string_1 = "ingestion-connection-string-1"
-    connection_string_2 = "ingestion-connection-string-2"
-    key_vault_id        = azurerm_key_vault.sensitive.id
   }
 
   network_rules = {

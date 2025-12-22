@@ -49,12 +49,11 @@ module "sa" {
   source     = "../.."
   depends_on = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
 
-  name                      = "stauditlogs"
-  access_tier               = "Hot"
-  account_replication_type  = "LRS"
-  location                  = "switzerlandnorth"
-  resource_group_name       = "my-resource-group"
-  shared_access_key_enabled = false # 4.0.0 or later versions will eventually fix this for good
+  name                     = "stauditlogs"
+  access_tier              = "Hot"
+  account_replication_type = "LRS"
+  location                 = "switzerlandnorth"
+  resource_group_name      = "my-resource-group"
 
   is_nfs_mountable = true # so it can be attached to pods
 
@@ -91,7 +90,6 @@ module "sa" {
   }
 
   storage_management_policy_default = {
-    enabled                                  = true
     blob_to_cool_after_last_modified_days    = 1
     blob_to_cold_after_last_modified_days    = 7
     blob_to_archive_after_last_modified_days = 90
