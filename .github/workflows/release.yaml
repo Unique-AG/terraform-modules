@@ -7,6 +7,12 @@ on:
         description: "Module to release"
         required: true
         type: string
+    tag-separator:
+      module:
+        description: "Tag separator"
+        required: false
+        type: string
+        default: "-"
 
 jobs:
   create-release:
@@ -70,12 +76,12 @@ jobs:
           RELEASE_NOTES: ${{ steps.module.outputs.changes }} # must be passed as ENV else the backticks will get escaped and not shown as code
         run: |
           # Create and push tag
-          git tag ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
-          git push origin ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }}
+          git tag ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}
+          git push origin ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}
 
           # Create GitHub release
           gh release create \
-            ${{ steps.module.outputs.name }}-${{ steps.module.outputs.version }} \
-            --title "${{ steps.module.outputs.name }}/${{ steps.module.outputs.version }}" \
+            ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }} \
+            --title "${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}" \
             --notes "$RELEASE_NOTES" \
             --target ${{ github.sha }}

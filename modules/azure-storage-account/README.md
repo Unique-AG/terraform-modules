@@ -204,6 +204,24 @@ The Archive tier is **NOT supported** for:
 
 ### ~> `5.0.0`
 
+#### Tag separator changed to `@`
+
+Starting with version `5.0.0`, the git tag separator has changed from `-` to `@` to unify Unique's release conventions. The new format is `azure-storage-account@5.0.0` instead of the previous `azure-storage-account-5.0.0`.
+
+**Impact:** Update your Terraform module source references accordingly:
+
+```hcl
+# Old format (< 5.0.0)
+module "storage" {
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-storage-account?ref=azure-storage-account-4.0.0"
+}
+
+# New format (>= 5.0.0)
+module "storage" {
+  source = "git::https://github.com/Unique-AG/terraform-modules.git//modules/azure-storage-account?ref=azure-storage-account@5.0.0"
+}
+```
+
 #### `shared_access_key_enabled` now defaults to `false`
 
 For improved security, `shared_access_key_enabled` now defaults to `false`. This is a **breaking change** for users who rely on:

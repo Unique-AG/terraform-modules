@@ -6,4 +6,6 @@ compatibility:
   unique.ai: ~> 2025.24
 changes:
   - kind: changed
-    description: "shared_access_key_enabled now defaults to false."
+    description: "Breaking ⚠️: shared_access_key_enabled now defaults to false."
+  - kind: changed
+    description: "Breaking ⚠️: Storage releases now ship with @ as tag separator to unify Uniques releases more."
