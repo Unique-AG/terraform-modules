@@ -3,4 +3,4 @@
 *.tfstate
 *.tfstate.backup
 *.tfvars
-provider.tf
+**/examples/**/provider.tf

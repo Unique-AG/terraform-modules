@@ -183,3 +183,40 @@ variable "ai_defender_settings" {
   })
   default = {}
 }
+
+variable "eventhub_export" {
+  description = "Configuration for exporting Defender for Cloud data to Event Hub."
+  type = object({
+    name                = string
+    location            = string
+    resource_group_name = string
+    eventhub = object({
+      id                = string
+      connection_string = string
+    })
+    sources = optional(map(object({
+      event_source  = string
+      property_path = optional(string, "")
+      labels        = optional(list(string), [])
+      })), {
+      alert = {
+        event_source  = "Alerts"
+        property_path = "properties.metadata.severity"
+        labels        = ["High", "Medium"]
+      }
+    })
+  })
+  default   = null
+  sensitive = true
+  validation {
+    condition     = var.eventhub_export == null || length(var.eventhub_export.sources) > 0
+    error_message = "At least one source must be configured in the sources map."
+  }
+  validation {
+    condition = var.eventhub_export == null || alltrue([
+      for key, source in var.eventhub_export.sources :
+      length(source.labels) == 0 || (length(source.labels) > 0 && source.property_path != "")
+    ])
+    error_message = "If labels are specified, property_path must also be provided for filtering."
+  }
+}
