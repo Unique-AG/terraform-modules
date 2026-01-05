@@ -1,9 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 5.0.0
+version: 5.1.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Default alert rules"
+    description: "Add support for advanced networking on AKS with Cilium data plane"
