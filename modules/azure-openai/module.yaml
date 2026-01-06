@@ -1,12 +1,12 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 3.0.0
+version: 3.1.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "⚠️ `cognitive_account_tags` variable. Accounts can get additional tags via the nested `extra_tags` field."
+    description: "publish module with both tag separators – dash and @"
   - kind: changed
     description: "⚠️ `endpoint_definitions_secret_name` variable. Use `endpoint_definitions_secret.name` instead."
   - kind: changed

@@ -1,13 +1,13 @@
 name: azure-entra-app-registration
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration
-version: 3.0.0
+version: 3.1.0
 # 4.0.0 must remove maintainer role
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "Updated URLs (`privacy_statement_url`, `terms_of_service_url`, `homepage_url`) from unique.ch to unique.ai."
+    description: "publish module with both tag separators – dash and @"
   - kind: added
     description: "⚠️ Introduced granular, hierarchical support roles: `user`, `application_support`, `system_support`, and `infrastructure_support` with corresponding input variables."
   - kind: added

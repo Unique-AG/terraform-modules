@@ -1,7 +1,7 @@
 name: azure-entra-app-registration-langfuse
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-langfuse
-version: 1.0.0-rc.1
+version: 1.1.0-rc.1
 changes:
-  - kind: added
-    description: "Added app registration for Langfuse."
+  - kind: changed
+    description: "publish module with both tag separators – dash and @"

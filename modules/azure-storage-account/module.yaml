@@ -1,11 +1,11 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 5.0.0
+version: 5.1.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
   - kind: changed
-    description: "Breaking ⚠️: shared_access_key_enabled now defaults to false."
+    description: "publish module with both tag separators – dash and @"
   - kind: changed
     description: "Breaking ⚠️: Storage releases now ship with @ as tag separator to unify Uniques releases more."

@@ -2,13 +2,6 @@
 
 <!-- Describe your changes in detail -->
 
-
-<!-- If major version bump
-
-Unify tag separator as can be seen in azure-storage-account.
-
--->
-
 ## Checklist before requesting a review
 - [ ] Module version bumped (`module.yaml`)
 - [ ] [`Contribution Guideline`](https://github.com/Unique-AG/terraform-modules/blob/main/CONTRIBUTING.md) read and understood
