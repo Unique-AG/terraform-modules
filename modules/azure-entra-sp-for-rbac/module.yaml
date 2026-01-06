@@ -4,7 +4,7 @@ sources:
   - https://learn.microsoft.com/en-us/cli/azure/azure-cli-sp-tutorial-1
   - https://learn.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az-ad-sp-create-for-rbac
   - https://opencost.io/docs/configuration/azure
-version: 1.0.0
+version: 1.1.0
 changes:
-  - kind: added
-    description: "module azure-entra-sp-for-rbac"
+  - kind: changed
+    description: "publish module with both tag separators – dash and @"

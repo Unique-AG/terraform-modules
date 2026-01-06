@@ -1,9 +1,9 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 3.1.0
+version: 3.2.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: changed
-    description: "Supports private endpoint locations to be provisioned in the location of the VNet. Change is backwards compatible and default to the location of the cognitive account."
+    description: "publish module with both tag separators – dash and @"

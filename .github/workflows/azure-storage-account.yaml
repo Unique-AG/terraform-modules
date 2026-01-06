@@ -24,4 +24,3 @@ jobs:
     uses: ./.github/workflows/release.yaml
     with:
       module: azure-storage-account
-      tag-separator: "@"

@@ -7,11 +7,6 @@ on:
         description: "Module to release"
         required: true
         type: string
-      tag-separator:
-        description: "Tag separator"
-        required: false
-        type: string
-        default: "-"
 
 jobs:
   create-release:
@@ -65,6 +60,13 @@ jobs:
               }
             }
 
+            // Add footer admonition about both tag formats
+            changeLog += '\n\n---\n\n'
+            changeLog += '> [!TIP]\n'
+            changeLog += '> This release is available with both tag formats:\n'
+            changeLog += `> - \`${name}-${version}\`\n`
+            changeLog += `> - \`${name}@${version}\``
+
             core.setOutput('name', name)
             core.setOutput('version', version)
             core.setOutput('changes', changeLog)
@@ -73,14 +75,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ steps.module.outputs.changes }} # must be passed as ENV else the backticks will get escaped and not shown as code
+          MODULE_NAME: ${{ steps.module.outputs.name }}
+          MODULE_VERSION: ${{ steps.module.outputs.version }}
         run: |
-          # Create and push tag
-          git tag ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}
-          git push origin ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}
+          # Create and push both tag formats
+          git tag "${MODULE_NAME}-${MODULE_VERSION}"
+          git tag "${MODULE_NAME}@${MODULE_VERSION}"
+          git push origin "${MODULE_NAME}-${MODULE_VERSION}" "${MODULE_NAME}@${MODULE_VERSION}"
 
-          # Create GitHub release
+          # Create GitHub release with @ separator
           gh release create \
-            ${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }} \
-            --title "${{ steps.module.outputs.name }}${{ inputs.tag-separator }}${{ steps.module.outputs.version }}" \
+            "${MODULE_NAME}@${MODULE_VERSION}" \
+            --title "${MODULE_NAME}@${MODULE_VERSION}" \
             --notes "$RELEASE_NOTES" \
             --target ${{ github.sha }}

@@ -1,7 +1,7 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.3.0
+version: 2.4.0
 changes:
   - kind: changed
-    description: "Update azapi and azurerm preferred version less strict"
+    description: "publish module with both tag separators – dash and @"

@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.4.1
+version: 4.5.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-  - kind: fixed
-    description: "Default settings, that are supersed by AGIC anyway, default to HTTP again as else a certificate must be supplied."
+  - kind: changed
+    description: "publish module with both tag separators – dash and @"
