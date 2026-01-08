@@ -3,6 +3,18 @@ locals {
   public_frontend_ip_config_name        = var.public_frontend_ip_configuration.explicit_name != null ? var.public_frontend_ip_configuration.explicit_name : "${var.name_prefix}-feip"
   private_frontend_ip_config_name       = try(var.private_frontend_ip_configuration.explicit_name, "${var.name_prefix}-privatefeip")
   active_frontend_ip_configuration_name = var.public_frontend_ip_configuration.is_active_http_listener ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
+
+  # WAF Custom Rule Priority Calculation
+  # Priorities are calculated sequentially to prevent overlaps
+  waf_priority_allow_https_challenges    = 1
+  waf_priority_allow_monitoring_agents   = 2
+  waf_priority_ip_restricted_paths_start = 3
+  waf_priority_ip_restricted_paths_end   = local.waf_priority_ip_restricted_paths_start + length(var.waf_custom_rules_unique_access_to_paths_ip_restricted)
+  waf_priority_block_unwanted_ips        = local.waf_priority_ip_restricted_paths_end
+  waf_priority_exempted_uris             = local.waf_priority_block_unwanted_ips + 1
+  waf_priority_blocked_headers_start     = local.waf_priority_exempted_uris + 1
+  waf_priority_blocked_headers_end       = local.waf_priority_blocked_headers_start + length(var.waf_custom_rules_blocked_headers)
+  waf_priority_allow_specific_hosts      = local.waf_priority_blocked_headers_end
 }
 
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
@@ -22,13 +34,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     request_body_enforcement    = try(var.waf_policy_settings.request_body_enforcement, true)
   }
 
-  # (1)
   # Allow Let's Encrypt HTTP-01 challenges
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_allow_https_challenges ? [1] : []
     content {
       name      = "AllowHttpsChallenges"
-      priority  = 1
+      priority  = local.waf_priority_allow_https_challenges
       rule_type = "MatchRule"
       action    = "Allow"
 
@@ -55,13 +66,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (2)
   # Allow Monitoring Agents to probe services
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_allow_monitoring_agents_to_probe_services != null ? [1] : []
     content {
       name      = "AllowMonitoringAgentsToProbeServices"
-      priority  = 2
+      priority  = local.waf_priority_allow_monitoring_agents
       rule_type = "MatchRule"
       action    = "Allow"
 
@@ -87,13 +97,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (3 to 14)
   # Restrict certain routes to certain IP addresses
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_unique_access_to_paths_ip_restricted
     content {
       name      = "RestrictAccessTo${replace(title(custom_rules.key), "-", "")}"
-      priority  = 3 + index(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted), custom_rules.key)
+      priority  = local.waf_priority_ip_restricted_paths_start + index(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted), custom_rules.key)
       rule_type = "MatchRule"
       action    = "Block"
 
@@ -122,13 +131,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (15)
   # Only allow listed IP addresses and ranges for the rest
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_ip_allow_list) > 0 ? [1] : []
     content {
       name      = "BlockUnwantedIPs"
-      priority  = 15
+      priority  = local.waf_priority_block_unwanted_ips
       rule_type = "MatchRule"
       action    = "Block" # condition is negated, we block everything that does _not_ IPMatch
 
@@ -143,13 +151,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (16)
   # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads)
   dynamic "custom_rules" {
     for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
     content {
       name      = "FurtherCheckingExemptedURIs"
-      priority  = 16
+      priority  = local.waf_priority_exempted_uris
       rule_type = "MatchRule"
       action    = "Allow"
 
@@ -164,13 +171,33 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # (99)
+  # Block requests containing specified headers to prevent header-based probing/misrouting
+  dynamic "custom_rules" {
+    for_each = { for idx, header in var.waf_custom_rules_blocked_headers : idx => header }
+    content {
+      name      = "BlockHeader${replace(title(replace(lower(custom_rules.value), "-", "")), " ", "")}"
+      priority  = local.waf_priority_blocked_headers_start + tonumber(custom_rules.key)
+      rule_type = "MatchRule"
+      action    = "Block"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestHeaders"
+          selector      = lower(custom_rules.value)
+        }
+        operator           = "Any"
+        negation_condition = false
+        transforms         = ["Lowercase"]
+      }
+    }
+  }
+
   # Allow certain host headers to pass
   dynamic "custom_rules" {
     for_each = var.waf_custom_rules_allow_hosts != null ? [1] : []
     content {
       name      = "AllowSpecificHosts"
-      priority  = 99
+      priority  = local.waf_priority_allow_specific_hosts
       rule_type = "MatchRule"
       action    = "Allow"
 
