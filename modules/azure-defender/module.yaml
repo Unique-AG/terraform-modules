@@ -1,7 +1,8 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.4.0
+version: 2.5.0
 changes:
-  - kind: changed
-    description: "publish module with both tag separators – dash and @"
+  - kind: added
+    description: "Support for Event Hub export"
+
