@@ -73,6 +73,10 @@ variable "namespace" {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$", var.namespace.name))
     error_message = "The namespace name can contain only letters, numbers and hyphens, must start with a letter, end with a letter or number, and be between 6 and 50 characters long."
   }
+  validation {
+    condition     = var.namespace.sku != "Basic" || var.namespace.auto_inflate_enabled == false
+    error_message = "Auto-inflate is not supported with Basic SKU. Set auto_inflate_enabled to false when using Basic SKU."
+  }
 }
 
 variable "eventhubs" {

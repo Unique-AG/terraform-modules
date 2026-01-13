@@ -12,7 +12,7 @@ locals {
       for group_key, group_value in hub_value.consumer_groups :
       "${hub_key}_${group_key}" => {
         hub_key       = hub_key
-        name          = coalesce(group_value.name, group_key)
+        name          = group_value.name
         user_metadata = group_value.user_metadata
       }
     }
