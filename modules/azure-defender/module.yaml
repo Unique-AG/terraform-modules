@@ -5,3 +5,4 @@ version: 2.5.0
 changes:
   - kind: added
     description: "Support for Event Hub export"
+

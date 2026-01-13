@@ -47,6 +47,13 @@ resource "azurerm_kubernetes_cluster" "cluster" {
           outbound_ip_prefix_ids    = var.network_profile.outbound_ip_prefix_ids
         }
       }
+      dynamic "advanced_networking" {
+        for_each = var.network_profile.advanced_networking_enabled ? [1] : []
+        content {
+          observability_enabled = true
+          security_enabled      = true
+        }
+      }
     }
   }
 

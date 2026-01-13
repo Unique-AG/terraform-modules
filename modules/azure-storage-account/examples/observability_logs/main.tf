@@ -49,13 +49,11 @@ module "sa" {
   source     = "../.."
   depends_on = [azurerm_role_assignment.kv_sens_storage_account_audit_logs_key_service_user, azurerm_key_vault_key.auditlogs_key]
 
-  name                      = "stobservability"
-  access_tier               = "Hot"
-  account_replication_type  = "LRS"
-  location                  = "switzerlandnorth"
-  resource_group_name       = "my-resource-group"
-  shared_access_key_enabled = false # 4.0.0 or later versions will eventually fix this for good
-
+  name                     = "stobservability"
+  access_tier              = "Hot"
+  account_replication_type = "LRS"
+  location                 = "switzerlandnorth"
+  resource_group_name      = "my-resource-group"
 
   identity_ids = [
     azurerm_user_assigned_identity.storage_account_keyvault_key_reader_audit_logs.id
@@ -87,7 +85,6 @@ module "sa" {
   }
 
   storage_management_policy_default = {
-    enabled                                  = true
     blob_to_cool_after_last_modified_days    = 30
     blob_to_cold_after_last_modified_days    = 90
     blob_to_archive_after_last_modified_days = 730  # 2 years

@@ -1,7 +1,14 @@
 locals {
   uses_cmk                 = var.customer_managed_key != null && var.self_cmk == null
   self_cmk                 = var.self_cmk != null && var.customer_managed_key == null
-  store_connection_strings = var.connection_settings != null
+  store_connection_strings = var.connection_settings != null && var.shared_access_key_enabled
+}
+
+check "connection_settings_requires_shared_access_key" {
+  assert {
+    condition     = var.connection_settings == null || var.shared_access_key_enabled
+    error_message = "connection_settings requires shared_access_key_enabled to be true, as connection strings are only available when shared access keys are enabled."
+  }
 }
 
 # Random string for unique resource names (only when backup vault is needed)

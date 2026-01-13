@@ -389,17 +389,18 @@ variable "admin_group_object_ids" {
 variable "network_profile" {
   description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
   type = object({
-    network_data_plane        = optional(string)
-    network_plugin            = optional(string, "azure")
-    network_plugin_mode       = optional(string, null)
-    network_policy            = optional(string)
-    service_cidr              = optional(string, "172.20.0.0/16")
-    dns_service_ip            = optional(string, "172.20.0.10")
-    outbound_type             = optional(string, "loadBalancer")
-    managed_outbound_ip_count = optional(number, null)
-    outbound_ip_address_ids   = optional(list(string), null)
-    outbound_ip_prefix_ids    = optional(list(string), null)
-    idle_timeout_in_minutes   = optional(number, 30)
+    network_data_plane          = optional(string)
+    network_plugin              = optional(string, "azure")
+    network_plugin_mode         = optional(string, null)
+    network_policy              = optional(string)
+    service_cidr                = optional(string, "172.20.0.0/16")
+    dns_service_ip              = optional(string, "172.20.0.10")
+    outbound_type               = optional(string, "loadBalancer")
+    managed_outbound_ip_count   = optional(number, null)
+    outbound_ip_address_ids     = optional(list(string), null)
+    outbound_ip_prefix_ids      = optional(list(string), null)
+    idle_timeout_in_minutes     = optional(number, 30)
+    advanced_networking_enabled = optional(bool, false)
   })
   default = {
     network_plugin = "azure"
@@ -443,6 +444,13 @@ variable "network_profile" {
       var.network_profile.network_data_plane == "cilium"
     )
     error_message = "When network_policy is set to 'cilium', network_data_plane must be set to 'cilium'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      !var.network_profile.advanced_networking_enabled ||
+      var.network_profile.network_data_plane == "cilium"
+    )
+    error_message = "When advanced_networking_enabled is set to true, network_data_plane must be set to 'cilium'."
   }
 }
 

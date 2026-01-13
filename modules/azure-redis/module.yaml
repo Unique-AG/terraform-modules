@@ -1,7 +1,7 @@
 name: azure-redis
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-redis
-version: 2.0.0
+version: 2.1.0
 changes:
-  - kind: added
-    description: "Private endpoint configuration"
+  - kind: changed
+    description: "publish module with both tag separators – dash and @"

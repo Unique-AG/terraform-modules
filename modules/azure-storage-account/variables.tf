@@ -151,7 +151,7 @@ variable "self_cmk" {
 }
 
 variable "connection_settings" {
-  description = "Object containing the connection strings and the Key Vault secret ID where the connection strings will be stored"
+  description = "Object containing the connection strings and the Key Vault secret ID where the connection strings will be stored. Requires shared_access_key_enabled to be true."
   type = object({
     connection_string_1 = string
     connection_string_2 = string
@@ -159,7 +159,6 @@ variable "connection_settings" {
     expiration_date     = optional(string, "2099-12-31T23:59:59Z")
   })
   default = null
-
 }
 
 variable "private_endpoint" {
@@ -197,9 +196,9 @@ variable "private_endpoint" {
 }
 
 variable "shared_access_key_enabled" {
-  description = "Enable shared access key for the storage account. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1)."
+  description = "Enable shared access key for the storage account. Defaults to false for improved security. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1). Additionally, connection_settings cannot be used when this is disabled."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "data_protection_settings" {

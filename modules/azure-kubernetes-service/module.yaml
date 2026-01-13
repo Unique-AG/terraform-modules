@@ -1,9 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 5.0.0
+version: 5.2.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: added
-    description: "Default alert rules"
+  - kind: changed
+    description: "publish module with both tag separators – dash and @"
