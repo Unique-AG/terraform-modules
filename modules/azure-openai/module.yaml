@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Diagnostic settings for Azure Monitor. Configurable globally via `diagnostic_settings` variable or per cognitive account. Per-account settings take precedence. Defaults to Audit logs and AllMetrics only. Enabling RequestResponse or Trace logs sensitive data - users must secure Log Analytics access accordingly."
+    description: "Support for customer managed keys (CMK) for encryption"
