@@ -1,9 +1,9 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 3.2.0
+version: 3.3.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: changed
-    description: "publish module with both tag separators – dash and @"
+  - kind: added
+    description: "Support for customer managed keys (CMK) for encryption"
