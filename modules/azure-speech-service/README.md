@@ -32,6 +32,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_cognitive_account.aca](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account) | resource |
+| [azurerm_cognitive_account_customer_managed_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account_customer_managed_key) | resource |
 | [azurerm_key_vault_secret.azure_speech_service_endpoint_definitions](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.azure_speech_service_endpoints](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.fqdn](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -45,7 +46,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_accounts"></a> [accounts](#input\_accounts) | values for the cognitive accounts | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "SpeechServices")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    public_network_access_enabled = optional(bool, false)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = list(string)<br/>    }))<br/>    private_endpoint = optional(object({<br/>      subnet_id           = string<br/>      vnet_location       = string<br/>      private_dns_zone_id = string<br/>    }))<br/>    diagnostic_settings = optional(object({<br/>      log_analytics_workspace_id = string<br/>      enabled_log_categories     = optional(list(string), null)<br/>      enabled_metrics            = optional(list(string), null)<br/>    }))<br/>    workload_identity = optional(object({<br/>      principal_id         = string<br/>      role_definition_name = string<br/>    }))<br/>  }))</pre> | n/a | yes |
+| <a name="input_accounts"></a> [accounts](#input\_accounts) | values for the cognitive accounts | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "SpeechServices")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    public_network_access_enabled = optional(bool, false)<br/>    customer_managed_key = optional(object({<br/>      key_vault_key_id = string<br/>      user_assigned_identity = object({<br/>        client_id   = string<br/>        resource_id = string<br/>      })<br/>    }))<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = list(string)<br/>    }))<br/>    private_endpoint = optional(object({<br/>      subnet_id           = string<br/>      vnet_location       = string<br/>      private_dns_zone_id = string<br/>    }))<br/>    diagnostic_settings = optional(object({<br/>      log_analytics_workspace_id = string<br/>      enabled_log_categories     = optional(list(string), null)<br/>      enabled_metrics            = optional(list(string), null)<br/>    }))<br/>    workload_identity = optional(object({<br/>      principal_id         = string<br/>      role_definition_name = string<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#input\_endpoint\_definitions\_secret\_name) | Name of the secret for the endpoint definitions | `string` | `"azure-speech-service-endpoint-definitions"` | no |
 | <a name="input_endpoints_secret_name"></a> [endpoints\_secret\_name](#input\_endpoints\_secret\_name) | Name of the secret for the endpoints | `string` | `"azure-speech-service-endpoints"` | no |
 | <a name="input_fqdn_secret_name_suffix"></a> [fqdn\_secret\_name\_suffix](#input\_fqdn\_secret\_name\_suffix) | The suffix of the secret name where the FQDN is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix | `string` | `"-fqdn"` | no |
@@ -72,3 +73,18 @@ No modules.
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
 | <a name="output_speech_service_secret_names"></a> [speech\_service\_secret\_names](#output\_speech\_service\_secret\_names) | The names of the Key Vault secrets containing the Speech Service resource IDs |
 <!-- END_TF_DOCS -->
+
+## Customer-Managed Keys (CMK)
+
+This module supports encryption with customer-managed keys through the `customer_managed_key` configuration in the `accounts` variable.
+
+> [!IMPORTANT]
+> ⚠️ Azure requires that the Key Vault containing the encryption key MUST be in the same region as the Cognitive Services account. Ensure your Key Vault is created in the same region as the account location.
+
+The `customer_managed_key` object includes:
+- `key_vault_key_id`: The full resource ID of the Key Vault key used for encryption
+- `user_assigned_identity`: A managed identity configuration with:
+  - `client_id`: The client ID of the user-assigned managed identity
+  - `resource_id`: The resource ID of the user-assigned managed identity
+
+This managed identity must have appropriate permissions (e.g., `Key Vault Crypto Service Encryption User`) to access the encryption key in the Key Vault.
