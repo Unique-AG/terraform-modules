@@ -1,0 +1,8 @@
+name: azure-eventhub
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-eventhub
+version: 1.0.0
+changes:
+  - kind: added
+    description: "Initial public release providing configurable Event Hub namespace, per-hub resources, authorization rules, diagnostics, and optional private endpoints."
+
