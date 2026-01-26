@@ -5,16 +5,19 @@ locals {
   active_frontend_ip_configuration_name = var.public_frontend_ip_configuration.is_active_http_listener ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
 
   # WAF Custom Rule Priority Calculation
-  # Priorities are calculated sequentially to prevent overlaps
+  # Priorities are calculated sequentially to prevent overlaps.
+  # Lower numbers = higher priority (evaluated first).
+  # IMPORTANT: Block rules must be evaluated before Allow rules to prevent bypasses.
+  # When an Allow rule matches, subsequent rules are NOT evaluated.
   waf_priority_allow_https_challenges    = 1
   waf_priority_allow_monitoring_agents   = 2
   waf_priority_ip_restricted_paths_start = 3
   waf_priority_ip_restricted_paths_end   = local.waf_priority_ip_restricted_paths_start + length(var.waf_custom_rules_unique_access_to_paths_ip_restricted)
   waf_priority_block_unwanted_ips        = local.waf_priority_ip_restricted_paths_end
-  waf_priority_exempted_uris             = local.waf_priority_block_unwanted_ips + 1
-  waf_priority_blocked_headers_start     = local.waf_priority_exempted_uris + 1
+  waf_priority_blocked_headers_start     = local.waf_priority_block_unwanted_ips + 1
   waf_priority_blocked_headers_end       = local.waf_priority_blocked_headers_start + length(var.waf_custom_rules_blocked_headers)
-  waf_priority_allow_specific_hosts      = local.waf_priority_blocked_headers_end
+  waf_priority_exempted_uris             = local.waf_priority_blocked_headers_end
+  waf_priority_allow_specific_hosts      = local.waf_priority_exempted_uris + 1
 }
 
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
@@ -151,27 +154,8 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
 
-  # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads)
-  dynamic "custom_rules" {
-    for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
-    content {
-      name      = "FurtherCheckingExemptedURIs"
-      priority  = local.waf_priority_exempted_uris
-      rule_type = "MatchRule"
-      action    = "Allow"
-
-      match_conditions {
-        match_variables {
-          variable_name = "RequestUri"
-        }
-        operator     = "BeginsWith"
-        match_values = var.waf_custom_rules_exempted_request_path_begin_withs
-        transforms   = ["Lowercase"]
-      }
-    }
-  }
-
-  # Block requests containing specified headers to prevent header-based probing/misrouting
+  # Block requests containing specified headers to prevent header-based probing/misrouting.
+  # This rule must be evaluated BEFORE exempted URIs to prevent bypass via Allow rule short-circuiting.
   dynamic "custom_rules" {
     for_each = { for idx, header in var.waf_custom_rules_blocked_headers : idx => header }
     content {
@@ -188,6 +172,27 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         operator           = "Any"
         negation_condition = false
         transforms         = ["Lowercase"]
+      }
+    }
+  }
+
+  # Allow certain URLs to be directly accessed without further checks (circumventing body enforcement until Unique AI properly handles multi-part uploads).
+  # This Allow rule is evaluated AFTER block rules (blocked headers, IP restrictions) to prevent security bypasses.
+  dynamic "custom_rules" {
+    for_each = length(var.waf_custom_rules_exempted_request_path_begin_withs) > 0 ? [1] : []
+    content {
+      name      = "FurtherCheckingExemptedURIs"
+      priority  = local.waf_priority_exempted_uris
+      rule_type = "MatchRule"
+      action    = "Allow"
+
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "BeginsWith"
+        match_values = var.waf_custom_rules_exempted_request_path_begin_withs
+        transforms   = ["Lowercase"]
       }
     }
   }

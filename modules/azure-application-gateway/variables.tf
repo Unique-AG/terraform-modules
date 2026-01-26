@@ -285,9 +285,10 @@ variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
 }
 
 variable "waf_custom_rules_exempted_request_path_begin_withs" {
-  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
-  # Note that this is now a green card to allowlist any URL.
-  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
+  # Unblock Ingestion Upload if the max request body size is greater than 2000KB.
+  # This rule allows requests to bypass managed rule body size checks.
+  # The rule is evaluated AFTER block rules (IP restrictions, blocked headers) to prevent security bypasses.
+  # When an Allow rule matches, subsequent WAF rules are not evaluated.
 
   description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
   type        = list(string)
