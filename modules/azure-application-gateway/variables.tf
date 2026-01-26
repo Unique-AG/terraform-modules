@@ -245,6 +245,12 @@ variable "waf_custom_rules_allow_https_challenges" {
   default     = true
 }
 
+variable "waf_custom_rules_blocked_headers" {
+  description = "List of header names to block (case-insensitive matching). Requests containing any of these headers will be blocked to prevent header-based probing/misrouting. Set to [] to disable."
+  type        = list(string)
+  default     = ["x-service-id"]
+}
+
 variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
   description = "Allow monitoring agents to probe services."
   type = object({
@@ -276,16 +282,13 @@ variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
     path_begin_withs = list(string)
   }))
   default = {}
-  validation {
-    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13 # this is limited due to the rule priority, can be increased if needed but then the rule priority must be adjusted
-    error_message = "The number of unique access to paths IP restricted rules must be less than 13 or else the priorities overlap. If you need more, open an issue on GitHub."
-  }
 }
 
 variable "waf_custom_rules_exempted_request_path_begin_withs" {
-  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
-  # Note that this is now a green card to allowlist any URL.
-  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
+  # Unblock Ingestion Upload if the max request body size is greater than 2000KB.
+  # This rule allows requests to bypass managed rule body size checks.
+  # The rule is evaluated AFTER block rules (IP restrictions, blocked headers) to prevent security bypasses.
+  # When an Allow rule matches, subsequent WAF rules are not evaluated.
 
   description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
   type        = list(string)
