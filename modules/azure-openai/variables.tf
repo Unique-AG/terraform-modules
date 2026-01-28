@@ -43,6 +43,12 @@ variable "cognitive_accounts" {
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
 
+    diagnostic_settings = optional(object({
+      log_analytics_workspace_id = string
+      log_categories             = optional(list(string), ["Audit"])
+      metric_categories          = optional(list(string), ["AllMetrics"])
+    }))
+
   }))
   validation {
     condition     = length(keys(var.cognitive_accounts)) > 0
@@ -68,6 +74,16 @@ variable "cognitive_accounts" {
       account.model_definitions_auth_strategy_injected != "ApiKey" || account.local_auth_enabled == true
     ])
     error_message = "When model_definitions_auth_strategy_injected is 'ApiKey', local_auth_enabled must be true"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.cognitive_accounts :
+      account.diagnostic_settings == null || alltrue([
+        for category in coalesce(try(account.diagnostic_settings.log_categories, null), []) :
+        contains(["Audit", "RequestResponse", "Trace"], category)
+      ])
+    ])
+    error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
   }
 }
 
@@ -108,4 +124,40 @@ variable "endpoint_definitions_secret" {
     sku_name_field_name     = optional(string, "usageTier")    # the sku_name field is very technical, to further process the field, we use the correct term from the Azure Docs
   })
   default = {}
+}
+
+variable "diagnostic_settings" {
+  description = <<-EOT
+    Global diagnostic settings configuration for Azure Cognitive Services accounts.
+    If null, diagnostic settings are not created (unless overridden per account).
+
+    Per-account diagnostic_settings take precedence over this global setting.
+    This serves as a fallback for accounts that don't specify their own settings.
+
+    Available log categories:
+      - Audit: Audit logs (default, recommended minimum)
+      - RequestResponse: Logs all request and response data including prompts and completions
+      - Trace: Detailed trace logs
+
+    WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as
+    user prompts and model responses. It is YOUR responsibility to:
+      - Restrict access to the Log Analytics workspace appropriately
+      - Ensure compliance with data protection regulations (GDPR, etc.)
+      - Implement appropriate retention policies
+      - Consider the cost implications of high-volume logging
+  EOT
+  type = object({
+    log_analytics_workspace_id = string
+    log_categories             = optional(list(string), ["Audit"])
+    metric_categories          = optional(list(string), ["AllMetrics"])
+  })
+  default = null
+
+  validation {
+    condition = var.diagnostic_settings == null || alltrue([
+      for category in coalesce(try(var.diagnostic_settings.log_categories, null), []) :
+      contains(["Audit", "RequestResponse", "Trace"], category)
+    ])
+    error_message = "log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
+  }
 }
