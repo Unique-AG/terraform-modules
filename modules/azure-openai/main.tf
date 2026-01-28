@@ -89,3 +89,38 @@ resource "azurerm_private_endpoint" "pe" {
     private_dns_zone_ids = [each.value.private_endpoint.private_dns_zone_id]
   }
 }
+
+locals {
+  # Compute effective diagnostic settings per account:
+  # - Per-account settings take precedence
+  # - Falls back to global diagnostic_settings
+  # - If both are null, the account is excluded
+  # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/monitoring
+  effective_diagnostic_settings = {
+    for account_key, account in var.cognitive_accounts :
+    account_key => coalesce(account.diagnostic_settings, var.diagnostic_settings)
+    if account.diagnostic_settings != null || var.diagnostic_settings != null
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "cognitive_account" {
+  for_each = local.effective_diagnostic_settings
+
+  name                       = "${each.key}-diagnostic-logs"
+  target_resource_id         = azurerm_cognitive_account.aca[each.key].id
+  log_analytics_workspace_id = each.value.log_analytics_workspace_id
+
+  dynamic "enabled_log" {
+    for_each = each.value.log_categories
+    content {
+      category = enabled_log.value
+    }
+  }
+
+  dynamic "enabled_metric" {
+    for_each = each.value.metric_categories
+    content {
+      category = enabled_metric.value
+    }
+  }
+}

@@ -1,21 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 3.1.0
+version: 3.2.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: changed
-    description: "publish module with both tag separators – dash and @"
-  - kind: changed
-    description: "⚠️ `endpoint_definitions_secret_name` variable. Use `endpoint_definitions_secret.name` instead."
-  - kind: changed
-    description: "⚠️ `endpoints_secret_name` variable. Use `endpoint_secret.name_suffix` instead."
-  - kind: changed
-    description: "⚠️ `*_secret_name_suffix` variables. Secret naming is now configured via structured objects (`primary_access_key_secret`, `endpoint_secret`, `endpoint_definitions_secret`)."
-  - kind: changed
-    description: "⚠️ `deployment.sku_type` field is renamed to `deployment.sku_name` to match the Azure API."
   - kind: added
-    description: "Extended `model_version_endpoints` to include per-deployment fields for usage tier (`usageTier`) and Tokens Per Minute (`tpmThousands`) via `endpoint_definitions_secret` field names."
-  - kind: added
-    description: "Key Vault secrets now include metadata: `content_type`, `expiration_date`, and `tags` for improved compliance and management."
+    description: "Diagnostic settings for Azure Monitor. Configurable globally via `diagnostic_settings` variable or per cognitive account. Per-account settings take precedence. Defaults to Audit logs and AllMetrics only. Enabling RequestResponse or Trace logs sensitive data - users must secure Log Analytics access accordingly."
