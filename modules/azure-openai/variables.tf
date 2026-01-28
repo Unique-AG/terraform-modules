@@ -43,6 +43,17 @@ variable "cognitive_accounts" {
       version_upgrade_option = optional(string, "NoAutoUpgrade")
     }))
 
+    monitor_diagnostic_setting = optional(object({
+      explicit_name              = optional(string)
+      log_analytics_workspace_id = string
+      enabled_log = optional(list(object({
+        category       = optional(string)
+        category_group = optional(string)
+      })), [{ category_group = "allLogs" }])
+      enabled_metric = optional(list(object({
+        category = string
+      })))
+    }))
   }))
   validation {
     condition     = length(keys(var.cognitive_accounts)) > 0
@@ -68,6 +79,16 @@ variable "cognitive_accounts" {
       account.model_definitions_auth_strategy_injected != "ApiKey" || account.local_auth_enabled == true
     ])
     error_message = "When model_definitions_auth_strategy_injected is 'ApiKey', local_auth_enabled must be true"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.cognitive_accounts :
+      account.monitor_diagnostic_setting == null || alltrue([
+        for log in account.monitor_diagnostic_setting.enabled_log :
+        (log.category != null && log.category_group == null) || (log.category == null && log.category_group != null)
+      ])
+    ])
+    error_message = "Each enabled_log must have exactly one of 'category' or 'category_group', not both or neither"
   }
 }
 

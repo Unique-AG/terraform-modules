@@ -89,3 +89,32 @@ resource "azurerm_private_endpoint" "pe" {
     private_dns_zone_ids = [each.value.private_endpoint.private_dns_zone_id]
   }
 }
+
+resource "azurerm_monitor_diagnostic_setting" "aca_diagnostic" {
+  for_each = { for k, v in var.cognitive_accounts : k => v if try(v.monitor_diagnostic_setting != null, false) }
+
+  name                       = each.value.monitor_diagnostic_setting.explicit_name != null ? each.value.monitor_diagnostic_setting.explicit_name : "log-${each.key}-aca"
+  target_resource_id         = azurerm_cognitive_account.aca[each.key].id
+  log_analytics_workspace_id = each.value.monitor_diagnostic_setting.log_analytics_workspace_id
+
+  dynamic "enabled_log" {
+    for_each = [for log in coalesce(each.value.monitor_diagnostic_setting.enabled_log, []) : log if log.category != null]
+    content {
+      category = enabled_log.value.category
+    }
+  }
+
+  dynamic "enabled_log" {
+    for_each = [for log in coalesce(each.value.monitor_diagnostic_setting.enabled_log, []) : log if log.category_group != null]
+    content {
+      category_group = enabled_log.value.category_group
+    }
+  }
+
+  dynamic "enabled_metric" {
+    for_each = coalesce(each.value.monitor_diagnostic_setting.enabled_metric, [])
+    content {
+      category = enabled_metric.value.category
+    }
+  }
+}
