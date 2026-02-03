@@ -80,23 +80,3 @@ resource "azuread_app_role_assignment" "managed_roles" {
   principal_object_id = each.value.principal_id
   resource_object_id  = azuread_service_principal.this.object_id
 }
-
-# ------------------------------------------------------------------------------------
-# Legacy support to not break existing SSO configurations on transition, see README.md
-# support for this will be removed in 4.0.0
-resource "random_uuid" "maintainers" {}
-resource "azuread_application_app_role" "maintainers" {
-  application_id = azuread_application.this.id
-  role_id        = random_uuid.maintainers.id
-
-  allowed_member_types = ["User"]
-  description          = "App role for maintainers"
-  display_name         = "Maintain"
-  value                = "maintain"
-}
-resource "azuread_app_role_assignment" "maintainers" {
-  for_each            = toset(var.application_support_object_ids) # Keep legacy assignment logic
-  app_role_id         = azuread_application_app_role.maintainers.role_id
-  principal_object_id = each.value
-  resource_object_id  = azuread_service_principal.this.object_id
-}

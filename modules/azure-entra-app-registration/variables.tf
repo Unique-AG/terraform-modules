@@ -5,9 +5,10 @@ variable "display_name" {
 
 variable "client_secret_generation_config" {
   type = object({
-    enabled     = bool
-    keyvault_id = optional(string)
-    secret_name = optional(string, "entra-app-client-secret")
+    enabled        = bool
+    keyvault_id    = optional(string)
+    secret_name    = optional(string, "entra-app-client-secret")
+    output_enabled = optional(bool, false)
   })
   description = "When enabled, a client secret will be generated and stored in the keyvault."
   default = {
