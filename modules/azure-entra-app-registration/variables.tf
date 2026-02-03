@@ -123,5 +123,5 @@ variable "homepage_url" {
 variable "admin_consent_enabled" {
   type        = bool
   description = "When enabled, admin consent will be automatically granted for all application permissions (Role type) in required_resource_access_list."
-  default     = false
+  default     = true
 }

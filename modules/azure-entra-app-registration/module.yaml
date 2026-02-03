@@ -9,3 +9,9 @@ changes:
     description: "Maintainer role and variable removed."
   - kind: added
     description: "Secret can optionally be outputted."
+  - kind: added
+    description: "Automatic admin consent for Microsoft Graph and SharePoint permissions – defaults to 'true'."
+  - kind: fixed
+    description: "Unused random provider."
+  - kind: fixed
+    description: "File chaos, adhering to TF module naming conventions."

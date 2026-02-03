@@ -39,7 +39,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_admin_consent_enabled"></a> [admin\_consent\_enabled](#input\_admin\_consent\_enabled) | When enabled, admin consent will be automatically granted for all application permissions (Role type) in required\_resource\_access\_list. | `bool` | `false` | no |
+| <a name="input_admin_consent_enabled"></a> [admin\_consent\_enabled](#input\_admin\_consent\_enabled) | When enabled, admin consent will be automatically granted for all application permissions (Role type) in required\_resource\_access\_list. | `bool` | `true` | no |
 | <a name="input_application_support_object_ids"></a> [application\_support\_object\_ids](#input\_application\_support\_object\_ids) | The object ids of the user/groups that should be able to support the application. | `list(string)` | `[]` | no |
 | <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret will be generated and stored in the keyvault. | <pre>object({<br/>    enabled        = bool<br/>    keyvault_id    = optional(string)<br/>    secret_name    = optional(string, "entra-app-client-secret")<br/>    output_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_display_name"></a> [display\_name](#input\_display\_name) | The displayed name in Entra ID. | `string` | n/a | yes |
