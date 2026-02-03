@@ -10,7 +10,7 @@ changes:
   - kind: added
     description: "Secret can optionally be outputted."
   - kind: added
-    description: "Automatic admin consent for Microsoft Graph and SharePoint permissions – defaults to 'true'."
+    description: "Automatic admin consent for Microsoft Graph permissions – defaults to 'true'."
   - kind: fixed
     description: "Unused random provider."
   - kind: fixed
