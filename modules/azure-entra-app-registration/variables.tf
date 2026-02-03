@@ -16,8 +16,8 @@ variable "client_secret_generation_config" {
   }
 
   validation {
-    condition     = !var.client_secret_generation_config.enabled || (var.client_secret_generation_config.enabled && var.client_secret_generation_config.keyvault_id != null)
-    error_message = "When client_secret_generation_config.enabled is true, keyvault_id must be provided."
+    condition     = !var.client_secret_generation_config.enabled || var.client_secret_generation_config.keyvault_id != null || var.client_secret_generation_config.output_enabled == true
+    error_message = "When client_secret_generation_config.enabled is true, either keyvault_id or output_enabled must be provided."
   }
 }
 
@@ -120,3 +120,8 @@ variable "homepage_url" {
   default     = "https://www.unique.ai"
 }
 
+variable "admin_consent_enabled" {
+  type        = bool
+  description = "When enabled, admin consent will be automatically granted for all application permissions (Role type) in required_resource_access_list."
+  default     = false
+}
