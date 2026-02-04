@@ -362,7 +362,7 @@ variable "waf_managed_rules" {
       },
       {
         rule_group_name = "REQUEST-920-PROTOCOL-ENFORCEMENT"
-        rules           = [{ id = "920230" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
+        rules           = [{ id = "920230" }, { id = "920271" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
       },
       {
         rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
@@ -428,12 +428,17 @@ variable "waf_managed_rules" {
       },
       {
         match_variable          = "RequestArgNames"
-        selector                = "variables.input.text,variables.text"
+        selector                = "variables.input.text,variables.text,messages.content,text"
         selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
           rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-921-PROTOCOL-ATTACK"
         }
       },
       {
@@ -470,6 +475,26 @@ variable "waf_managed_rules" {
         match_variable          = "RequestCookieNames"
         selector                = "__Secure-next-auth.session-token"
         selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+        }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Host-uniqueid.useragent"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
