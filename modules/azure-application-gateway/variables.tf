@@ -435,6 +435,11 @@ variable "waf_managed_rules" {
           version         = "3.2"
           rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
         }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,messages.content,text"
+        selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
@@ -480,6 +485,11 @@ variable "waf_managed_rules" {
           version         = "3.2"
           rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
         }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Secure-next-auth.session-token"
+        selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
@@ -495,6 +505,11 @@ variable "waf_managed_rules" {
           version         = "3.2"
           rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
         }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Host-uniqueid.useragent"
+        selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
