@@ -26,6 +26,14 @@ variable "cognitive_accounts" {
     public_network_access_enabled            = optional(bool, false)
     sku_name                                 = optional(string, "S0")
 
+    customer_managed_key = optional(object({
+      key_vault_key_id = string
+      user_assigned_identity = object({
+        client_id   = string
+        resource_id = string
+      })
+    }))
+
     private_endpoint = optional(object({
       private_dns_zone_id = string
       subnet_id           = string

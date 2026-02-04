@@ -1,4 +1,9 @@
 locals {
+  accounts_with_cmk = {
+    for k, v in var.cognitive_accounts : k => v
+    if v.customer_managed_key != null
+  }
+
   model_version_endpoints = [
     for account_key, account in azurerm_cognitive_account.aca : {
       "endpoint" : account.endpoint,
@@ -45,6 +50,18 @@ resource "azurerm_cognitive_account" "aca" {
   resource_group_name           = var.resource_group_name
   sku_name                      = each.value.sku_name
   tags                          = merge(var.tags, each.value.extra_tags)
+
+  dynamic "identity" {
+    for_each = each.value.customer_managed_key != null ? [1] : []
+    content {
+      type         = "UserAssigned"
+      identity_ids = [each.value.customer_managed_key.user_assigned_identity.resource_id]
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [customer_managed_key]
+  }
 }
 
 resource "azurerm_cognitive_deployment" "deployments" {
@@ -123,4 +140,12 @@ resource "azurerm_monitor_diagnostic_setting" "cognitive_account" {
       category = enabled_metric.value
     }
   }
+}
+
+resource "azurerm_cognitive_account_customer_managed_key" "cmk" {
+  for_each = local.accounts_with_cmk
+
+  cognitive_account_id = azurerm_cognitive_account.aca[each.key].id
+  key_vault_key_id     = each.value.customer_managed_key.key_vault_key_id
+  identity_client_id   = each.value.customer_managed_key.user_assigned_identity.client_id
 }

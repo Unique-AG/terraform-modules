@@ -6,6 +6,13 @@ variable "accounts" {
     custom_subdomain_name         = optional(string)
     local_auth_enabled            = optional(bool, false)
     public_network_access_enabled = optional(bool, false)
+    customer_managed_key = optional(object({
+      key_vault_key_id = string
+      user_assigned_identity = object({
+        client_id   = string
+        resource_id = string
+      })
+    }))
     private_endpoint = optional(object({
       private_dns_zone_id = string
       subnet_id           = string
@@ -67,3 +74,4 @@ variable "primary_access_key_secret_name_suffix" {
   description = "The suffix of the secret name where the Primary Access Key is stored for the Cognitive Account. The secret name will be Cognitive Account Name + this suffix"
   default     = "-key"
 }
+
