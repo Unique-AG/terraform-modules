@@ -1,7 +1,7 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 3.2.0
+version: 3.3.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
