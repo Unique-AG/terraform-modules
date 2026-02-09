@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.5.0
+version: 4.6.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
   - kind: changed
-    description: "publish module with both tag separators – dash and @"
+    description: "Ruleset exclusions to the WAF managed rules to prevent blocking of valid requests."
