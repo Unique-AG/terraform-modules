@@ -1,9 +1,15 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 4.6.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
   - kind: added
-    description: "WAF can now block custom headers and by default blocks the header x-service-id."
+    description: "/uptime is now allowed for monitoring agents."
+  - kind: added
+    description: "WAF custom rule to block requests containing specified headers (default: x-service-id)."
+  - kind: added
+    description: "WAF GeoMatch custom rule to restrict traffic to allowed country/region codes via waf_custom_rules_allowed_regions object."
+  - kind: changed
+    description: "Renamed all waf_custom_rules_* variables for consistent allowed_/blocked_/exempted_ naming convention."

@@ -233,16 +233,33 @@ variable "waf_policy_settings" {
   }
 }
 
-variable "waf_custom_rules_ip_allow_list" {
+variable "waf_custom_rules_allowed_ips" {
   description = "List of IP addresses or ranges which are allowed to pass the WAF. An empty list means all IPs are allowed."
   type        = list(string)
   default     = []
 }
 
-variable "waf_custom_rules_allow_https_challenges" {
+variable "waf_custom_rules_allowed_https_challenges" {
   description = "Allow HTTP-01 challenges e.g.from Let's Encrypt."
   type        = bool
   default     = true
+}
+
+variable "waf_custom_rules_allowed_regions" {
+  description = "GeoMatch filtering by country/region. Set to null to disable. When set, traffic not from the listed region_codes is blocked. unknown_included (default: false) adds ZZ (unmapped IPs) to the allow list — enable only if false positives from unmapped IPs are a concern. Reference: https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/geomatch-custom-rules"
+  type = object({
+    region_codes     = list(string)
+    unknown_included = optional(bool, false)
+  })
+  default = null
+
+  validation {
+    condition = var.waf_custom_rules_allowed_regions == null || alltrue([
+      for code in var.waf_custom_rules_allowed_regions.region_codes :
+      can(regex("^[A-Z]{2}$", code))
+    ])
+    error_message = "Each region code must be a valid ISO 3166-1 alpha-2 code (two uppercase letters), e.g. CH, DE, US."
+  }
 }
 
 variable "waf_custom_rules_blocked_headers" {
@@ -251,7 +268,7 @@ variable "waf_custom_rules_blocked_headers" {
   default     = ["x-service-id"]
 }
 
-variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
+variable "waf_custom_rules_allowed_monitoring_agents" {
   description = "Allow monitoring agents to probe services."
   type = object({
     request_header_user_agent = string
@@ -259,11 +276,11 @@ variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
   })
   default = {
     request_header_user_agent = "Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-    probe_path_equals         = ["/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser", "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"]
+    probe_path_equals         = ["/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser", "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health", "/uptime"]
   }
 }
 
-variable "waf_custom_rules_allow_hosts" {
+variable "waf_custom_rules_allowed_hosts" {
   description = "Allow monitoring agents to probe services."
   type = object({
     request_header_host = string
@@ -275,7 +292,7 @@ variable "waf_custom_rules_allow_hosts" {
   }
 }
 
-variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
+variable "waf_custom_rules_allowed_ips_sensitive_paths" {
   description = "Only allow certain IP matches to access selected paths. Passing no IP means all requests get blocked for these paths. Pass 0.0.0.0/0 to allow all IPs for the routes. The default blocks touchy routes as we ship secure by default."
   type = map(object({
     ip_allow_list    = list(string)
@@ -284,7 +301,7 @@ variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
   default = {}
 }
 
-variable "waf_custom_rules_exempted_request_path_begin_withs" {
+variable "waf_custom_rules_exempted_uris" {
   # Unblock Ingestion Upload if the max request body size is greater than 2000KB.
   # This rule allows requests to bypass managed rule body size checks.
   # The rule is evaluated AFTER block rules (IP restrictions, blocked headers) to prevent security bypasses.
@@ -365,7 +382,7 @@ variable "waf_managed_rules" {
       },
       {
         rule_group_name = "REQUEST-920-PROTOCOL-ENFORCEMENT"
-        rules           = [{ id = "920230" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
+        rules           = [{ id = "920230" }, { id = "920271" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
       },
       {
         rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
@@ -431,12 +448,22 @@ variable "waf_managed_rules" {
       },
       {
         match_variable          = "RequestArgNames"
-        selector                = "variables.input.text,variables.text"
+        selector                = "variables.input.text,variables.text,messages.content,text"
         selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
           rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+      },
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,messages.content,text"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-921-PROTOCOL-ATTACK"
         }
       },
       {
@@ -472,6 +499,36 @@ variable "waf_managed_rules" {
       {
         match_variable          = "RequestCookieNames"
         selector                = "__Secure-next-auth.session-token"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Secure-next-auth.session-token"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+        }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Host-uniqueid.useragent"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
+      },
+      {
+        match_variable          = "RequestCookieNames"
+        selector                = "__Host-uniqueid.useragent"
         selector_match_operator = "EqualsAny"
         excluded_rule_set = {
           type            = "OWASP"
