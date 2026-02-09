@@ -18,20 +18,20 @@ locals {
   #   M+1              = exempted_uris
   #   M+2              = allowed_hosts
 
-  _allowed_regions_count              = var.waf_custom_rules_allowed_regions != null ? 1 : 0
-  _allowed_ips_sensitive_paths_count  = length(var.waf_custom_rules_allowed_ips_sensitive_paths)
-  _blocked_headers_count              = length(var.waf_custom_rules_blocked_headers)
+  _allowed_regions_count             = var.waf_custom_rules_allowed_regions != null ? 1 : 0
+  _allowed_ips_sensitive_paths_count = length(var.waf_custom_rules_allowed_ips_sensitive_paths)
+  _blocked_headers_count             = length(var.waf_custom_rules_blocked_headers)
 
   waf_priority_allowed_https_challenges          = 1
-  waf_priority_allowed_monitoring_agents          = 2
-  waf_priority_allowed_regions                    = 3
-  waf_priority_allowed_ips_sensitive_paths_start  = 3 + local._allowed_regions_count
-  waf_priority_allowed_ips_sensitive_paths_end    = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count
-  waf_priority_allowed_ips                        = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count
-  waf_priority_blocked_headers_start              = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1
-  waf_priority_blocked_headers_end                = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count
-  waf_priority_exempted_uris                      = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count
-  waf_priority_allowed_hosts                      = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count + 1
+  waf_priority_allowed_monitoring_agents         = 2
+  waf_priority_allowed_regions                   = 3
+  waf_priority_allowed_ips_sensitive_paths_start = 3 + local._allowed_regions_count
+  waf_priority_allowed_ips_sensitive_paths_end   = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count
+  waf_priority_allowed_ips                       = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count
+  waf_priority_blocked_headers_start             = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1
+  waf_priority_blocked_headers_end               = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count
+  waf_priority_exempted_uris                     = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count
+  waf_priority_allowed_hosts                     = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count + 1
 }
 
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
