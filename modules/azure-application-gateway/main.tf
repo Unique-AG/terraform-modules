@@ -14,20 +14,20 @@ locals {
   #   3                = allowed_regions (geomatch, skipped if empty)
   #   3+R..N           = allowed_ips_sensitive_paths (R = allowed_regions count 0|1)
   #   N+1              = allowed_ips
-  #   N+2..M           = blocked_headers (M = N+1 + count)
-  #   M+1              = exempted_uris
-  #   M+2              = allowed_hosts
+  #   N+2              = blocked_headers (single rule with multiple match_variables)
+  #   N+3              = exempted_uris
+  #   N+4              = allowed_hosts
 
   _allowed_regions_count             = var.waf_custom_rules_allowed_regions != null ? 1 : 0
   _allowed_ips_sensitive_paths_count = length(var.waf_custom_rules_allowed_ips_sensitive_paths)
-  _blocked_headers_count             = length(var.waf_custom_rules_blocked_headers)
+  _blocked_headers_count             = length(var.waf_custom_rules_blocked_headers) > 0 ? 1 : 0
 
   waf_priority_allowed_https_challenges          = 1
   waf_priority_allowed_monitoring_agents         = 2
   waf_priority_allowed_regions                   = 3
   waf_priority_allowed_ips_sensitive_paths_start = 3 + local._allowed_regions_count
   waf_priority_allowed_ips                       = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count
-  waf_priority_blocked_headers_start             = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1
+  waf_priority_blocked_headers                   = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1
   waf_priority_exempted_uris                     = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count
   waf_priority_allowed_hosts                     = 3 + local._allowed_regions_count + local._allowed_ips_sensitive_paths_count + 1 + local._blocked_headers_count + 1
 }
@@ -191,21 +191,23 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   # Block requests containing specified headers to prevent header-based probing/misrouting.
   # This rule must be evaluated BEFORE exempted URIs to prevent bypass via Allow rule short-circuiting.
   dynamic "custom_rules" {
-    for_each = { for idx, header in var.waf_custom_rules_blocked_headers : idx => header }
+    for_each = length(var.waf_custom_rules_blocked_headers) > 0 ? [1] : []
     content {
-      name      = "BlockHeader${replace(title(replace(lower(custom_rules.value), "-", "")), " ", "")}"
-      priority  = local.waf_priority_blocked_headers_start + tonumber(custom_rules.key)
+      name      = "BlockSpecifiedHeaders"
+      priority  = local.waf_priority_blocked_headers
       rule_type = "MatchRule"
       action    = "Block"
 
       match_conditions {
-        match_variables {
-          variable_name = "RequestHeaders"
-          selector      = lower(custom_rules.value)
+        dynamic "match_variables" {
+          for_each = var.waf_custom_rules_blocked_headers
+          content {
+            variable_name = "RequestHeaders"
+            selector      = lower(match_variables.value)
+          }
         }
         operator           = "Any"
         negation_condition = false
-        transforms         = ["Lowercase"]
       }
     }
   }
