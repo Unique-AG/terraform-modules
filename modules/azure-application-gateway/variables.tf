@@ -233,19 +233,47 @@ variable "waf_policy_settings" {
   }
 }
 
-variable "waf_custom_rules_ip_allow_list" {
+variable "waf_custom_rules_allowed_ips" {
   description = "List of IP addresses or ranges which are allowed to pass the WAF. An empty list means all IPs are allowed."
   type        = list(string)
   default     = []
 }
 
-variable "waf_custom_rules_allow_https_challenges" {
+variable "waf_custom_rules_allowed_https_challenges" {
   description = "Allow HTTP-01 challenges e.g.from Let's Encrypt."
   type        = bool
   default     = true
 }
 
-variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
+variable "waf_custom_rules_allowed_regions" {
+  description = "GeoMatch filtering by country/region. Set to null to disable. When set, traffic not from the listed region_codes is blocked. unknown_included (default: false) adds ZZ (unmapped IPs) to the allow list — enable only if false positives from unmapped IPs are a concern. Reference: https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/geomatch-custom-rules"
+  type = object({
+    region_codes     = list(string)
+    unknown_included = optional(bool, false)
+  })
+  default = null
+
+  validation {
+    condition     = var.waf_custom_rules_allowed_regions == null || length(var.waf_custom_rules_allowed_regions.region_codes) > 0
+    error_message = "region_codes must be non-empty when waf_custom_rules_allowed_regions is set. Use null to disable geomatch filtering."
+  }
+
+  validation {
+    condition = var.waf_custom_rules_allowed_regions == null || alltrue([
+      for code in var.waf_custom_rules_allowed_regions.region_codes :
+      can(regex("^[A-Z]{2}$", code))
+    ])
+    error_message = "Each region code must be a valid ISO 3166-1 alpha-2 code (two uppercase letters), e.g. CH, DE, US."
+  }
+}
+
+variable "waf_custom_rules_blocked_headers" {
+  description = "List of header names to block (case-insensitive matching). Requests containing any of these headers will be blocked to prevent header-based probing/misrouting. Set to [] to disable."
+  type        = list(string)
+  default     = ["x-service-id"]
+}
+
+variable "waf_custom_rules_allowed_monitoring_agents" {
   description = "Allow monitoring agents to probe services."
   type = object({
     request_header_user_agent = string
@@ -253,11 +281,11 @@ variable "waf_custom_rules_allow_monitoring_agents_to_probe_services" {
   })
   default = {
     request_header_user_agent = "Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-    probe_path_equals         = ["/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser", "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"]
+    probe_path_equals         = ["/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser", "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health", "/uptime"]
   }
 }
 
-variable "waf_custom_rules_allow_hosts" {
+variable "waf_custom_rules_allowed_hosts" {
   description = "Allow monitoring agents to probe services."
   type = object({
     request_header_host = string
@@ -269,23 +297,20 @@ variable "waf_custom_rules_allow_hosts" {
   }
 }
 
-variable "waf_custom_rules_unique_access_to_paths_ip_restricted" {
+variable "waf_custom_rules_allowed_ips_sensitive_paths" {
   description = "Only allow certain IP matches to access selected paths. Passing no IP means all requests get blocked for these paths. Pass 0.0.0.0/0 to allow all IPs for the routes. The default blocks touchy routes as we ship secure by default."
   type = map(object({
     ip_allow_list    = list(string)
     path_begin_withs = list(string)
   }))
   default = {}
-  validation {
-    condition     = length(keys(var.waf_custom_rules_unique_access_to_paths_ip_restricted)) < 13 # this is limited due to the rule priority, can be increased if needed but then the rule priority must be adjusted
-    error_message = "The number of unique access to paths IP restricted rules must be less than 13 or else the priorities overlap. If you need more, open an issue on GitHub."
-  }
 }
 
-variable "waf_custom_rules_exempted_request_path_begin_withs" {
-  # Unblock Ingestion Upload if the max request body size is greater than 2000KB
-  # Note that this is now a green card to allowlist any URL.
-  # This rules priority is 5, so it will be applied after all other rules (incl. e.g. IP-based rules).
+variable "waf_custom_rules_exempted_uris" {
+  # Unblock Ingestion Upload if the max request body size is greater than 2000KB.
+  # This rule allows requests to bypass managed rule body size checks.
+  # The rule is evaluated AFTER block rules (IP restrictions, blocked headers) to prevent security bypasses.
+  # When an Allow rule matches, subsequent WAF rules are not evaluated.
 
   description = "The request URIs that are exempted from further checks. This is a workaround to allowlist certain URLs to bypass further blocking checks (in this case the body size)."
   type        = list(string)
