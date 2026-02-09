@@ -254,6 +254,11 @@ variable "waf_custom_rules_allowed_regions" {
   default = null
 
   validation {
+    condition     = var.waf_custom_rules_allowed_regions == null || length(var.waf_custom_rules_allowed_regions.region_codes) > 0
+    error_message = "region_codes must be non-empty when waf_custom_rules_allowed_regions is set. Use null to disable geomatch filtering."
+  }
+
+  validation {
     condition = var.waf_custom_rules_allowed_regions == null || alltrue([
       for code in var.waf_custom_rules_allowed_regions.region_codes :
       can(regex("^[A-Z]{2}$", code))
