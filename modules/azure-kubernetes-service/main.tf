@@ -218,6 +218,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
   pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
@@ -245,6 +246,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
   node_taints                 = distinct(concat(["kubernetes.azure.com/scalesetpriority=spot:NoSchedule"], each.value.node_taints))
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
   pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   priority                    = "Spot"
   spot_max_price              = each.value.spot_max_price
