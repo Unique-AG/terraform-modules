@@ -241,7 +241,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
   min_count                   = each.value.min_count
   mode                        = each.value.mode
   name                        = each.key
-  node_labels                 = merge({ "kubernetes.azure.com/scalesetpriority" = "spot" }, each.value.node_labels)
+  node_labels                 = merge(each.value.node_labels, { "kubernetes.azure.com/scalesetpriority" = "spot" })
   node_taints                 = distinct(concat(["kubernetes.azure.com/scalesetpriority=spot:NoSchedule"], each.value.node_taints))
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
