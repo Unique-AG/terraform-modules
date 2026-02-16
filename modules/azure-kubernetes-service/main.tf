@@ -218,7 +218,38 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
   pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
+  tags                        = var.tags
+  temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
+  vm_size                     = each.value.vm_size
+  vnet_subnet_id              = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
+  zones                       = each.value.zones
+
+  upgrade_settings {
+    max_surge = each.value.upgrade_settings.max_surge
+  }
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
+  for_each              = var.spot_node_pool_settings
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
+
+  auto_scaling_enabled        = each.value.auto_scaling_enabled
+  eviction_policy             = each.value.eviction_policy
+  max_count                   = each.value.max_count
+  max_pods                    = try(each.value.max_pods, null)
+  min_count                   = each.value.min_count
+  mode                        = each.value.mode
+  name                        = each.key
+  node_labels                 = merge(each.value.node_labels, { "kubernetes.azure.com/scalesetpriority" = "spot" })
+  node_taints                 = distinct(concat(["kubernetes.azure.com/scalesetpriority=spot:NoSchedule"], each.value.node_taints))
+  os_disk_size_gb             = each.value.os_disk_size_gb
+  os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
+  pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
+  priority                    = "Spot"
+  spot_max_price              = each.value.spot_max_price
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
   vm_size                     = each.value.vm_size

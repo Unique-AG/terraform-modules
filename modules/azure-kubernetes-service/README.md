@@ -46,160 +46,45 @@ Remember to update the following variables in the example:
 - `cluster_name`
 - `node_rg_name`
 
+## Node Pools
+
+Regular and spot node pools are managed through separate variables (`node_pool_settings` and `spot_node_pool_settings`) and separate Terraform resources. This split exists because `priority` is a `ForceNew` attribute — changing a pool between `Regular` and `Spot` destroys and recreates it. Keeping them in distinct resource blocks prevents accidental destruction of regular pools and makes the spot-specific attributes (`eviction_policy`, `spot_max_price`) explicit rather than conditional.
+
+The spot resource automatically injects the required `kubernetes.azure.com/scalesetpriority=spot` label and `NoSchedule` taint. See the `spot_node_pool_settings` variable description for scheduling examples and eviction policy details.
+
 ## Networking
 
-The AKS module supports various networking configurations to meet different deployment requirements. Here are the key networking features:
-
-### Network Profile
-The cluster supports configurable network profiles through the `network_profile` variable:
+See the `network_profile` variable description for configuration details, validation rules, and outbound traffic options.
 
 ```hcl
 network_profile = {
-  network_plugin = "azure"  # or "kubenet"
-  network_policy = "azure"  # or "calico"
+  network_plugin = "azure"
+  network_policy = "azure"
   service_cidr   = "172.20.0.0/16"
   dns_service_ip = "172.20.0.10"
-  outbound_type  = "loadBalancer"  # or "userDefinedRouting"
+  outbound_type  = "loadBalancer"
 
-  # Outbound configuration (mutually exclusive options)
-  managed_outbound_ip_count = 1  # Option 1: Number of managed outbound IPs
-  outbound_ip_address_ids   = [] # Option 2: List of existing public IP IDs
-  outbound_ip_prefix_ids    = [] # Option 3: List of existing public IP prefix IDs
+  # Outbound options (mutually exclusive)
+  managed_outbound_ip_count = 1
+  # outbound_ip_address_ids = ["/subscriptions/.../publicIPs/ip1"]
+  # outbound_ip_prefix_ids  = ["/subscriptions/.../publicIPPrefixes/prefix1"]
 }
 ```
-
-#### Network Profile Validation Rules:
-1. When `outbound_type` is set to `"loadBalancer"`, you must specify exactly one of:
-   - `managed_outbound_ip_count`: Number of managed outbound IPs to create
-   - `outbound_ip_address_ids`: List of existing public IP IDs to use
-   - `outbound_ip_prefix_ids`: List of existing public IP prefix IDs to use
-
-2. These outbound configuration options are mutually exclusive - you can only specify one of them.
-
-### Subnet Configuration
-The module supports separate subnets for nodes and pods:
-
-- **Default Node Pool**:
-  - Node subnet: `default_subnet_nodes_id`
-  - Pod subnet: `default_subnet_pods_id` (optional,defaults to node subnet for backwards compatibility)
-
-- **Additional Node Pools**:
-  - Each node pool can have its own subnet configuration through `node_pool_settings`
-  - Supports separate subnets for nodes and pods per pool
-  - Falls back to default subnets if not specified
-
-If desired to merge node and pod subnets (not recommended for production but maybe for test and very small clusters), set `segregated_node_and_pod_subnets_enabled` to `false`, defaults to `true`.
-
-### Outbound Traffic
-The cluster supports two outbound traffic configurations:
-
-1. **Load Balancer (Default)**:
-   - Uses Azure Load Balancer for outbound traffic
-   - Requires one of the following configurations:
-     ```hcl
-     network_profile = {
-       outbound_type = "loadBalancer"
-       managed_outbound_ip_count = 1  # Option 1: Create new managed IPs
-     }
-     # OR
-     network_profile = {
-       outbound_type = "loadBalancer"
-       outbound_ip_address_ids = ["/subscriptions/.../publicIPs/ip1"]  # Option 2: Use existing IPs
-     }
-     # OR
-     network_profile = {
-       outbound_type = "loadBalancer"
-       outbound_ip_prefix_ids = ["/subscriptions/.../publicIPPrefixes/prefix1"]  # Option 3: Use existing prefixes
-     }
-     ```
-
-2. **User Defined Routing**:
-   - Allows custom routing configuration
-   - Useful for scenarios requiring specific routing rules
-   - Configuration:
-     ```hcl
-     network_profile = {
-       outbound_type = "userDefinedRouting"
-     }
-     ```
-
-### Private Cluster
-The cluster can be deployed as a private cluster with the following options:
-
-- `private_cluster_enabled`: Enable/disable private cluster
-- `private_dns_zone_id`: Specify private DNS zone for the cluster
-- `private_cluster_public_fqdn_enabled`: Control public FQDN visibility
-
-### API Server Access
-Control access to the Kubernetes API server:
-
-- `api_server_authorized_ip_ranges`: Specify allowed IP ranges
-- When using private cluster, this is required for management access
-
-### Network Security
-The module includes several security features:
-
-- Azure Policy integration (`azure_policy_enabled`)
-- Microsoft Defender integration
-- Network policy support (Azure or Calico)
-- Private cluster deployment option
-
-### Best Practices
-1. Use separate subnets for nodes and pods when possible
-2. Enable network policies for enhanced security
-3. Consider private cluster deployment for production workloads
-4. Use user-defined routing when specific routing rules are required
-5. Configure appropriate API server access controls
-6. When using Load Balancer outbound type, carefully choose between managed IPs and existing IPs/prefixes based on your requirements
 
 ## Alerts and Monitoring
 
-The module supports both activity log alerts and metric alerts through a unified `alerts` variable. The alert type is determined by which criteria block is specified (`activity_log_criteria` or `metric_criteria`). By default, the module includes sensible alert defaults that can be customized or disabled.
-
-### Default Alerts
-
-The module includes one default alert:
-- **aks_agent_pool_write_error**: Activity log alert for agent pool write failures, most commonly thrown when the cluster fails an automatic upgrade
-
-### Simple Usage
-
-The easiest way to use alerts is to just specify action groups - the default alerts are used automatically:
+The default `alerts` variable includes an activity log alert for agent pool write failures. Provide `default_action_group_ids` to receive notifications. Set `alerts = {}` to disable all defaults. See the `alerts` variable description for the full schema.
 
 ```hcl
 module "aks" {
   source = "./modules/azure-kubernetes-service"
-  
-  # Just specify action groups - default alerts are used automatically
+
   default_action_group_ids = [azurerm_monitor_action_group.example.id]
-  
-  # ... other configuration ...
-}
-```
 
-### Custom Alerts
-
-You can add custom alerts or override defaults by specifying the `alerts` variable:
-
-```hcl
-module "aks" {
-  source = "./modules/azure-kubernetes-service"
-  
-  # Action groups apply to all alerts without explicit actions
-  default_action_group_ids = [azurerm_monitor_action_group.example.id]
-  
   alerts = {
-    # Keep default alert
-    aks_agent_pool_write_error = {
-      name        = "AKS Agent Pool Write Error"
-      activity_log_criteria = {
-        operation_name = "Microsoft.ContainerService/managedClusters/agentpools/write"
-        category       = "Administrative"
-      }
-    }
-    # Add custom metric alert
     high_node_cpu = {
-      name        = "High Node CPU Usage"
-      severity    = 2
+      name     = "High Node CPU Usage"
+      severity = 2
       metric_criteria = {
         metric_name = "node_cpu_usage_percentage"
         aggregation = "Average"
@@ -208,30 +93,10 @@ module "aks" {
       }
     }
   }
-  
-  # ... other configuration ...
 }
 ```
 
-### Disabling Alerts
-
-To disable all default alerts, set the variable to an empty map:
-
-```hcl
-module "aks" {
-  source = "./modules/azure-kubernetes-service"
-  
-  alerts = {}
-  
-  # ... other configuration ...
-}
-```
-
-### Prometheus Alerts
-
-The module also supports Prometheus-based alerts when `azure_prometheus_grafana_monitor` is enabled. See the [prometheus-alerts example](./examples/prometheus-alerts/) for more details.
-
-For complete examples, see [activity-log-alerts example](./examples/activity-log-alerts/).
+Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is enabled. See the [prometheus-alerts example](./examples/prometheus-alerts/) and [activity-log-alerts example](./examples/activity-log-alerts/).
 
 # Module
 
@@ -260,6 +125,7 @@ No modules.
 | [azurerm_dashboard_grafana.grafana](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dashboard_grafana) | resource |
 | [azurerm_kubernetes_cluster.cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
+| [azurerm_kubernetes_cluster_node_pool.spot_node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_log_analytics_workspace_table.basic_log_table](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace_table) | resource |
 | [azurerm_monitor_action_group.aks_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
 | [azurerm_monitor_activity_log_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_activity_log_alert) | resource |
@@ -313,7 +179,7 @@ No modules.
 | <a name="input_maintenance_window_start"></a> [maintenance\_window\_start](#input\_maintenance\_window\_start) | The start hour of the maintenance window. | `number` | `16` | no |
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
 | <a name="input_monitoring_account_name"></a> [monitoring\_account\_name](#input\_monitoring\_account\_name) | The name of the monitoring account | `string` | `"MonitoringAccount1"` | no |
-| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster. Note: managed\_outbound\_ip\_count, outbound\_ip\_address\_ids, and outbound\_ip\_prefix\_ids are mutually exclusive. | <pre>object({<br/>    network_data_plane          = optional(string)<br/>    network_plugin              = optional(string, "azure")<br/>    network_plugin_mode         = optional(string, null)<br/>    network_policy              = optional(string)<br/>    service_cidr                = optional(string, "172.20.0.0/16")<br/>    dns_service_ip              = optional(string, "172.20.0.10")<br/>    outbound_type               = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count   = optional(number, null)<br/>    outbound_ip_address_ids     = optional(list(string), null)<br/>    outbound_ip_prefix_ids      = optional(list(string), null)<br/>    idle_timeout_in_minutes     = optional(number, 30)<br/>    advanced_networking_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
+| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster.<br/><br/>outbound\_type:<br/>  - "loadBalancer" (default) - Requires exactly one of managed\_outbound\_ip\_count,<br/>    outbound\_ip\_address\_ids, or outbound\_ip\_prefix\_ids. These are mutually exclusive.<br/>  - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.<br/><br/>Cilium requirements:<br/>  - network\_data\_plane = "cilium" requires network\_plugin = "azure"<br/>  - network\_policy = "cilium" requires network\_data\_plane = "cilium"<br/>  - advanced\_networking\_enabled requires network\_data\_plane = "cilium" | <pre>object({<br/>    network_data_plane          = optional(string)<br/>    network_plugin              = optional(string, "azure")<br/>    network_plugin_mode         = optional(string, null)<br/>    network_policy              = optional(string)<br/>    service_cidr                = optional(string, "172.20.0.0/16")<br/>    dns_service_ip              = optional(string, "172.20.0.10")<br/>    outbound_type               = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count   = optional(number, null)<br/>    outbound_ip_address_ids     = optional(list(string), null)<br/>    outbound_ip_prefix_ids      = optional(list(string), null)<br/>    idle_timeout_in_minutes     = optional(number, 30)<br/>    advanced_networking_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
 | <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |
 | <a name="input_node_rg_name"></a> [node\_rg\_name](#input\_node\_rg\_name) | The name of the node resource group for the AKS cluster. | `string` | n/a | yes |
@@ -333,6 +199,7 @@ No modules.
 | <a name="input_segregated_node_and_pod_subnets_enabled"></a> [segregated\_node\_and\_pod\_subnets\_enabled](#input\_segregated\_node\_and\_pod\_subnets\_enabled) | Some legacy or smaller clusters might not want to split nodes and pods into different subnets. Falsifying this will force the module to only use 1 subnet for both nodes and pods. It is not recommended for production use cases. | `bool` | `true` | no |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The service CIDR for the Kubernetes Cluster. | `string` | `"172.20.0.0/16"` | no |
 | <a name="input_sku_tier"></a> [sku\_tier](#input\_sku\_tier) | The SKU tier for the Kubernetes Cluster. | `string` | `"Standard"` | no |
+| <a name="input_spot_node_pool_settings"></a> [spot\_node\_pool\_settings](#input\_spot\_node\_pool\_settings) | Settings for spot instance node pools. Spot VMs offer unused Azure capacity at<br/>significant discounts but can be evicted at any time when Azure needs the capacity back.<br/><br/>The following label and taint are automatically added to every spot pool:<br/>  - Label: kubernetes.azure.com/scalesetpriority=spot<br/>  - Taint: kubernetes.azure.com/scalesetpriority=spot:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on spot nodes. To prefer spot<br/>but fall back to regular nodes, use a preferredDuringScheduling node affinity:<br/><br/>  affinity:<br/>    nodeAffinity:<br/>      preferredDuringSchedulingIgnoredDuringExecution:<br/>        - weight: 100<br/>          preference:<br/>            matchExpressions:<br/>              - key: kubernetes.azure.com/scalesetpriority<br/>                operator: In<br/>                values:<br/>                  - spot<br/>  tolerations:<br/>    - key: kubernetes.azure.com/scalesetpriority<br/>      operator: Equal<br/>      value: spot<br/>      effect: NoSchedule<br/><br/>eviction\_policy:<br/>  - "Delete"      (default) - VM and its OS disk are deleted on eviction.<br/>                    Nodes scale back via the autoscaler when capacity returns.<br/>  - "Deallocate"  - VM is stopped and deallocated, keeping the OS disk.<br/>                    Allows faster restart but incurs storage costs for the disk.<br/><br/>spot\_max\_price:<br/>  - -1            (default) - Caps at the current on-demand price for the VM SKU.<br/>                    The VM is only evicted for capacity reasons, never for price.<br/>  - positive value - Hard USD-per-hour ceiling (up to 5 decimal places).<br/>                    The VM is evicted when the spot price exceeds this value.<br/><br/>Spot pools can only run in "User" mode (not "System") and should not host<br/>workloads that cannot tolerate interruptions (e.g. stateful services without<br/>checkpointing, single-replica controllers). | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = optional(map(string), {})<br/>    node_taints                 = optional(list(string), [])<br/>    auto_scaling_enabled        = bool<br/>    mode                        = optional(string, "User")<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    eviction_policy             = optional(string, "Delete")<br/>    spot_max_price              = optional(number, -1)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to resources. | `map(string)` | `{}` | no |
 | <a name="input_tenant_id"></a> [tenant\_id](#input\_tenant\_id) | The tenant ID for the Azure subscription. | `string` | n/a | yes |
 | <a name="input_workload_identity_enabled"></a> [workload\_identity\_enabled](#input\_workload\_identity\_enabled) | Specifies whether workload identity is enabled for the Kubernetes Cluster. | `bool` | `true` | no |

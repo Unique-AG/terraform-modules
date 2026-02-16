@@ -290,6 +290,83 @@ variable "node_pool_settings" {
   }
 }
 
+variable "spot_node_pool_settings" {
+  description = <<-EOT
+    Settings for spot instance node pools. Spot VMs offer unused Azure capacity at
+    significant discounts but can be evicted at any time when Azure needs the capacity back.
+
+    The following label and taint are automatically added to every spot pool:
+      - Label: kubernetes.azure.com/scalesetpriority=spot
+      - Taint: kubernetes.azure.com/scalesetpriority=spot:NoSchedule
+
+    Workloads must tolerate the taint to be scheduled on spot nodes. To prefer spot
+    but fall back to regular nodes, use a preferredDuringScheduling node affinity:
+
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.azure.com/scalesetpriority
+                    operator: In
+                    values:
+                      - spot
+      tolerations:
+        - key: kubernetes.azure.com/scalesetpriority
+          operator: Equal
+          value: spot
+          effect: NoSchedule
+
+    eviction_policy:
+      - "Delete"      (default) - VM and its OS disk are deleted on eviction.
+                        Nodes scale back via the autoscaler when capacity returns.
+      - "Deallocate"  - VM is stopped and deallocated, keeping the OS disk.
+                        Allows faster restart but incurs storage costs for the disk.
+
+    spot_max_price:
+      - -1            (default) - Caps at the current on-demand price for the VM SKU.
+                        The VM is only evicted for capacity reasons, never for price.
+      - positive value - Hard USD-per-hour ceiling (up to 5 decimal places).
+                        The VM is evicted when the spot price exceeds this value.
+
+    Spot pools can only run in "User" mode (not "System") and should not host
+    workloads that cannot tolerate interruptions (e.g. stateful services without
+    checkpointing, single-replica controllers).
+  EOT
+  type = map(object({
+    vm_size                     = string
+    min_count                   = optional(number)
+    max_count                   = optional(number)
+    max_pods                    = optional(number)
+    os_disk_size_gb             = number
+    os_sku                      = optional(string, "AzureLinux")
+    os_type                     = optional(string, "Linux")
+    node_labels                 = optional(map(string), {})
+    node_taints                 = optional(list(string), [])
+    auto_scaling_enabled        = bool
+    mode                        = optional(string, "User")
+    zones                       = list(string)
+    subnet_nodes_id             = optional(string, null)
+    subnet_pods_id              = optional(string, null)
+    temporary_name_for_rotation = optional(string, null)
+    eviction_policy             = optional(string, "Delete")
+    spot_max_price              = optional(number, -1)
+    upgrade_settings = object({
+      max_surge = string
+    })
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for k, v in var.spot_node_pool_settings :
+      contains(["Deallocate", "Delete"], v.eviction_policy)
+    ])
+    error_message = "eviction_policy must be either 'Deallocate' or 'Delete'."
+  }
+}
+
 variable "monitoring_account_name" {
   description = "The name of the monitoring account"
   default     = "MonitoringAccount1"
@@ -387,7 +464,19 @@ variable "admin_group_object_ids" {
 //If network_profile is not defined this might lead to unexpected aks behavior.
 
 variable "network_profile" {
-  description = "Network profile configuration for the AKS cluster. Note: managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids are mutually exclusive."
+  description = <<-EOT
+    Network profile configuration for the AKS cluster.
+
+    outbound_type:
+      - "loadBalancer" (default) - Requires exactly one of managed_outbound_ip_count,
+        outbound_ip_address_ids, or outbound_ip_prefix_ids. These are mutually exclusive.
+      - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.
+
+    Cilium requirements:
+      - network_data_plane = "cilium" requires network_plugin = "azure"
+      - network_policy = "cilium" requires network_data_plane = "cilium"
+      - advanced_networking_enabled requires network_data_plane = "cilium"
+  EOT
   type = object({
     network_data_plane          = optional(string)
     network_plugin              = optional(string, "azure")

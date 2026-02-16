@@ -1,9 +1,13 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 5.2.0
+version: 5.3.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
+  - kind: added
+    description: "Support for spot node pools 💲"
   - kind: changed
-    description: "publish module with both tag separators – dash and @"
+    description: "Updated readme for brevity, skimmability, consistency and conciseness."
+  - kind: removed
+    description: "Paragraphs repeating variable definitions have been removed."
