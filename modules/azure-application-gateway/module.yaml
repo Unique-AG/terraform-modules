@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 5.0.1
+version: 5.1.0
 compatibility:
   unique.ai: ~> 2025.32
 changes:
-  - kind: fixed
-    description: "Custom Header Blocking improved to not waste priority slots."
+  - kind: added
+    description: "X-Forwarded-For header is now deleted from the request headers."

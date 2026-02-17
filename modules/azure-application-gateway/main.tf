@@ -440,10 +440,19 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   # REWRITE RULE SET - Rewrites requests and responses in flight
-  # Modifies response headers to add security headers and remove sensitive information
+  # Modifies request and response headers to add security headers and remove sensitive information
   rewrite_rule_set {
     name = "security-headers"
 
+    rewrite_rule {
+      name          = "delete-x-forwarded-for-header"
+      rule_sequence = 50
+
+      request_header_configuration {
+        header_name  = "X-Forwarded-For"
+        header_value = ""
+      }
+    }
     # Adds HSTS header for security
     rewrite_rule {
       name          = "set-hsts-header"
