@@ -22,7 +22,7 @@ misconfigurations:
   - id: AVD-AZU-0017 # https://avd.aquasec.com/misconfig/avd-azu-0017 - Ensure Secret Expiry
     statement: Rotating these values entails complexity that users must consider and handle. Clients enforcing this should use Azure Policy.
     paths:
-      - modules/azure-bing-search/secrets.tf
+      - modules/azure-bing-grounded-search/secrets.tf
       - modules/azure-document-intelligence/secrets.tf
       - modules/azure-entra-app-registration/secrets.tf
   - id: AVD-AZU-0040 # https://avd.aquasec.com/misconfig/avd-azu-0040 - Logging

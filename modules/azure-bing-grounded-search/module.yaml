@@ -1,0 +1,9 @@
+name: azure-bing-grounded-search
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-grounded-search
+version: 1.0.0
+compatibility:
+  unique.ai: ~> 2026.10
+changes:
+  - kind: added
+    description: "Initial release of Azure Bing Grounded Search module"
