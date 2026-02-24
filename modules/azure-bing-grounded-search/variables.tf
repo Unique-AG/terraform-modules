@@ -77,15 +77,15 @@ variable "secret_names" {
     project_endpoint = optional(object({
       name            = optional(string, "azure-ai-project-endpoint")
       expiration_date = optional(string, "2099-12-31T23:59:59Z")
-    }))
+    }), {})
     bing_connection_string = optional(object({
       name            = optional(string, "azure-ai-bing-resource-connection-string")
       expiration_date = optional(string, "2099-12-31T23:59:59Z")
-    }))
+    }), {})
     bing_agent_model = optional(object({
       name            = optional(string, "azure-ai-bing-agent-model")
       expiration_date = optional(string, "2099-12-31T23:59:59Z")
-    }))
+    }), {})
   })
   default = {
     project_endpoint       = {}
