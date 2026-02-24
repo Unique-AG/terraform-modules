@@ -1,4 +1,4 @@
-// Mimics https://github.com/azure-ai-foundry/foundry-samples/blob/main/samples/microsoft/infrastructure-setup/45-basic-agent-bing/modules/add-bing-search-tool.bicep as Terraform module.
+// Mimics https://github.com/azure-ai-foundry/foundry-samples/blob/main/infrastructure/infrastructure-setup-bicep/45-basic-agent-bing/modules/add-bing-search-tool.bicep as Terraform module.
 
 resource "azurerm_cognitive_account" "foundry_account" {
   custom_subdomain_name         = var.foundry_account.custom_subdomain_name
@@ -27,13 +27,17 @@ resource "azurerm_cognitive_account" "foundry_account" {
 }
 
 resource "azapi_resource" "foundry_project" {
-  for_each  = var.foundry_projects
-  location  = var.foundry_account.location
-  name      = each.key
-  parent_id = azurerm_cognitive_account.foundry_account.id
-  type      = "Microsoft.CognitiveServices/accounts/projects@2025-04-01-preview"
+  for_each                  = var.foundry_projects
+  location                  = var.foundry_account.location
+  name                      = each.key
+  parent_id                 = azurerm_cognitive_account.foundry_account.id
+  type                      = "Microsoft.CognitiveServices/accounts/projects@2025-06-01"
+  schema_validation_enabled = false
 
   body = {
+    sku = {
+      name = "S0"
+    }
     properties = {
       description = each.value.description
       displayName = each.value.display_name
@@ -109,10 +113,11 @@ resource "azapi_resource_action" "bing_search_keys" {
 }
 
 resource "azapi_resource" "bing_search_connection" {
-  for_each  = var.foundry_projects
-  name      = "${each.key}-bsc"
-  parent_id = azapi_resource.foundry_project[each.key].id
-  type      = "Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview"
+  for_each                  = var.foundry_projects
+  name                      = "${each.key}-bsc"
+  parent_id                 = azapi_resource.foundry_project[each.key].id
+  type                      = "Microsoft.CognitiveServices/accounts/projects/connections@2025-06-01"
+  schema_validation_enabled = false
 
   body = {
     properties = {
