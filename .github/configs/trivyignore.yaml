@@ -3,18 +3,21 @@ misconfigurations:
   - id: AVD-AZU-0013 # https://avd.aquasec.com/misconfig/avd-azu-0013 - Specify Network Acl
     statement: Example value
     paths:
+      - modules/azure-bing-grounded-search/examples/standard/main.tf
       - modules/azure-storage-account/examples/audit_logs/main.tf
       - modules/azure-storage-account/examples/observability_logs/main.tf
       - modules/azure-storage-account/examples/secure_by_default/main.tf
   - id: AVD-AZU-0014 # https://avd.aquasec.com/misconfig/avd-azu-0014 - Ensure Key Expiry
     statement: Example value
     paths:
+      - modules/azure-bing-grounded-search/examples/standard/main.tf
       - modules/azure-storage-account/examples/audit_logs/main.tf
       - modules/azure-storage-account/examples/observability_logs/main.tf
       - modules/azure-storage-account/examples/secure_by_default/main.tf
   - id: AVD-AZU-0016 # https://avd.aquasec.com/misconfig/avd-azu-0016 - No Purge
     statement: Example value
     paths:
+      - modules/azure-bing-grounded-search/examples/standard/main.tf
       - modules/azure-storage-account/examples/audit_logs/main.tf
       - modules/azure-storage-account/examples/observability_logs/main.tf
       - modules/azure-storage-account/examples/secure_by_default/main.tf

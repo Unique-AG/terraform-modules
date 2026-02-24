@@ -14,7 +14,7 @@ resource "azurerm_cognitive_account" "foundry_account" {
   identity { type = "SystemAssigned" }
 
   network_acls {
-    default_action = "Deny"
+    default_action = var.private_endpoint != null ? "Deny" : "Allow"
     bypass         = "AzureServices"
     ip_rules       = var.foundry_account.ip_rules_allowed
     dynamic "virtual_network_rules" {
