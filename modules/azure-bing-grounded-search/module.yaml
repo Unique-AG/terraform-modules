@@ -1,9 +1,9 @@
 name: azure-bing-grounded-search
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-grounded-search
-version: 1.0.0
+version: 2.0.0
 compatibility:
   unique.ai: ~> 2026.10
 changes:
-  - kind: added
-    description: "Initial release of Azure Bing Grounded Search module"
+  - kind: breaking
+    description: "network_acls and private_endpoint nested into foundry_account. private_endpoint is now required - pass null to disable. public_network_access_enabled derived from private_endpoint."

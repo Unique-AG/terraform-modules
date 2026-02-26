@@ -1,8 +1,0 @@
-name: azure-bing-search
-sources:
-  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-search
-version: 1.0.0-rc.2
-deprecated: true
-changes:
-  - kind: changed
-    description: "publish module with both tag separators – dash and @"

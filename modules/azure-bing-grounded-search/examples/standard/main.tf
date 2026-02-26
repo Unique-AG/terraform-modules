@@ -43,10 +43,13 @@ module "bing_grounded_search" {
   key_vault_id        = azurerm_key_vault.example.id
 
   foundry_account = {
-    name                               = "fdry-example-001"
-    custom_subdomain_name              = "fdry-example-001"
-    location                           = azurerm_resource_group.example.location
-    virtual_network_subnet_ids_allowed = [azurerm_subnet.aks_pods.id]
+    name                  = "fdry-example-001"
+    custom_subdomain_name = "fdry-example-001"
+    location              = azurerm_resource_group.example.location
+    private_endpoint      = null
+    network_acls = {
+      virtual_network_subnet_ids = [azurerm_subnet.aks_pods.id]
+    }
   }
 
   foundry_projects = {

@@ -12,14 +12,22 @@ variable "tags" {
 variable "foundry_account" {
   description = "Configuration for the AI Foundry cognitive account"
   type = object({
-    name                               = string
-    custom_subdomain_name              = string
-    location                           = string
-    resource_group_name                = optional(string)
-    sku_name                           = optional(string, "S0")
-    extra_tags                         = optional(map(string), {})
-    virtual_network_subnet_ids_allowed = optional(list(string), [])
-    ip_rules_allowed                   = optional(list(string), [])
+    name                  = string
+    custom_subdomain_name = string
+    location              = string
+    resource_group_name   = optional(string)
+    sku_name              = optional(string, "S0")
+    extra_tags            = optional(map(string), {})
+    network_acls = optional(object({
+      ip_rules                   = optional(list(string), [])
+      virtual_network_subnet_ids = optional(list(string), [])
+    }), {})
+    private_endpoint = object({
+      subnet_id           = string
+      location            = optional(string)
+      resource_group_name = optional(string)
+      private_dns_zone_id = string
+    })
   })
 }
 
@@ -29,17 +37,6 @@ variable "foundry_projects" {
     description  = string
     display_name = string
   }))
-}
-
-variable "private_endpoint" {
-  description = "Configuration for the private endpoint. Set to null to enable public access (e.g., for development)"
-  type = object({
-    subnet_id           = string
-    location            = optional(string)
-    resource_group_name = optional(string)
-    private_dns_zone_id = string
-  })
-  default = null # PE requires a VNET injected machine, we don't want to invest into that right now https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/configure-private-link#securely-connect-to-foundry
 }
 
 variable "deployment" {

@@ -1,3 +1,18 @@
+## Network Access Hierarchy
+
+The `foundry_account` variable exposes two network security knobs inside `foundry_account`.
+Callers must explicitly lower their security posture.
+
+| Layer | Configuration | Default | Effect |
+|-------|---------------|---------|--------|
+| Private endpoint | `private_endpoint = { ... }` | required (`null` to disable) | Routes traffic through a private link and disables public access. `network_acls` become irrelevant. |
+| Network ACLs | `network_acls = { ip_rules = [...], virtual_network_subnet_ids = [...] }` | `{}` (deny all) | Sets `default_action = "Deny"` and allows only the listed IPs/subnets. Only effective when `private_endpoint = null`. |
+| Open access | `network_acls = null` | — | Sets `default_action = "Allow"`. No IP or subnet restrictions. Only valid when `private_endpoint = null`. |
+
+`public_network_access_enabled` is derived: `false` when a private endpoint is configured, `true` otherwise.
+
+To move from the default (deny-all ACLs) to open access, a caller must **explicitly** pass `network_acls = null`.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -39,10 +54,9 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_bing_account"></a> [bing\_account](#input\_bing\_account) | Configuration for the Bing Grounding account | <pre>object({<br/>    name              = string<br/>    resource_group_id = string<br/>    sku_name          = optional(string, "G1")<br/>    extra_tags        = optional(map(string), {})<br/>  })</pre> | n/a | yes |
 | <a name="input_deployment"></a> [deployment](#input\_deployment) | Configuration for the cognitive services deployment | <pre>object({<br/>    name                   = string<br/>    model_name             = string<br/>    model_version          = string<br/>    model_format           = optional(string, "OpenAI")<br/>    sku_name               = optional(string, "Standard")<br/>    sku_capacity           = number<br/>    version_upgrade_option = optional(string, "NoAutoUpgrade")<br/>    rai_policy_name        = optional(string, "Microsoft.Default")<br/>  })</pre> | n/a | yes |
-| <a name="input_foundry_account"></a> [foundry\_account](#input\_foundry\_account) | Configuration for the AI Foundry cognitive account | <pre>object({<br/>    name                               = string<br/>    custom_subdomain_name              = string<br/>    location                           = string<br/>    resource_group_name                = optional(string)<br/>    sku_name                           = optional(string, "S0")<br/>    extra_tags                         = optional(map(string), {})<br/>    virtual_network_subnet_ids_allowed = optional(list(string), [])<br/>    ip_rules_allowed                   = optional(list(string), [])<br/>  })</pre> | n/a | yes |
+| <a name="input_foundry_account"></a> [foundry\_account](#input\_foundry\_account) | Configuration for the AI Foundry cognitive account | <pre>object({<br/>    name                  = string<br/>    custom_subdomain_name = string<br/>    location              = string<br/>    resource_group_name   = optional(string)<br/>    sku_name              = optional(string, "S0")<br/>    extra_tags            = optional(map(string), {})<br/>    network_acls = optional(object({<br/>      ip_rules                   = optional(list(string), [])<br/>      virtual_network_subnet_ids = optional(list(string), [])<br/>    }), {})<br/>    private_endpoint = object({<br/>      subnet_id           = string<br/>      location            = optional(string)<br/>      resource_group_name = optional(string)<br/>      private_dns_zone_id = string<br/>    })<br/>  })</pre> | n/a | yes |
 | <a name="input_foundry_projects"></a> [foundry\_projects](#input\_foundry\_projects) | Configuration for the AI Foundry projects. | <pre>map(object({<br/>    description  = string<br/>    display_name = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where secrets will be stored. | `string` | n/a | yes |
-| <a name="input_private_endpoint"></a> [private\_endpoint](#input\_private\_endpoint) | Configuration for the private endpoint. Set to null to enable public access (e.g., for development) | <pre>object({<br/>    subnet_id           = string<br/>    location            = optional(string)<br/>    resource_group_name = optional(string)<br/>    private_dns_zone_id = string<br/>  })</pre> | `null` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Default resource group name for resources that don't specify their own | `string` | n/a | yes |
 | <a name="input_secret_names"></a> [secret\_names](#input\_secret\_names) | Base names and expiration dates of the Key Vault secrets. Per-project secrets (project\_endpoint, bing\_connection\_string) are suffixed with the project key, e.g. 'azure-ai-project-endpoint-uat-agents-001'. Check the 'secret\_names' output for the actual composed names. | <pre>object({<br/>    project_endpoint = optional(object({<br/>      name            = optional(string, "azure-ai-project-endpoint")<br/>      expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    }), {})<br/>    bing_connection_string = optional(object({<br/>      name            = optional(string, "azure-ai-bing-resource-connection-string")<br/>      expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    }), {})<br/>    bing_agent_model = optional(object({<br/>      name            = optional(string, "azure-ai-bing-agent-model")<br/>      expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>    }), {})<br/>  })</pre> | <pre>{<br/>  "bing_agent_model": {},<br/>  "bing_connection_string": {},<br/>  "project_endpoint": {}<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Default tags to apply to all resources | `map(string)` | `{}` | no |
