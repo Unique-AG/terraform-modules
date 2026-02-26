@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> This module is deprecated. Refer to `azure-bing-grounded-search`.
+
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
