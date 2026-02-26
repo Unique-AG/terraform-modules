@@ -1,5 +1,16 @@
 // Mimics https://github.com/azure-ai-foundry/foundry-samples/blob/main/infrastructure/infrastructure-setup-bicep/45-basic-agent-bing/modules/add-bing-search-tool.bicep as Terraform module.
 
+locals {
+  has_private_endpoint = var.foundry_account.private_endpoint != null
+  has_network_acls     = var.foundry_account.network_acls != null
+
+  public_network_access_enabled = !local.has_private_endpoint
+  network_acls_default_action   = local.has_network_acls ? "Deny" : "Allow"
+  network_acls_ip_rules         = local.has_network_acls ? var.foundry_account.network_acls.ip_rules : []
+  network_acls_subnet_ids       = local.has_network_acls ? var.foundry_account.network_acls.virtual_network_subnet_ids : []
+}
+
+
 resource "azurerm_cognitive_account" "foundry_account" {
   custom_subdomain_name         = var.foundry_account.custom_subdomain_name
   kind                          = "AIServices"
@@ -7,18 +18,18 @@ resource "azurerm_cognitive_account" "foundry_account" {
   location                      = var.foundry_account.location
   name                          = var.foundry_account.name
   project_management_enabled    = true
-  public_network_access_enabled = var.private_endpoint == null
+  public_network_access_enabled = local.public_network_access_enabled
   resource_group_name           = coalesce(var.foundry_account.resource_group_name, var.resource_group_name)
   sku_name                      = var.foundry_account.sku_name
   tags                          = merge(var.tags, var.foundry_account.extra_tags)
   identity { type = "SystemAssigned" }
 
   network_acls {
-    default_action = var.private_endpoint != null ? "Deny" : "Allow"
+    default_action = local.network_acls_default_action
     bypass         = "AzureServices"
-    ip_rules       = var.foundry_account.ip_rules_allowed
+    ip_rules       = local.network_acls_ip_rules
     dynamic "virtual_network_rules" {
-      for_each = var.foundry_account.virtual_network_subnet_ids_allowed
+      for_each = local.network_acls_subnet_ids
       content {
         subnet_id = virtual_network_rules.value
       }
@@ -52,11 +63,11 @@ resource "azapi_resource" "foundry_project" {
 }
 
 resource "azurerm_private_endpoint" "foundry_account_private_endpoint" {
-  count               = var.private_endpoint != null ? 1 : 0
+  count               = local.has_private_endpoint ? 1 : 0
   name                = "${var.foundry_account.name}-pe"
-  location            = coalesce(var.private_endpoint.location, var.foundry_account.location)
-  resource_group_name = coalesce(var.private_endpoint.resource_group_name, var.resource_group_name)
-  subnet_id           = var.private_endpoint.subnet_id
+  location            = coalesce(var.foundry_account.private_endpoint.location, var.foundry_account.location)
+  resource_group_name = coalesce(var.foundry_account.private_endpoint.resource_group_name, var.resource_group_name)
+  subnet_id           = var.foundry_account.private_endpoint.subnet_id
   private_service_connection {
     name                           = "${var.foundry_account.name}-psc"
     private_connection_resource_id = azurerm_cognitive_account.foundry_account.id
@@ -65,7 +76,7 @@ resource "azurerm_private_endpoint" "foundry_account_private_endpoint" {
   }
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [var.private_endpoint.private_dns_zone_id]
+    private_dns_zone_ids = [var.foundry_account.private_endpoint.private_dns_zone_id]
   }
 }
 
