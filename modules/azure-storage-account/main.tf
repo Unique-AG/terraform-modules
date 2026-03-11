@@ -2,6 +2,7 @@ locals {
   uses_cmk                 = var.customer_managed_key != null && var.self_cmk == null
   self_cmk                 = var.self_cmk != null && var.customer_managed_key == null
   store_connection_strings = var.connection_settings != null && var.shared_access_key_enabled
+  change_feed_enabled      = var.data_protection_settings.change_feed_enabled && var.data_protection_settings.change_feed_retention_days > 0
 }
 
 check "connection_settings_requires_shared_access_key" {
@@ -44,8 +45,8 @@ resource "azurerm_storage_account" "storage_account" {
   is_hns_enabled = var.is_nfs_mountable
 
   blob_properties {
-    change_feed_enabled           = var.data_protection_settings.change_feed_retention_days > 0
-    change_feed_retention_in_days = var.data_protection_settings.change_feed_retention_days > 0 ? var.data_protection_settings.change_feed_retention_days : null
+    change_feed_enabled           = local.change_feed_enabled
+    change_feed_retention_in_days = local.change_feed_enabled ? var.data_protection_settings.change_feed_retention_days : null
     versioning_enabled            = var.data_protection_settings.versioning_enabled
     dynamic "cors_rule" {
       for_each = var.cors_rules

@@ -205,6 +205,7 @@ variable "data_protection_settings" {
   description = "Settings for data protection features including soft delete, versioning, change feed and point-in-time restore."
   type = object({
     blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days
+    change_feed_enabled                  = optional(bool, true)
     change_feed_retention_days           = optional(number, 7)  # 0-146000 days
     container_soft_delete_retention_days = optional(number, 30) # 1-365 days
     point_in_time_restore_days           = optional(number, 7)
@@ -212,6 +213,7 @@ variable "data_protection_settings" {
   })
   default = {
     blob_soft_delete_retention_days      = 30
+    change_feed_enabled                  = true
     change_feed_retention_days           = 7
     container_soft_delete_retention_days = 30
     point_in_time_restore_days           = 7
@@ -222,10 +224,11 @@ variable "data_protection_settings" {
     condition = (
       var.data_protection_settings.point_in_time_restore_days == -1 ||
       (var.data_protection_settings.versioning_enabled == true &&
+        var.data_protection_settings.change_feed_enabled == true &&
         var.data_protection_settings.change_feed_retention_days > 0 &&
       var.data_protection_settings.blob_soft_delete_retention_days > 0)
     )
-    error_message = "When point_in_time_restore_days is set, versioning_enabled must be true, change_feed_retention_days must be greater than 0, and blob_soft_delete_retention_days must be greater than 0."
+    error_message = "When point_in_time_restore_days is set, versioning_enabled and change_feed_enabled must be true, change_feed_retention_days must be greater than 0, and blob_soft_delete_retention_days must be greater than 0."
   }
 
   validation {
@@ -240,10 +243,11 @@ variable "data_protection_settings" {
     condition = (
       !var.is_nfs_mountable ||
       (!var.data_protection_settings.versioning_enabled &&
+        !var.data_protection_settings.change_feed_enabled &&
         var.data_protection_settings.change_feed_retention_days == -1 &&
       var.data_protection_settings.point_in_time_restore_days == -1)
     )
-    error_message = "When is_nfs_mountable (HNS) is enabled, all data protection settings must be disabled: versioning_enabled must be false, and change_feed_retention_days and point_in_time_restore_days must be set to -1."
+    error_message = "When is_nfs_mountable (HNS) is enabled, all data protection settings must be disabled: versioning_enabled and change_feed_enabled must be false, and change_feed_retention_days and point_in_time_restore_days must be set to -1."
   }
 }
 
