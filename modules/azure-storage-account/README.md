@@ -82,6 +82,19 @@ True to the [Design principles](../../DESIGN.md), Network limitations should not
 
 ⚠️ When using `is_nfs_mountable` then a `network_rules` variable is required as Azure does not allow the creation of such accounts without `Deny`ing traffic from creation.
 
+## Change Feed Behavior
+
+By default, change feed remains enabled through `data_protection_settings.change_feed_retention_days = 7` for backward compatibility.
+Change feed is enabled only when `change_feed_enabled = true` and `change_feed_retention_days > 0`.
+
+To disable change feed explicitly without changing retention defaults:
+
+```hcl
+data_protection_settings = {
+  change_feed_enabled = false
+}
+```
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -139,7 +152,7 @@ No modules.
 | <a name="input_containers"></a> [containers](#input\_containers) | Map of containers to create in the storage account where the key is the name. | <pre>map(object({<br/>    access_type = optional(string, "private")<br/>  }))</pre> | `{}` | no |
 | <a name="input_cors_rules"></a> [cors\_rules](#input\_cors\_rules) | CORS rules for the storage account | <pre>list(object({<br/>    allowed_origins    = list(string)<br/>    allowed_methods    = list(string)<br/>    allowed_headers    = list(string)<br/>    exposed_headers    = list(string)<br/>    max_age_in_seconds = number<br/>  }))</pre> | `[]` | no |
 | <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_name                  = string<br/>    key_vault_id              = string<br/>    key_version               = optional(string, null)<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
-| <a name="input_data_protection_settings"></a> [data\_protection\_settings](#input\_data\_protection\_settings) | Settings for data protection features including soft delete, versioning, change feed and point-in-time restore. | <pre>object({<br/>    blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days<br/>    change_feed_retention_days           = optional(number, 7)  # 0-146000 days<br/>    container_soft_delete_retention_days = optional(number, 30) # 1-365 days<br/>    point_in_time_restore_days           = optional(number, 7)<br/>    versioning_enabled                   = optional(bool, true)<br/>  })</pre> | <pre>{<br/>  "blob_soft_delete_retention_days": 30,<br/>  "change_feed_retention_days": 7,<br/>  "container_soft_delete_retention_days": 30,<br/>  "point_in_time_restore_days": 7,<br/>  "versioning_enabled": true<br/>}</pre> | no |
+| <a name="input_data_protection_settings"></a> [data\_protection\_settings](#input\_data\_protection\_settings) | Settings for data protection features including soft delete, versioning, change feed and point-in-time restore. | <pre>object({<br/>    blob_soft_delete_retention_days      = optional(number, 30) # 1-365 days<br/>    change_feed_enabled                  = optional(bool, true)<br/>    change_feed_retention_days           = optional(number, 7)  # 0-146000 days<br/>    container_soft_delete_retention_days = optional(number, 30) # 1-365 days<br/>    point_in_time_restore_days           = optional(number, 7)<br/>    versioning_enabled                   = optional(bool, true)<br/>  })</pre> | <pre>{<br/>  "blob_soft_delete_retention_days": 30,<br/>  "change_feed_enabled": true,<br/>  "change_feed_retention_days": 7,<br/>  "container_soft_delete_retention_days": 30,<br/>  "point_in_time_restore_days": 7,<br/>  "versioning_enabled": true<br/>}</pre> | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
 | <a name="input_infrastructure_encryption_enabled"></a> [infrastructure\_encryption\_enabled](#input\_infrastructure\_encryption\_enabled) | Enable infrastructure encryption for the storage account. | `bool` | `false` | no |
 | <a name="input_is_nfs_mountable"></a> [is\_nfs\_mountable](#input\_is\_nfs\_mountable) | Enable NFSv3 and HNS protocol for the storage account in order to be mounted to AKS/nodes. In order to enable this, the account\_tier and the account\_kind must be set to a limited subset, refer to the Azure Docs(https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#is_hns_enabled-1) for more information. | `bool` | `false` | no |
@@ -173,7 +186,6 @@ No modules.
 ## Limitations
 
 - This module as of now is not supporting [`azurerm_key_vault_managed_hardware_security_module` (HSM-backend Key Vaults)](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/key_vault_managed_hardware_security_module).
-- Neither change feed nor versioning are currently supported by this module. If you need these features, please open an issue. They are omitted for brevity and simplicity not because we do not want to support them.
 - Future versions will ship with built-in [`azurerm_storage_container_immutability_policy`](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/storage_container_immutability_policy).
 
 ## Archive Tier Support
