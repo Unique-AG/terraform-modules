@@ -85,6 +85,7 @@ True to the [Design principles](../../DESIGN.md), Network limitations should not
 ## Change Feed Behavior
 
 By default, change feed remains enabled through `data_protection_settings.change_feed_retention_days = 7` for backward compatibility.
+Change feed is enabled only when `change_feed_enabled = true` and `change_feed_retention_days > 0`.
 
 To disable change feed explicitly without changing retention defaults:
 
@@ -185,7 +186,6 @@ No modules.
 ## Limitations
 
 - This module as of now is not supporting [`azurerm_key_vault_managed_hardware_security_module` (HSM-backend Key Vaults)](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/key_vault_managed_hardware_security_module).
-- Neither change feed nor versioning are currently supported by this module. If you need these features, please open an issue. They are omitted for brevity and simplicity not because we do not want to support them.
 - Future versions will ship with built-in [`azurerm_storage_container_immutability_policy`](https://registry.terraform.io/providers/hashicorp/azurerm/3.117.0/docs/resources/storage_container_immutability_policy).
 
 ## Archive Tier Support
