@@ -5,7 +5,7 @@
 # SPDX-SnippetEnd
 echo "Running Trivy for Terraform scanning"
 
-CMD="docker run --rm -v "$(pwd):/workdir" aquasec/trivy:0.69.3 config --ignorefile /workdir/.github/configs/trivyignore.yaml"
+CMD="docker run --rm -v "$(pwd):/workdir" aquasec/trivy@sha256:bcc376de8d77cfe086a917230e818dc9f8528e3c852f7b1aff648949b6258d1c config --ignorefile /workdir/.github/configs/trivyignore.yaml" # v0.69.3
 
 # Check if output file path is provided as argument
 if [ -n "$1" ]; then
