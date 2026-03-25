@@ -15,20 +15,23 @@ variable "default_secrets_placeholders" {
     expiration_date = optional(string, "2099-12-31T23:59:59Z")
   }))
   default = {
-    google-search-api-key       = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-anthropic-api-key   = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-bedrock-access-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-bedrock-secret-key  = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-gemini-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-openai-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-together-ai-api-key = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-voyage-api-key      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    litellm-xai-api-key         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    quartr-api-creds            = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    six-api-creds               = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
-    zitadel-scope-mgmt-pat      = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    google-search-api-key               = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-anthropic-api-key           = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-bedrock-access-key          = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-bedrock-secret-key          = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-gemini-api-key              = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-openai-api-key              = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-together-ai-api-key         = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-voyage-api-key              = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm-xai-api-key                 = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    mcp-hub-default-oauth-client-id     = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    mcp-hub-default-oauth-client-secret = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    quartr-api-creds                    = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    six-api-creds                       = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    zitadel-scope-mgmt-pat              = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
   }
 }
+
 variable "extra_secrets_placeholders" {
   description = "List of secrets that are additionally, manually created and need to be placed in the core key vault. The manual- prefix is prepended automatically."
   type = map(object({
@@ -61,7 +64,5 @@ variable "secrets_to_create" {
     zitadel_main_key                      = { create = true, name = "zitadel-main-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     sops_age_key_custom_assistant_1       = { create = true, name = "sops-age-key-custom-assistant-1", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     sops_age_key_custom_assistant_2       = { create = true, name = "sops-age-key-custom-assistant-2", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
-    mcp_hub_default_oauth_client_id       = { create = true, name = "mcp-hub-default-oauth-client-id", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
-    mcp_hub_default_oauth_client_secret   = { create = true, name = "mcp-hub-default-oauth-client-secret", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
   }
 }
