@@ -61,5 +61,7 @@ variable "secrets_to_create" {
     zitadel_main_key                      = { create = true, name = "zitadel-main-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     sops_age_key_custom_assistant_1       = { create = true, name = "sops-age-key-custom-assistant-1", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     sops_age_key_custom_assistant_2       = { create = true, name = "sops-age-key-custom-assistant-2", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    mcp_hub_default_oauth_client_id       = { create = true, name = "mcp-hub-default-oauth-client-id", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    mcp_hub_default_oauth_client_secret   = { create = true, name = "mcp-hub-default-oauth-client-secret", content_type = "text/plain", special = false, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
   }
 }

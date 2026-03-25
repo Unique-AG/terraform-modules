@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 3.4.0
+version: 3.5.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
   - kind: added
-    description: "added litellm-xai-api-key to the default secrets"
+    description: "added mcp-hub-default-oauth-client-id and mcp-hub-default-oauth-client-secret to the default secrets"
