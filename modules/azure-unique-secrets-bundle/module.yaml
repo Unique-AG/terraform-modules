@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 3.5.0
+version: 3.5.1
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: added
-    description: "added mcp-hub-default-oauth-client-id and mcp-hub-default-oauth-client-secret to the default secrets"
+  - kind: fixed
+    description: "move mcp-hub-default-oauth-client-id and mcp-hub-default-oauth-client-secret to core key vault as manually-managed secrets"

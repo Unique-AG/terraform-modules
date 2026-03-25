@@ -231,27 +231,3 @@ resource "azurerm_key_vault_secret" "sops_age_key_custom_assistant_2" {
   key_vault_id    = var.kv_id_sensitive
   expiration_date = var.secrets_to_create.sops_age_key_custom_assistant_2.expiration_date
 }
-
-resource "azurerm_key_vault_secret" "mcp_hub_default_oauth_client_id" {
-  count           = var.secrets_to_create.mcp_hub_default_oauth_client_id.create ? 1 : 0
-  name            = var.secrets_to_create.mcp_hub_default_oauth_client_id.name
-  value           = "<TO BE SET MANUALLY>"
-  content_type    = var.secrets_to_create.mcp_hub_default_oauth_client_id.content_type
-  key_vault_id    = var.kv_id_sensitive
-  expiration_date = var.secrets_to_create.mcp_hub_default_oauth_client_id.expiration_date
-  lifecycle {
-    ignore_changes = [value, tags, content_type]
-  }
-}
-
-resource "azurerm_key_vault_secret" "mcp_hub_default_oauth_client_secret" {
-  count           = var.secrets_to_create.mcp_hub_default_oauth_client_secret.create ? 1 : 0
-  name            = var.secrets_to_create.mcp_hub_default_oauth_client_secret.name
-  value           = "<TO BE SET MANUALLY>"
-  content_type    = var.secrets_to_create.mcp_hub_default_oauth_client_secret.content_type
-  key_vault_id    = var.kv_id_sensitive
-  expiration_date = var.secrets_to_create.mcp_hub_default_oauth_client_secret.expiration_date
-  lifecycle {
-    ignore_changes = [value, tags, content_type]
-  }
-}
