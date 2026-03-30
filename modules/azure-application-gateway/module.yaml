@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 5.0.1
+version: 5.1.0
 compatibility:
-  unique.ai: ~> 2025.32
+  unique.ai: ~> 2026.14
 changes:
-  - kind: fixed
-    description: "Custom Header Blocking improved to not waste priority slots."
+  - kind: changed
+    description: "WAF false positives on NextAuth session cookie now excludes `__Secure-next-auth.session-token` from `REQUEST-930-APPLICATION-ATTACK-LFI` (rule 930120)."
