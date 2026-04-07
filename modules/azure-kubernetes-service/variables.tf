@@ -718,6 +718,22 @@ variable "node_os_upgrade_channel" {
   }
 }
 
+variable "upgrade_override" {
+  description = "Override settings for AKS cluster upgrades. Forces upgrades past safeguards. Once set, this block cannot be removed from the configuration. effective_until is required due to azurerm provider bug #28960."
+  type = object({
+    force_upgrade_enabled = bool
+    effective_until       = string
+  })
+  default = null
+
+  validation {
+    condition = var.upgrade_override == null ? true : (
+      can(regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$", var.upgrade_override.effective_until))
+    )
+    error_message = "effective_until is required (azurerm provider bug #28960 sends empty string for null) and must be in RFC 3339 format (e.g. 2025-10-01T13:00:00Z)."
+  }
+}
+
 variable "alert_configuration" {
   description = "Configuration for AKS alerts and monitoring"
   type = object({

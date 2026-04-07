@@ -28,6 +28,14 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   automatic_upgrade_channel           = var.automatic_upgrade_channel
   node_os_upgrade_channel             = var.node_os_upgrade_channel
 
+  dynamic "upgrade_override" {
+    for_each = var.upgrade_override != null ? [1] : []
+    content {
+      force_upgrade_enabled = var.upgrade_override.force_upgrade_enabled
+      effective_until       = var.upgrade_override.effective_until
+    }
+  }
+
   dynamic "network_profile" {
     for_each = var.network_profile != null ? [1] : []
     content {
