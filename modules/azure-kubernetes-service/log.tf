@@ -1,22 +1,5 @@
-locals {
-  # https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
-  diagnostic_logs_all_categories = [
-    "cloud-controller-manager",
-    "cluster-autoscaler",
-    "csi-azuredisk-controller",
-    "csi-azurefile-controller",
-    "csi-snapshot-controller",
-    "kube-audit-admin",
-    "kube-scheduler",
-  ]
-  basic_log_tables = [
-    "ContainerLogV2",
-    "AKSControlPlane",
-  ]
-}
-
 resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each                = var.log_analytics_workspace != null ? toset(local.basic_log_tables) : []
+  for_each                = var.log_analytics_workspace != null ? toset(var.basic_log_tables) : []
   workspace_id            = var.log_analytics_workspace.id
   name                    = each.value
   plan                    = var.log_table_plan
@@ -32,7 +15,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
   log_analytics_destination_type = "Dedicated"
 
   dynamic "enabled_log" {
-    for_each = local.diagnostic_logs_all_categories
+    for_each = var.diagnostic_logs_categories
     content {
       category = enabled_log.value
     }

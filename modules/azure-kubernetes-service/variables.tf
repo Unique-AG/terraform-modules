@@ -227,6 +227,29 @@ variable "log_table_plan" {
   default     = "Basic"
 }
 
+variable "diagnostic_logs_categories" {
+  description = "AKS diagnostic log categories to enable. See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs"
+  type        = list(string)
+  default = [
+    "cloud-controller-manager",
+    "cluster-autoscaler",
+    "csi-azuredisk-controller",
+    "csi-azurefile-controller",
+    "csi-snapshot-controller",
+    "kube-audit-admin",
+    "kube-scheduler",
+  ]
+}
+
+variable "basic_log_tables" {
+  description = "Log Analytics tables to configure with the basic log plan."
+  type        = list(string)
+  default = [
+    "ContainerLogV2",
+    "AKSControlPlane",
+  ]
+}
+
 variable "node_pool_settings" {
   description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({

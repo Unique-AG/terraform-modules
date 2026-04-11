@@ -1,9 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 5.4.0
+version: 5.5.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Optional `upgrade_override` block on the AKS cluster (force upgrade / effective_until)"
+    description: "Diagnostic settings and Data Collection Rule log (categories) can now be configured"
