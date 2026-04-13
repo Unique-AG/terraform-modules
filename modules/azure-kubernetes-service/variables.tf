@@ -227,6 +227,41 @@ variable "log_table_plan" {
   default     = "Basic"
 }
 
+# DEPRECATION NOTICE: The three variables below (`diagnostic_logs_categories`, `basic_log_tables`,
+# `container_insights_streams`) are transitional. An upcoming major version will introduce a
+# breaking refactor of the entire logging setup. These variables will be removed and replaced.
+
+variable "diagnostic_logs_categories" {
+  description = <<-EOT
+    AKS diagnostic log categories to enable. Only categories present in the supported set are used.
+    See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
+
+    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
+  EOT
+  type        = list(string)
+  default     = null
+}
+
+variable "basic_log_tables" {
+  description = <<-EOT
+    Log Analytics workspace tables to configure with the specified log table plan.
+
+    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
+  EOT
+  type        = list(string)
+  default     = ["ContainerLogV2", "AKSControlPlane"]
+}
+
+variable "container_insights_streams" {
+  description = <<-EOT
+    Container Insights data collection streams. Defaults to the Group-Default stream.
+
+    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
+  EOT
+  type        = list(string)
+  default     = ["Microsoft-ContainerInsights-Group-Default"]
+}
+
 variable "node_pool_settings" {
   description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
   type = map(object({

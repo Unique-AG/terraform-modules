@@ -1,9 +1,10 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 5.4.0
+# upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
+version: 5.5.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Optional `upgrade_override` block on the AKS cluster (force upgrade / effective_until)"
+    description: "Variables `diagnostic_logs_categories`, `basic_log_tables`, and `container_insights_streams` to configure AKS diagnostic logs and Container Insights streams; defaults preserve existing behavior. All three are deprecated and will be removed in the next major version as part of a breaking logging refactor."
