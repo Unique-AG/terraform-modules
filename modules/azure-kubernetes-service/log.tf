@@ -9,14 +9,14 @@ locals {
     "kube-audit-admin",
     "kube-scheduler",
   ]
-  basic_log_tables = [
-    "ContainerLogV2",
-    "AKSControlPlane",
-  ]
+  diagnostic_logs_enabled_categories = var.diagnostic_logs_categories != null ? [
+    for category in local.diagnostic_logs_all_categories : category
+    if contains(var.diagnostic_logs_categories, category)
+  ] : local.diagnostic_logs_all_categories
 }
 
 resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each                = var.log_analytics_workspace != null ? toset(local.basic_log_tables) : []
+  for_each                = var.log_analytics_workspace != null ? toset(var.basic_log_tables) : []
   workspace_id            = var.log_analytics_workspace.id
   name                    = each.value
   plan                    = var.log_table_plan
@@ -32,7 +32,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
   log_analytics_destination_type = "Dedicated"
 
   dynamic "enabled_log" {
-    for_each = local.diagnostic_logs_all_categories
+    for_each = local.diagnostic_logs_enabled_categories
     content {
       category = enabled_log.value
     }
@@ -59,14 +59,14 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
   }
 
   data_flow {
-    streams      = ["Microsoft-ContainerInsights-Group-Default"]
+    streams      = var.container_insights_streams
     destinations = ["ciworkspace"]
   }
 
   data_sources {
     extension {
       name           = "ContainerInsightsExtension"
-      streams        = ["Microsoft-ContainerInsights-Group-Default"]
+      streams        = var.container_insights_streams
       extension_name = "ContainerInsights"
       extension_json = jsonencode({
         dataCollectionSettings = {
