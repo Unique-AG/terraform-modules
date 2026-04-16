@@ -58,7 +58,7 @@ variable "flex_storage_mb" {
 variable "flex_pg_backup_retention_days" {
   description = "The number of days to retain backups for the PostgreSQL server."
   type        = number
-  default     = 7
+  default     = 14
   validation {
     condition     = var.flex_pg_backup_retention_days >= 0
     error_message = "Backup retention days must be greater than or equal to 0."
@@ -177,6 +177,20 @@ variable "zone" {
   type        = string
   default     = null
   nullable    = true
+}
+
+variable "high_availability" {
+  description = "High availability configuration. Set to null to disable entirely."
+  type = object({
+    mode                      = optional(string, "ZoneRedundant")
+    standby_availability_zone = optional(string, null)
+  })
+  default = {}
+
+  validation {
+    condition     = var.high_availability == null ? true : contains(["SameZone", "ZoneRedundant"], var.high_availability.mode)
+    error_message = "high_availability.mode must be either 'SameZone' or 'ZoneRedundant'."
+  }
 }
 
 variable "administrator_login" {

@@ -179,6 +179,20 @@ Before upgrading:
 
 ## [Examples](./examples)
 
+## High Availability
+
+<small>Added in `3.4.0` – set to `null` to keep old cost and SLA.</small>
+
+Zone-redundant HA provisions a synchronous standby replica in a separate Availability Zone. Azure flips the DNS record to the standby on failover — your connection string stays the same, but active connections drop and must reconnect (worst case manually restarting affected deployments).
+
+**What to expect during failover:**
+
+- Planned failover: ~30s downtime
+- Unplanned failover (zone outage): 60–120s downtime
+- Data loss: zero (synchronous replication — transactions are confirmed on both nodes before being acknowledged)
+
+**Cost:** enabling HA doubles the compute cost. Storage is shared and does not double.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -227,10 +241,11 @@ No modules.
 | <a name="input_database_connection_string_secret_prefix"></a> [database\_connection\_string\_secret\_prefix](#input\_database\_connection\_string\_secret\_prefix) | Prefix of the secret containing the full connection string. The full name of the secret is this prefix + database name | `string` | `"database-url-"` | no |
 | <a name="input_databases"></a> [databases](#input\_databases) | Map of databases and its properties | <pre>map(<br/>    object({<br/>      name            = string<br/>      collation       = optional(string, null)<br/>      charset         = optional(string, null)<br/>      lifecycle       = optional(bool, false)<br/>      prevent_destroy = optional(bool, true)<br/>    })<br/>  )</pre> | `{}` | no |
 | <a name="input_delegated_subnet_id"></a> [delegated\_subnet\_id](#input\_delegated\_subnet\_id) | The ID of the delegated subnet. | `string` | `null` | no |
-| <a name="input_flex_pg_backup_retention_days"></a> [flex\_pg\_backup\_retention\_days](#input\_flex\_pg\_backup\_retention\_days) | The number of days to retain backups for the PostgreSQL server. | `number` | `7` | no |
+| <a name="input_flex_pg_backup_retention_days"></a> [flex\_pg\_backup\_retention\_days](#input\_flex\_pg\_backup\_retention\_days) | The number of days to retain backups for the PostgreSQL server. | `number` | `14` | no |
 | <a name="input_flex_pg_version"></a> [flex\_pg\_version](#input\_flex\_pg\_version) | The version of the PostgreSQL server. | `string` | `"14"` | no |
 | <a name="input_flex_sku"></a> [flex\_sku](#input\_flex\_sku) | The SKU for the PostgreSQL server. | `string` | `"GP_Standard_D2ds_v5"` | no |
 | <a name="input_flex_storage_mb"></a> [flex\_storage\_mb](#input\_flex\_storage\_mb) | The storage size in MB for the PostgreSQL server. | `number` | `32768` | no |
+| <a name="input_high_availability"></a> [high\_availability](#input\_high\_availability) | High availability configuration. Set to null to disable entirely. | <pre>object({<br/>    mode                      = optional(string, "ZoneRedundant")<br/>    standby_availability_zone = optional(string, null)<br/>  })</pre> | `{}` | no |
 | <a name="input_host_secret_name"></a> [host\_secret\_name](#input\_host\_secret\_name) | Name of the secret containing the host | `string` | `null` | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | List of managed identity IDs to assign to the storage account. | `list(string)` | `[]` | no |
 | <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id) | The ID of the Key Vault where the secrets will be stored | `string` | `null` | no |
