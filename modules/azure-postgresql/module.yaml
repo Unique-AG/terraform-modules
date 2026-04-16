@@ -1,13 +1,11 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 3.2.0
+version: 3.4.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
+  - kind: added
+    description: "high_availability block for PostgreSQL Flexible Server (default ZoneRedundant; set to null to disable). Not that this doubles compute cost at an additional availability nine (99.9% → 99.99% SLA at time of writing - see readme for more details)."
   - kind: changed
-    description: "publish module with both tag separators – dash and @"
-  - kind: changed
-    description: "secrets are now tagged so they can be touched if needed without changing the value."
-  - kind: changed
-    description: "secrets are compliant with trivy misconfiguration requirements featuring an expiry date as well as a content type."
+    description: "flex_pg_backup_retention_days default value changed to 14 to comply with Unique AI's backup and production readiness policy."
