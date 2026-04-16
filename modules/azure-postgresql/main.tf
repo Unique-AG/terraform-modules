@@ -29,6 +29,14 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     start_minute = var.maintenance_window.start_minute
   }
 
+  dynamic "high_availability" {
+    for_each = var.high_availability != null ? [var.high_availability] : []
+    content {
+      mode                      = high_availability.value.mode
+      standby_availability_zone = high_availability.value.standby_availability_zone
+    }
+  }
+
   dynamic "customer_managed_key" {
     for_each = local.self_cmk ? [1] : []
     content {
@@ -63,7 +71,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     }
   }
   lifecycle {
-    ignore_changes = [zone, storage_mb]
+    ignore_changes = [zone, high_availability[0].standby_availability_zone, storage_mb]
   }
 }
 
