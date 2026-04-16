@@ -207,7 +207,7 @@ Zone-redundant HA provisions a synchronous standby replica in a separate Availab
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.68.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
 
 ## Modules
 
