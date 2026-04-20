@@ -37,7 +37,9 @@ variable "accounts" {
 
     Diagnostic settings: per-account `diagnostic_settings` is the only configuration; this module has no global fallback.
     If null for an account, no diagnostic setting is created for that account.
-    Use `enabled_log_categories` for individual log categories and/or `enabled_log_category_groups` for category groups (e.g. allLogs, audit); both can be combined.
+
+    `enabled_log_categories` and `enabled_log_category_groups` are mutually exclusive at the Azure API (each `enabled_log` block sets exactly one).
+    This module mirrors the Azure portal and gives precedence to `enabled_log_category_groups` when it is non-empty (individual categories are then ignored).
   EOT
   validation {
     condition = alltrue([

@@ -1,9 +1,9 @@
 name: azure-openai
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-openai
-version: 3.4.0
+version: 3.5.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: added
-    description: "Support for log category groups (`log_category_groups`) on diagnostic settings, alongside existing `log_categories`."
+  - kind: changed
+    description: "log_category_groups now takes precedence over log_categories (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories validation."

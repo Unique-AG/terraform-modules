@@ -128,7 +128,7 @@ resource "azurerm_monitor_diagnostic_setting" "cognitive_account" {
   log_analytics_workspace_id = each.value.log_analytics_workspace_id
 
   dynamic "enabled_log" {
-    for_each = each.value.log_categories
+    for_each = length(each.value.log_category_groups) > 0 ? [] : each.value.log_categories
     content {
       category = enabled_log.value
     }

@@ -45,7 +45,7 @@ resource "azurerm_monitor_diagnostic_setting" "foundry_account" {
   log_analytics_workspace_id = var.foundry_account.diagnostic_settings.log_analytics_workspace_id
 
   dynamic "enabled_log" {
-    for_each = var.foundry_account.diagnostic_settings.log_categories
+    for_each = length(var.foundry_account.diagnostic_settings.log_category_groups) > 0 ? [] : var.foundry_account.diagnostic_settings.log_categories
     content {
       category = enabled_log.value
     }

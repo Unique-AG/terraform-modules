@@ -31,6 +31,11 @@ variable "accounts" {
 
     Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.
     If both are null for an account, no diagnostic setting is created for that account.
+
+    `log_categories` vs `log_category_groups`: mutually exclusive in Azure Monitor (each `enabled_log` block sets exactly one).
+    This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).
+    `log_category_groups` is dynamic — new categories Azure adds to the group are auto-enabled.
+    `log_categories` locks the exact list. Valid values when using explicit categories: Audit, AzureOpenAIRequestUsage, RequestResponse, Trace.
   EOT
   validation {
     condition     = length(keys(var.accounts)) > 0
@@ -41,10 +46,10 @@ variable "accounts" {
       for account in var.accounts :
       account.diagnostic_settings == null || alltrue([
         for category in coalesce(try(account.diagnostic_settings.log_categories, null), []) :
-        contains(["Audit", "RequestResponse", "Trace"], category)
+        contains(["Audit", "AzureOpenAIRequestUsage", "RequestResponse", "Trace"], category)
       ])
     ])
-    error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
+    error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
   }
 }
 
@@ -105,13 +110,15 @@ variable "diagnostic_settings" {
     Per-account diagnostic_settings take precedence over this global setting.
     This serves as a fallback for accounts that don't specify their own settings.
 
-    Available log categories:
+    Available log categories (when using explicit `log_categories` and `log_category_groups` is empty):
       - Audit: Audit logs (default, recommended minimum)
+      - AzureOpenAIRequestUsage: Token usage and request metering for applicable cognitive services
       - RequestResponse: Logs all request and response data including prompts and completions
       - Trace: Detailed trace logs
 
-    Use log_category_groups for Azure diagnostic log category groups (e.g. allLogs, audit) as an
-    alternative or complement to log_categories; see Azure Monitor documentation for valid values.
+    `log_categories` and `log_category_groups` are mutually exclusive at the Azure API (each enabled log block sets exactly one).
+    This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).
+    Use `log_category_groups` for dynamic groups such as `audit` or `allLogs`; see Azure Monitor documentation for valid values.
 
     WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as
     user prompts and model responses. It is YOUR responsibility to:
@@ -131,8 +138,8 @@ variable "diagnostic_settings" {
   validation {
     condition = var.diagnostic_settings == null || alltrue([
       for category in coalesce(try(var.diagnostic_settings.log_categories, null), []) :
-      contains(["Audit", "RequestResponse", "Trace"], category)
+      contains(["Audit", "AzureOpenAIRequestUsage", "RequestResponse", "Trace"], category)
     ])
-    error_message = "log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
+    error_message = "log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
   }
 }

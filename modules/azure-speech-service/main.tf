@@ -62,7 +62,7 @@ resource "azurerm_monitor_diagnostic_setting" "diag" {
   log_analytics_workspace_id = try(each.value.diagnostic_settings.log_analytics_workspace_id, null)
 
   dynamic "enabled_log" {
-    for_each = try(each.value.diagnostic_settings.enabled_log_categories, [])
+    for_each = length(try(each.value.diagnostic_settings.enabled_log_category_groups, [])) > 0 ? [] : coalesce(try(each.value.diagnostic_settings.enabled_log_categories, null), [])
     content {
       category = enabled_log.value
     }

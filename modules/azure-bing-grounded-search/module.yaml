@@ -1,9 +1,9 @@
 name: azure-bing-grounded-search
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-grounded-search
-version: 2.1.0
+version: 2.2.0
 compatibility:
   unique.ai: ~> 2026.10
 changes:
-  - kind: added
-    description: "Diagnostic settings support on `foundry_account.diagnostic_settings` including `log_categories`, `log_category_groups`, and `metric_categories`."
+  - kind: changed
+    description: "log_category_groups now takes precedence over log_categories (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories validation."
