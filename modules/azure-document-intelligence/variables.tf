@@ -18,11 +18,33 @@ variable "accounts" {
       subnet_id           = string
       vnet_location       = optional(string)
     }))
+
+    diagnostic_settings = optional(object({
+      log_analytics_workspace_id = string
+      log_categories             = optional(list(string), ["Audit"])
+      log_category_groups        = optional(list(string), [])
+      metric_categories          = optional(list(string), ["AllMetrics"])
+    }))
   }))
-  description = "values for the cognitive accounts"
+  description = <<-EOT
+    Values for the cognitive accounts.
+
+    Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.
+    If both are null for an account, no diagnostic setting is created for that account.
+  EOT
   validation {
     condition     = length(keys(var.accounts)) > 0
     error_message = "At least one cognitive account must be defined"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.accounts :
+      account.diagnostic_settings == null || alltrue([
+        for category in coalesce(try(account.diagnostic_settings.log_categories, null), []) :
+        contains(["Audit", "RequestResponse", "Trace"], category)
+      ])
+    ])
+    error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
   }
 }
 
@@ -75,3 +97,42 @@ variable "primary_access_key_secret_name_suffix" {
   default     = "-key"
 }
 
+variable "diagnostic_settings" {
+  description = <<-EOT
+    Global diagnostic settings configuration for Azure Cognitive Services accounts.
+    If null, diagnostic settings are not created (unless overridden per account).
+
+    Per-account diagnostic_settings take precedence over this global setting.
+    This serves as a fallback for accounts that don't specify their own settings.
+
+    Available log categories:
+      - Audit: Audit logs (default, recommended minimum)
+      - RequestResponse: Logs all request and response data including prompts and completions
+      - Trace: Detailed trace logs
+
+    Use log_category_groups for Azure diagnostic log category groups (e.g. allLogs, audit) as an
+    alternative or complement to log_categories; see Azure Monitor documentation for valid values.
+
+    WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as
+    user prompts and model responses. It is YOUR responsibility to:
+      - Restrict access to the Log Analytics workspace appropriately
+      - Ensure compliance with data protection regulations (GDPR, etc.)
+      - Implement appropriate retention policies
+      - Consider the cost implications of high-volume logging
+  EOT
+  type = object({
+    log_analytics_workspace_id = string
+    log_categories             = optional(list(string), ["Audit"])
+    log_category_groups        = optional(list(string), [])
+    metric_categories          = optional(list(string), ["AllMetrics"])
+  })
+  default = null
+
+  validation {
+    condition = var.diagnostic_settings == null || alltrue([
+      for category in coalesce(try(var.diagnostic_settings.log_categories, null), []) :
+      contains(["Audit", "RequestResponse", "Trace"], category)
+    ])
+    error_message = "log_categories must only contain valid values: 'Audit', 'RequestResponse', 'Trace'"
+  }
+}

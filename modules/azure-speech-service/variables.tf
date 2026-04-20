@@ -22,16 +22,23 @@ variable "accounts" {
       private_dns_zone_id = string
     }))
     diagnostic_settings = optional(object({
-      log_analytics_workspace_id = string
-      enabled_log_categories     = optional(list(string), null)
-      enabled_metrics            = optional(list(string), null)
+      log_analytics_workspace_id  = string
+      enabled_log_categories      = optional(list(string), null)
+      enabled_log_category_groups = optional(list(string), [])
+      enabled_metrics             = optional(list(string), null)
     }))
     workload_identity = optional(object({
       principal_id         = string
       role_definition_name = string
     }))
   }))
-  description = "values for the cognitive accounts"
+  description = <<-EOT
+    Values for the cognitive accounts.
+
+    Diagnostic settings: per-account `diagnostic_settings` is the only configuration; this module has no global fallback.
+    If null for an account, no diagnostic setting is created for that account.
+    Use `enabled_log_categories` for individual log categories and/or `enabled_log_category_groups` for category groups (e.g. allLogs, audit); both can be combined.
+  EOT
   validation {
     condition = alltrue([
       for k, v in var.accounts :

@@ -68,6 +68,13 @@ resource "azurerm_monitor_diagnostic_setting" "diag" {
     }
   }
 
+  dynamic "enabled_log" {
+    for_each = try(each.value.diagnostic_settings.enabled_log_category_groups, [])
+    content {
+      category_group = enabled_log.value
+    }
+  }
+
   dynamic "enabled_metric" {
     for_each = try(
       each.value.diagnostic_settings != null ?

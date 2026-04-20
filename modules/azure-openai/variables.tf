@@ -14,7 +14,12 @@ variable "tags" {
 }
 
 variable "cognitive_accounts" {
-  description = "Map of cognitive accounts, refer to the README for more details."
+  description = <<-EOT
+    Map of cognitive accounts, refer to the README for more details.
+
+    Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.
+    If both are null for an account, no diagnostic setting is created for that account.
+  EOT
   type = map(object({
     custom_subdomain_name                    = string
     extra_tags                               = optional(map(string), {})
@@ -54,6 +59,7 @@ variable "cognitive_accounts" {
     diagnostic_settings = optional(object({
       log_analytics_workspace_id = string
       log_categories             = optional(list(string), ["Audit"])
+      log_category_groups        = optional(list(string), [])
       metric_categories          = optional(list(string), ["AllMetrics"])
     }))
 
@@ -147,6 +153,9 @@ variable "diagnostic_settings" {
       - RequestResponse: Logs all request and response data including prompts and completions
       - Trace: Detailed trace logs
 
+    Use log_category_groups for Azure diagnostic log category groups (e.g. allLogs, audit) as an
+    alternative or complement to log_categories; see Azure Monitor documentation for valid values.
+
     WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as
     user prompts and model responses. It is YOUR responsibility to:
       - Restrict access to the Log Analytics workspace appropriately
@@ -157,6 +166,7 @@ variable "diagnostic_settings" {
   type = object({
     log_analytics_workspace_id = string
     log_categories             = optional(list(string), ["Audit"])
+    log_category_groups        = optional(list(string), [])
     metric_categories          = optional(list(string), ["AllMetrics"])
   })
   default = null

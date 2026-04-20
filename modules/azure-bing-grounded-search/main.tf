@@ -37,6 +37,35 @@ resource "azurerm_cognitive_account" "foundry_account" {
   }
 }
 
+resource "azurerm_monitor_diagnostic_setting" "foundry_account" {
+  count = var.foundry_account.diagnostic_settings != null ? 1 : 0
+
+  name                       = "${var.foundry_account.name}-diag"
+  target_resource_id         = azurerm_cognitive_account.foundry_account.id
+  log_analytics_workspace_id = var.foundry_account.diagnostic_settings.log_analytics_workspace_id
+
+  dynamic "enabled_log" {
+    for_each = var.foundry_account.diagnostic_settings.log_categories
+    content {
+      category = enabled_log.value
+    }
+  }
+
+  dynamic "enabled_log" {
+    for_each = var.foundry_account.diagnostic_settings.log_category_groups
+    content {
+      category_group = enabled_log.value
+    }
+  }
+
+  dynamic "enabled_metric" {
+    for_each = var.foundry_account.diagnostic_settings.metric_categories
+    content {
+      category = enabled_metric.value
+    }
+  }
+}
+
 resource "azapi_resource" "foundry_project" {
   for_each                  = var.foundry_projects
   location                  = var.foundry_account.location
