@@ -27,7 +27,7 @@ misconfigurations:
     paths:
       - modules/azure-bing-grounded-search/secrets.tf
       - modules/azure-document-intelligence/secrets.tf
-      - modules/azure-entra-app-registration/secrets.tf
+      - modules/azure-entra-app-registration-argocd/main.tf
   - id: AVD-AZU-0040 # https://avd.aquasec.com/misconfig/avd-azu-0040 - Logging
     statement: Design decision, users choice
     paths:

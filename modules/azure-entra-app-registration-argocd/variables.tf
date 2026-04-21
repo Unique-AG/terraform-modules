@@ -5,12 +5,15 @@ variable "display_name" {
 
 variable "client_secret_generation_config" {
   type = object({
-    enabled        = bool
-    keyvault_id    = optional(string)
-    secret_name    = optional(string, "entra-app-client-secret")
-    output_enabled = optional(bool, false)
+    enabled                            = bool
+    keyvault_id                        = optional(string)
+    secret_name                        = optional(string, "entra-app-client-secret")
+    output_enabled                     = optional(bool, false)
+    explicit_password_display_name     = optional(string)
+    explicit_client_id_secret_name     = optional(string)
+    explicit_client_secret_secret_name = optional(string)
   })
-  description = "When enabled, a client secret will be generated and stored in the keyvault."
+  description = "When enabled, a client secret will be generated and stored in the keyvault. The three explicit_* fields override the templated names for backward compatibility (changing azuread_application_password.display_name forces recreation)."
   default = {
     enabled = false
   }
@@ -28,14 +31,15 @@ variable "redirect_uris" {
 }
 
 variable "redirect_uris_public_native" {
-  description = "Public client/native (mobile & desktop) redirects"
+  description = "Public client/native redirects. For the ArgoCD CLI flow, set to [\"http://localhost:8085/auth/callback\"] (see ArgoCD docs)."
   type        = list(string)
   default     = []
 }
 
 variable "owner_user_object_ids" {
-  type    = list(string)
-  default = []
+  type        = list(string)
+  description = "Object IDs of users/service principals to set as owners on the application registration."
+  default     = []
 }
 
 variable "required_resource_access_list" {
@@ -60,6 +64,10 @@ variable "required_resource_access_list" {
       },
       {
         id   = "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0" # email
+        type = "Scope"
+      },
+      {
+        id   = "7427e0e9-2fba-42fe-b0c0-848c9e6a8182" # offline_access
         type = "Scope"
       },
     ],
@@ -122,6 +130,6 @@ variable "homepage_url" {
 
 variable "admin_consent_enabled" {
   type        = bool
-  description = "When enabled, admin consent will be automatically granted for all application permissions (Role type) in required_resource_access_list."
+  description = "When enabled, tenant-wide admin consent will be automatically granted for all delegated permissions (Scope type) in required_resource_access_list."
   default     = true
 }
