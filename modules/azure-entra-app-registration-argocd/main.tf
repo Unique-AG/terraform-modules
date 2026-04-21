@@ -57,21 +57,15 @@ locals {
     ]
   ])
 
-  # Extract all application permissions (Role type) from required_resource_access_list
-  # These are the permissions that need admin consent
-  admin_consent_permissions = var.admin_consent_enabled ? flatten([
-    for resource_app_id, accesses in var.required_resource_access_list : [
-      for access in accesses : {
-        resource_app_id = resource_app_id
-        permission_id   = access.id
-      } if access.type == "Role"
-    ]
-  ]) : []
+  # Delegated (Scope) permissions grouped by resource app — tenant-wide consent via oauth2PermissionGrant
+  delegated_consent_permissions_by_resource = var.admin_consent_enabled ? {
+    for resource_app_id, accesses in var.required_resource_access_list :
+    resource_app_id => [for access in accesses : access.id if access.type == "Scope"]
+    if anytrue([for access in accesses : access.type == "Scope"])
+  } : {}
 
-  # Get unique resource app IDs that have Role permissions
-  resource_app_ids_for_consent = var.admin_consent_enabled ? toset([
-    for perm in local.admin_consent_permissions : perm.resource_app_id
-  ]) : toset([])
+  # Resource APIs needed for delegated permission grants
+  resource_app_ids_for_consent = var.admin_consent_enabled ? toset(keys(local.delegated_consent_permissions_by_resource)) : toset([])
 }
 
 #------------------------------------------------------------------------------
@@ -89,8 +83,8 @@ resource "azuread_application" "this" {
   web {
     homepage_url = var.homepage_url
     implicit_grant {
-      access_token_issuance_enabled = true
-      id_token_issuance_enabled     = true
+      access_token_issuance_enabled = false
+      id_token_issuance_enabled     = false
     }
     redirect_uris = var.redirect_uris
   }
@@ -140,11 +134,6 @@ resource "azuread_application" "this" {
       essential             = false
       name                  = "groups"
     }
-    saml2_token {
-      additional_properties = []
-      essential             = false
-      name                  = "groups"
-    }
   }
 
   lifecycle {
@@ -184,7 +173,7 @@ resource "azuread_app_role_assignment" "managed_roles" {
 }
 
 #------------------------------------------------------------------------------
-# Admin Consent for Application Permissions
+# Admin Consent (delegated permissions)
 #------------------------------------------------------------------------------
 
 resource "azuread_service_principal" "external_apis" {
@@ -195,21 +184,28 @@ resource "azuread_service_principal" "external_apis" {
 }
 
 resource "time_sleep" "wait_for_propagation" {
-  count = var.admin_consent_enabled && length(local.admin_consent_permissions) > 0 ? 1 : 0
+  count = var.admin_consent_enabled && length(local.delegated_consent_permissions_by_resource) > 0 ? 1 : 0
 
   depends_on      = [azuread_application.this, azuread_service_principal.this]
   create_duration = "30s"
 }
 
-resource "azuread_app_role_assignment" "admin_consent" {
-  for_each = {
-    for idx, perm in local.admin_consent_permissions :
-    "${perm.resource_app_id}:${perm.permission_id}" => perm
-  }
+#------------------------------------------------------------------------------
+# Delegated permission consent (tenant-wide admin consent for Scope)
+#------------------------------------------------------------------------------
 
-  app_role_id         = each.value.permission_id
-  principal_object_id = azuread_service_principal.this.object_id
-  resource_object_id  = azuread_service_principal.external_apis[each.value.resource_app_id].object_id
+resource "azuread_service_principal_delegated_permission_grant" "delegated_consent" {
+  for_each = local.delegated_consent_permissions_by_resource
+
+  service_principal_object_id          = azuread_service_principal.this.object_id
+  resource_service_principal_object_id = azuread_service_principal.external_apis[each.key].object_id
+
+  claim_values = [
+    for permission_id in each.value : [
+      for scope_name, scope_id in azuread_service_principal.external_apis[each.key].oauth2_permission_scope_ids :
+      scope_name if scope_id == permission_id
+    ][0]
+  ]
 
   depends_on = [time_sleep.wait_for_propagation]
 }
@@ -222,13 +218,19 @@ resource "azuread_application_password" "aad_app_password" {
   count = var.client_secret_generation_config.enabled ? 1 : 0
 
   application_id = azuread_application.this.id
-  display_name   = "unique-enterprise-gitops-app-key"
+  display_name = coalesce(
+    var.client_secret_generation_config.explicit_password_display_name,
+    "${var.client_secret_generation_config.secret_name}-client-secret",
+  )
 }
 
 resource "azurerm_key_vault_secret" "aad_app_gitops_client_id" {
   count = var.client_secret_generation_config.enabled && var.client_secret_generation_config.keyvault_id != null ? 1 : 0
 
-  name         = "aad-app-${var.client_secret_generation_config.secret_name}-client-id"
+  name = coalesce(
+    var.client_secret_generation_config.explicit_client_id_secret_name,
+    "${var.client_secret_generation_config.secret_name}-client-id",
+  )
   value        = azuread_application.this.client_id
   key_vault_id = var.client_secret_generation_config.keyvault_id
 }
@@ -236,7 +238,10 @@ resource "azurerm_key_vault_secret" "aad_app_gitops_client_id" {
 resource "azurerm_key_vault_secret" "aad_app_gitops_client_secret" {
   count = var.client_secret_generation_config.enabled && var.client_secret_generation_config.keyvault_id != null ? 1 : 0
 
-  name         = "aad-app-${var.client_secret_generation_config.secret_name}-client-secret"
+  name = coalesce(
+    var.client_secret_generation_config.explicit_client_secret_secret_name,
+    "${var.client_secret_generation_config.secret_name}-client-secret",
+  )
   value        = azuread_application_password.aad_app_password[0].value
   key_vault_id = var.client_secret_generation_config.keyvault_id
 }

@@ -1,0 +1,9 @@
+name: azure-entra-app-registration-argocd
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-argocd
+version: 1.0.0
+compatibility:
+  argocd: ~> 3.3.6
+changes:
+  - kind: added
+    description: "Initial release. Dedicated ArgoCD Entra ID app registration with delegated-only admin consent (User.Read, openid, profile, email, offline_access), four app roles (user/application_support/system_support/infrastructure_support) aligned with Unique Segregation policies, and optional client-secret generation with explicit name overrides for backward-compatible migration from the generic module."
