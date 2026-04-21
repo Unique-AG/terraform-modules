@@ -1,9 +1,11 @@
 name: azure-bing-grounded-search
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-bing-grounded-search
-version: 2.2.0
+version: 2.1.0
 compatibility:
   unique.ai: ~> 2026.10
 changes:
   - kind: changed
-    description: "log_category_groups now takes precedence over log_categories (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories validation."
+    description: "log_category_groups now takes precedence over log_categories
+      (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories
+      validation."
