@@ -18,11 +18,38 @@ variable "accounts" {
       subnet_id           = string
       vnet_location       = optional(string)
     }))
+
+    diagnostic_settings = optional(object({
+      log_analytics_workspace_id = string
+      log_categories             = optional(list(string), ["Audit"])
+      log_category_groups        = optional(list(string), [])
+      metric_categories          = optional(list(string), ["AllMetrics"])
+    }))
   }))
-  description = "values for the cognitive accounts"
+  description = <<-EOT
+    Values for the cognitive accounts.
+
+    Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.
+    If both are null for an account, no diagnostic setting is created for that account.
+
+    `log_categories` vs `log_category_groups`: mutually exclusive in Azure Monitor (each `enabled_log` block sets exactly one).
+    This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).
+    `log_category_groups` is dynamic — new categories Azure adds to the group are auto-enabled.
+    `log_categories` locks the exact list. Valid values when using explicit categories: Audit, AzureOpenAIRequestUsage, RequestResponse, Trace.
+  EOT
   validation {
     condition     = length(keys(var.accounts)) > 0
     error_message = "At least one cognitive account must be defined"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.accounts :
+      account.diagnostic_settings == null || alltrue([
+        for category in coalesce(try(account.diagnostic_settings.log_categories, null), []) :
+        contains(["Audit", "AzureOpenAIRequestUsage", "RequestResponse", "Trace"], category)
+      ])
+    ])
+    error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
   }
 }
 
@@ -75,3 +102,44 @@ variable "primary_access_key_secret_name_suffix" {
   default     = "-key"
 }
 
+variable "diagnostic_settings" {
+  description = <<-EOT
+    Global diagnostic settings configuration for Azure Cognitive Services accounts.
+    If null, diagnostic settings are not created (unless overridden per account).
+
+    Per-account diagnostic_settings take precedence over this global setting.
+    This serves as a fallback for accounts that don't specify their own settings.
+
+    Available log categories (when using explicit `log_categories` and `log_category_groups` is empty):
+      - Audit: Audit logs (default, recommended minimum)
+      - AzureOpenAIRequestUsage: Token usage and request metering for applicable cognitive services
+      - RequestResponse: Logs all request and response data including prompts and completions
+      - Trace: Detailed trace logs
+
+    `log_categories` and `log_category_groups` are mutually exclusive at the Azure API (each enabled log block sets exactly one).
+    This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).
+    Use `log_category_groups` for dynamic groups such as `audit` or `allLogs`; see Azure Monitor documentation for valid values.
+
+    WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as
+    user prompts and model responses. It is YOUR responsibility to:
+      - Restrict access to the Log Analytics workspace appropriately
+      - Ensure compliance with data protection regulations (GDPR, etc.)
+      - Implement appropriate retention policies
+      - Consider the cost implications of high-volume logging
+  EOT
+  type = object({
+    log_analytics_workspace_id = string
+    log_categories             = optional(list(string), ["Audit"])
+    log_category_groups        = optional(list(string), [])
+    metric_categories          = optional(list(string), ["AllMetrics"])
+  })
+  default = null
+
+  validation {
+    condition = var.diagnostic_settings == null || alltrue([
+      for category in coalesce(try(var.diagnostic_settings.log_categories, null), []) :
+      contains(["Audit", "AzureOpenAIRequestUsage", "RequestResponse", "Trace"], category)
+    ])
+    error_message = "log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
+  }
+}

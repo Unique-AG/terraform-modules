@@ -1,9 +1,10 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version: 4.2.0
+version: 4.3.0
 compatibility:
   unique.ai: ~> 2025.26
 changes:
-  - kind: added
-    description: "Support for customer managed keys (CMK) for encryption"
+  - kind: changed
+    description: "enabled_log_category_groups now takes precedence over
+      enabled_log_categories (mirrors Azure portal)."

@@ -24,6 +24,13 @@ resource "azurerm_cognitive_account" "aca" {
 }
 
 locals {
+  # Per-account diagnostic_settings override global; either can enable diagnostics.
+  effective_diagnostic_settings = {
+    for account_key, account in var.accounts :
+    account_key => coalesce(account.diagnostic_settings, var.diagnostic_settings)
+    if account.diagnostic_settings != null || var.diagnostic_settings != null
+  }
+
   accounts_with_cmk = {
     for k, v in var.accounts : k => v
     if v.customer_managed_key != null
@@ -68,4 +75,33 @@ resource "azurerm_cognitive_account_customer_managed_key" "cmk" {
   cognitive_account_id = azurerm_cognitive_account.aca[each.key].id
   key_vault_key_id     = each.value.customer_managed_key.key_vault_key_id
   identity_client_id   = each.value.customer_managed_key.user_assigned_identity.client_id
+}
+
+resource "azurerm_monitor_diagnostic_setting" "cognitive_account" {
+  for_each = local.effective_diagnostic_settings
+
+  name                       = "${var.doc_intelligence_name}-${each.key}-diag"
+  target_resource_id         = azurerm_cognitive_account.aca[each.key].id
+  log_analytics_workspace_id = each.value.log_analytics_workspace_id
+
+  dynamic "enabled_log" {
+    for_each = length(each.value.log_category_groups) > 0 ? [] : each.value.log_categories
+    content {
+      category = enabled_log.value
+    }
+  }
+
+  dynamic "enabled_log" {
+    for_each = each.value.log_category_groups
+    content {
+      category_group = enabled_log.value
+    }
+  }
+
+  dynamic "enabled_metric" {
+    for_each = each.value.metric_categories
+    content {
+      category = enabled_metric.value
+    }
+  }
 }

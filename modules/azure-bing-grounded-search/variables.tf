@@ -10,7 +10,17 @@ variable "tags" {
 }
 
 variable "foundry_account" {
-  description = "Configuration for the AI Foundry cognitive account"
+  description = <<-EOT
+    Configuration for the AI Foundry cognitive account.
+
+    Diagnostic settings: `foundry_account.diagnostic_settings` is the single source of truth for this single-account module; there is no global fallback.
+    If null, no diagnostic setting is created.
+
+    `log_categories` vs `log_category_groups`: mutually exclusive in Azure Monitor (each `enabled_log` block sets exactly one).
+    This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).
+    `log_category_groups` is dynamic — new categories Azure adds to the group are auto-enabled.
+    `log_categories` locks the exact list. Valid values when using explicit categories: Audit, AzureOpenAIRequestUsage, RequestResponse, Trace.
+  EOT
   type = object({
     name                  = string
     custom_subdomain_name = string
@@ -28,7 +38,22 @@ variable "foundry_account" {
       resource_group_name = optional(string)
       private_dns_zone_id = string
     })
+
+    diagnostic_settings = optional(object({
+      log_analytics_workspace_id = string
+      log_categories             = optional(list(string), ["Audit"])
+      log_category_groups        = optional(list(string), [])
+      metric_categories          = optional(list(string), ["AllMetrics"])
+    }))
   })
+
+  validation {
+    condition = var.foundry_account.diagnostic_settings == null || alltrue([
+      for category in coalesce(try(var.foundry_account.diagnostic_settings.log_categories, null), []) :
+      contains(["Audit", "AzureOpenAIRequestUsage", "RequestResponse", "Trace"], category)
+    ])
+    error_message = "foundry_account.diagnostic_settings.log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
+  }
 }
 
 variable "foundry_projects" {

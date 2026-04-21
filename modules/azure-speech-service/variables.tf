@@ -22,16 +22,25 @@ variable "accounts" {
       private_dns_zone_id = string
     }))
     diagnostic_settings = optional(object({
-      log_analytics_workspace_id = string
-      enabled_log_categories     = optional(list(string), null)
-      enabled_metrics            = optional(list(string), null)
+      log_analytics_workspace_id  = string
+      enabled_log_categories      = optional(list(string), null)
+      enabled_log_category_groups = optional(list(string), [])
+      enabled_metrics             = optional(list(string), null)
     }))
     workload_identity = optional(object({
       principal_id         = string
       role_definition_name = string
     }))
   }))
-  description = "values for the cognitive accounts"
+  description = <<-EOT
+    Values for the cognitive accounts.
+
+    Diagnostic settings: per-account `diagnostic_settings` is the only configuration; this module has no global fallback.
+    If null for an account, no diagnostic setting is created for that account.
+
+    `enabled_log_categories` and `enabled_log_category_groups` are mutually exclusive at the Azure API (each `enabled_log` block sets exactly one).
+    This module mirrors the Azure portal and gives precedence to `enabled_log_category_groups` when it is non-empty (individual categories are then ignored).
+  EOT
   validation {
     condition = alltrue([
       for k, v in var.accounts :
