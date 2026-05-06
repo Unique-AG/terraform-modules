@@ -226,7 +226,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
-  os_type                     = each.value.os_type
   pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
@@ -266,5 +265,43 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
 
   upgrade_settings {
     max_surge = each.value.upgrade_settings.max_surge
+  }
+}
+
+# Using azapi_resource because azurerm provider doesn't yet support KataVmIsolation workload_runtime.
+# TODO: Switch back to azurerm_kubernetes_cluster_node_pool once support is released.
+# See: https://github.com/hashicorp/terraform-provider-azurerm/pull/31257
+resource "azapi_resource" "kata_node_pool" {
+  for_each = var.kata_node_pool_settings
+
+  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
+  name      = each.key
+  parent_id = azurerm_kubernetes_cluster.cluster.id
+
+  body = {
+    properties = {
+      availabilityZones = each.value.zones
+      count             = each.value.min_count
+      enableAutoScaling = each.value.auto_scaling_enabled
+      maxCount          = each.value.max_count
+      maxPods           = each.value.max_pods
+      minCount          = each.value.min_count
+      mode              = each.value.mode
+      nodeLabels        = merge(each.value.node_labels, { "workload-runtime" = "kata" })
+      nodeTaints        = distinct(concat(["workload-runtime=kata:NoSchedule"], each.value.node_taints))
+      osDiskSizeGB      = each.value.os_disk_size_gb
+      osSKU             = each.value.os_sku
+      osType            = each.value.os_type
+      vmSize            = each.value.vm_size
+      vnetSubnetID      = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
+      workloadRuntime   = "KataVmIsolation"
+      upgradeSettings = {
+        maxSurge = each.value.upgrade_settings.max_surge
+      }
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
