@@ -278,6 +278,7 @@ resource "azapi_resource" "kata_node_pool" {
   type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
   name      = each.key
   parent_id = azurerm_kubernetes_cluster.cluster.id
+  tags      = var.tags
 
   body = {
     properties = {
