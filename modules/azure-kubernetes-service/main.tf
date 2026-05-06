@@ -226,6 +226,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
   os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
   pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
   tags                        = var.tags
   temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
@@ -269,7 +270,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
 }
 
 # Using azapi_resource because azurerm provider doesn't yet support KataVmIsolation workload_runtime.
-# TODO: Switch back to azurerm_kubernetes_cluster_node_pool once support is released.
+# Switch back to azurerm_kubernetes_cluster_node_pool once PR #31257 is released.
 # See: https://github.com/hashicorp/terraform-provider-azurerm/pull/31257
 resource "azapi_resource" "kata_node_pool" {
   for_each = var.kata_node_pool_settings
@@ -292,6 +293,7 @@ resource "azapi_resource" "kata_node_pool" {
       osDiskSizeGB      = each.value.os_disk_size_gb
       osSKU             = each.value.os_sku
       osType            = each.value.os_type
+      podSubnetID       = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
       vmSize            = each.value.vm_size
       vnetSubnetID      = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
       workloadRuntime   = "KataVmIsolation"

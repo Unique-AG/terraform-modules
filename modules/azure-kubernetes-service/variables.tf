@@ -446,6 +446,7 @@ variable "kata_node_pool_settings" {
     mode                 = optional(string, "User")
     zones                = list(string)
     subnet_nodes_id      = optional(string, null)
+    subnet_pods_id       = optional(string, null)
     upgrade_settings = object({
       max_surge = string
     })
