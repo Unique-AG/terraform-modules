@@ -2,9 +2,9 @@ name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 5.5.0
+version: 5.6.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Variables `diagnostic_logs_categories`, `basic_log_tables`, and `container_insights_streams` to configure AKS diagnostic logs and Container Insights streams; defaults preserve existing behavior. All three are deprecated and will be removed in the next major version as part of a breaking logging refactor."
+    description: "Variable `kata_node_pool_settings` to deploy Kata Containers node pools with hardware-isolated VM workload runtime (KataVmIsolation). Uses azapi provider pending azurerm support."

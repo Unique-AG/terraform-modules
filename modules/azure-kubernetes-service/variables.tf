@@ -402,6 +402,58 @@ variable "spot_node_pool_settings" {
   }
 }
 
+variable "kata_node_pool_settings" {
+  description = <<-EOT
+    Settings for Kata Containers node pools with hardware-isolated VM workload runtime.
+    Kata Containers provide strong isolation by running each container in a lightweight
+    VM, offering an additional security boundary between containers and the host.
+
+    The following label and taint are automatically added to every Kata pool:
+      - Label: workload-runtime=kata
+      - Taint: workload-runtime=kata:NoSchedule
+
+    Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass
+    with handler 'kata' for pods that should run in Kata containers:
+
+      apiVersion: node.k8s.io/v1
+      kind: RuntimeClass
+      metadata:
+        name: kata
+      handler: kata
+      scheduling:
+        nodeSelector:
+          workload-runtime: kata
+        tolerations:
+          - key: workload-runtime
+            operator: Equal
+            value: kata
+            effect: NoSchedule
+
+    Note: Kata node pools require VM sizes that support nested virtualization.
+    The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload_runtime.
+  EOT
+  type = map(object({
+    vm_size              = string
+    min_count            = optional(number)
+    max_count            = optional(number)
+    max_pods             = optional(number)
+    os_disk_size_gb      = number
+    os_sku               = optional(string, "AzureLinux")
+    os_type              = optional(string, "Linux")
+    node_labels          = optional(map(string), {})
+    node_taints          = optional(list(string), [])
+    auto_scaling_enabled = bool
+    mode                 = optional(string, "User")
+    zones                = list(string)
+    subnet_nodes_id      = optional(string, null)
+    subnet_pods_id       = optional(string, null)
+    upgrade_settings = object({
+      max_surge = string
+    })
+  }))
+  default = {}
+}
+
 variable "monitoring_account_name" {
   description = "The name of the monitoring account"
   default     = "MonitoringAccount1"

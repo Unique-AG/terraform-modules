@@ -106,12 +106,14 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
+| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.4 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.39 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
+| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.4 |
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.39 |
 
 ## Modules
@@ -122,6 +124,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azapi_resource.kata_node_pool](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_dashboard_grafana.grafana](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dashboard_grafana) | resource |
 | [azurerm_kubernetes_cluster.cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
@@ -166,6 +169,7 @@ No modules.
 | <a name="input_defender_log_analytics_workspace_id"></a> [defender\_log\_analytics\_workspace\_id](#input\_defender\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace for Microsoft Defender | `string` | `null` | no |
 | <a name="input_diagnostic_logs_categories"></a> [diagnostic\_logs\_categories](#input\_diagnostic\_logs\_categories) | AKS diagnostic log categories to enable. Only categories present in the supported set are used.<br/>See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs<br/><br/>DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor. | `list(string)` | `null` | no |
 | <a name="input_dns_service_ip"></a> [dns\_service\_ip](#input\_dns\_service\_ip) | The DNS service IP for the Kubernetes Cluster. | `string` | `"172.20.0.10"` | no |
+| <a name="input_kata_node_pool_settings"></a> [kata\_node\_pool\_settings](#input\_kata\_node\_pool\_settings) | Settings for Kata Containers node pools with hardware-isolated VM workload runtime.<br/>Kata Containers provide strong isolation by running each container in a lightweight<br/>VM, offering an additional security boundary between containers and the host.<br/><br/>The following label and taint are automatically added to every Kata pool:<br/>  - Label: workload-runtime=kata<br/>  - Taint: workload-runtime=kata:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass<br/>with handler 'kata' for pods that should run in Kata containers:<br/><br/>  apiVersion: node.k8s.io/v1<br/>  kind: RuntimeClass<br/>  metadata:<br/>    name: kata<br/>  handler: kata<br/>  scheduling:<br/>    nodeSelector:<br/>      workload-runtime: kata<br/>    tolerations:<br/>      - key: workload-runtime<br/>        operator: Equal<br/>        value: kata<br/>        effect: NoSchedule<br/><br/>Note: Kata node pools require VM sizes that support nested virtualization.<br/>The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload\_runtime. | <pre>map(object({<br/>    vm_size              = string<br/>    min_count            = optional(number)<br/>    max_count            = optional(number)<br/>    max_pods             = optional(number)<br/>    os_disk_size_gb      = number<br/>    os_sku               = optional(string, "AzureLinux")<br/>    os_type              = optional(string, "Linux")<br/>    node_labels          = optional(map(string), {})<br/>    node_taints          = optional(list(string), [])<br/>    auto_scaling_enabled = bool<br/>    mode                 = optional(string, "User")<br/>    zones                = list(string)<br/>    subnet_nodes_id      = optional(string, null)<br/>    subnet_pods_id       = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_kubernetes_default_node_count_max"></a> [kubernetes\_default\_node\_count\_max](#input\_kubernetes\_default\_node\_count\_max) | The maximum number of nodes in the default node pool. | `number` | `5` | no |
 | <a name="input_kubernetes_default_node_count_min"></a> [kubernetes\_default\_node\_count\_min](#input\_kubernetes\_default\_node\_count\_min) | The minimum number of nodes in the default node pool. | `number` | `2` | no |
 | <a name="input_kubernetes_default_node_os_disk_size"></a> [kubernetes\_default\_node\_os\_disk\_size](#input\_kubernetes\_default\_node\_os\_disk\_size) | The OS disk size in GB for default node pool VMs. | `number` | `100` | no |
