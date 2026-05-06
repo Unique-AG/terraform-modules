@@ -278,12 +278,12 @@ resource "azapi_resource" "kata_node_pool" {
   type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
   name      = each.key
   parent_id = azurerm_kubernetes_cluster.cluster.id
-  tags      = var.tags
 
   body = {
+    tags = var.tags
     properties = {
       availabilityZones = each.value.zones
-      count             = each.value.min_count
+      count             = coalesce(each.value.min_count, 0)
       enableAutoScaling = each.value.auto_scaling_enabled
       maxCount          = each.value.max_count
       maxPods           = each.value.max_pods
