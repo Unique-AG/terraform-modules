@@ -280,7 +280,6 @@ resource "azapi_resource" "kata_node_pool" {
   parent_id = azurerm_kubernetes_cluster.cluster.id
 
   body = {
-    tags = var.tags
     properties = {
       availabilityZones = each.value.zones
       count             = coalesce(each.value.min_count, 0)
