@@ -140,12 +140,11 @@ resource "azurerm_private_endpoint" "storage_account_pe" {
 }
 
 resource "azurerm_storage_account_customer_managed_key" "cmk" {
-  count                     = local.uses_cmk ? 1 : 0
-  storage_account_id        = azurerm_storage_account.storage_account.id
-  key_vault_id              = var.customer_managed_key.key_vault_id
-  key_name                  = var.customer_managed_key.key_name
-  key_version               = var.customer_managed_key.key_version
-  user_assigned_identity_id = var.customer_managed_key.user_assigned_identity_id
+  count                        = local.uses_cmk ? 1 : 0
+  federated_identity_client_id = var.customer_managed_key.federated_identity_client_id
+  key_vault_key_id             = var.customer_managed_key.key_vault_key_id
+  storage_account_id           = azurerm_storage_account.storage_account.id
+  user_assigned_identity_id    = var.customer_managed_key.user_assigned_identity_id
 }
 
 resource "azurerm_storage_management_policy" "default" {
@@ -186,11 +185,11 @@ resource "azurerm_key_vault_key" "storage-account-byok" {
 }
 
 resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
-  count                     = local.self_cmk ? 1 : 0
-  storage_account_id        = azurerm_storage_account.storage_account.id
-  key_vault_id              = var.self_cmk.key_vault_id
-  key_name                  = azurerm_key_vault_key.storage-account-byok[0].name
-  user_assigned_identity_id = var.self_cmk.user_assigned_identity_id
+  count                        = local.self_cmk ? 1 : 0
+  federated_identity_client_id = var.self_cmk.federated_identity_client_id
+  storage_account_id           = azurerm_storage_account.storage_account.id
+  key_vault_key_id             = azurerm_key_vault_key.storage-account-byok[0].id
+  user_assigned_identity_id    = var.self_cmk.user_assigned_identity_id
 }
 
 resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {

@@ -84,15 +84,14 @@ variable "cors_rules" {
 }
 
 variable "customer_managed_key" {
-  description = "Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key_vault_id must be accessible to the user_assigned_identity_id."
+  description = "Customer-managed key for the storage account via azurerm_storage_account_customer_managed_key. `key_vault_key_id` is the full Azure resource ID of the Key Vault key. The user-assigned identity must have access to unwrap that key. Set `federated_identity_client_id` for cross-tenant customer-managed keys."
   type = object({
-    key_name                  = string
-    key_vault_id              = string
-    key_version               = optional(string, null)
-    user_assigned_identity_id = string
+    key_vault_key_id             = string
+    user_assigned_identity_id    = string
+    federated_identity_client_id = optional(string, null)
   })
-  default = null
-
+  default  = null
+  nullable = true
 }
 
 variable "storage_management_policy_default" {
@@ -138,12 +137,13 @@ variable "network_rules" {
 variable "self_cmk" {
   description = "Details for the self customer managed key."
   type = object({
-    key_name                  = string
-    key_vault_id              = string
-    key_type                  = optional(string, "RSA-HSM")
-    key_size                  = optional(number, 2048)
-    key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
-    user_assigned_identity_id = string
+    key_name                     = string
+    key_vault_id                 = string
+    key_type                     = optional(string, "RSA-HSM")
+    key_size                     = optional(number, 2048)
+    key_opts                     = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
+    user_assigned_identity_id    = string
+    federated_identity_client_id = optional(string, null)
 
   })
   default = null
