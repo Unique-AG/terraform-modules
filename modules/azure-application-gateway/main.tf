@@ -320,8 +320,8 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
 
 
 resource "azurerm_application_gateway" "appgw" {
-  enable_http2        = true
   firewall_policy_id  = local.waf_enabled ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
+  http2_enabled       = true
   location            = var.resource_group.location
   name                = var.explicit_name != null ? var.explicit_name : "${var.name_prefix}-appgw"
   resource_group_name = var.resource_group.name
