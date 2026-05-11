@@ -188,7 +188,7 @@ resource "azurerm_storage_account_customer_managed_key" "storage_account_cmk" {
   count                        = local.self_cmk ? 1 : 0
   federated_identity_client_id = var.self_cmk.federated_identity_client_id
   storage_account_id           = azurerm_storage_account.storage_account.id
-  key_vault_key_id             = azurerm_key_vault_key.storage-account-byok[0].id
+  key_vault_key_id             = azurerm_key_vault_key.storage-account-byok[0].versionless_id
   user_assigned_identity_id    = var.self_cmk.user_assigned_identity_id
 }
 

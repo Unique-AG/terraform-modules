@@ -84,7 +84,7 @@ variable "cors_rules" {
 }
 
 variable "customer_managed_key" {
-  description = "Customer-managed key for the storage account via azurerm_storage_account_customer_managed_key. `key_vault_key_id` is the full Azure resource ID of the Key Vault key. The user-assigned identity must have access to unwrap that key. Set `federated_identity_client_id` for cross-tenant customer-managed keys."
+  description = "Customer-managed key for the storage account via azurerm_storage_account_customer_managed_key. `key_vault_key_id` is the full Azure resource ID of the Key Vault key. The user-assigned identity must have access to unwrap that key. Set `federated_identity_client_id` for cross-tenant customer-managed keys. Callers should prefer versionless key ids (.versionless_id instead of .id)."
   type = object({
     key_vault_key_id             = string
     user_assigned_identity_id    = string
