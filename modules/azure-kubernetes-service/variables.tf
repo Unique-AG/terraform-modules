@@ -75,6 +75,39 @@ variable "max_surge" {
   }
 }
 
+variable "drain_timeout_in_minutes" {
+  description = "Maximum minutes AKS will wait for pods on a node to drain during an upgrade. AKS uses a short internal default (~6 min) which is too tight for slow-to-evict workloads (Kata-VM, large stateful pods, custom controllers). Range 0-1440."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = var.drain_timeout_in_minutes == null || (try(var.drain_timeout_in_minutes, 0) >= 0 && try(var.drain_timeout_in_minutes, 0) <= 1440)
+    error_message = "drain_timeout_in_minutes must be between 0 and 1440 (or null to use the AKS default)."
+  }
+}
+
+variable "node_soak_duration_in_minutes" {
+  description = "Time AKS waits after a new node becomes Ready before moving on to the next node during an upgrade. Range 0-30."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = var.node_soak_duration_in_minutes == null || (try(var.node_soak_duration_in_minutes, 0) >= 0 && try(var.node_soak_duration_in_minutes, 0) <= 30)
+    error_message = "node_soak_duration_in_minutes must be between 0 and 30 (or null to use the AKS default)."
+  }
+}
+
+variable "undrainable_node_behavior" {
+  description = "What AKS does when a node can't be drained within the timeout (default_node_pool only). \"Schedule\" (AKS default) fails the upgrade. \"Cordon\" leaves the node cordoned and continues so one stuck workload doesn't block the whole upgrade. Set per-pool via *_node_pool_settings.upgrade_settings.undrainable_node_behavior for user pools."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(var.undrainable_node_behavior, "null"))
+    error_message = "undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null."
+  }
+}
+
 variable "api_server_authorized_ip_ranges" {
   description = "The IP ranges that are allowed to access the Kubernetes API server."
   type        = list(string)
@@ -281,9 +314,19 @@ variable "node_pool_settings" {
     subnet_pods_id              = optional(string, null)
     temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
-      max_surge = string
+      max_surge                     = string
+      drain_timeout_in_minutes      = optional(number)
+      node_soak_duration_in_minutes = optional(number)
+      undrainable_node_behavior     = optional(string)
     })
   }))
+  validation {
+    condition = alltrue([
+      for k, v in var.node_pool_settings :
+      v.upgrade_settings.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(v.upgrade_settings.undrainable_node_behavior, "null"))
+    ])
+    error_message = "node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every node pool."
+  }
   default = {
     stable = {
       vm_size         = "Standard_D8s_v5"
@@ -388,7 +431,10 @@ variable "spot_node_pool_settings" {
     eviction_policy             = optional(string, "Delete")
     spot_max_price              = optional(number, -1)
     upgrade_settings = object({
-      max_surge = string
+      max_surge                     = string
+      drain_timeout_in_minutes      = optional(number)
+      node_soak_duration_in_minutes = optional(number)
+      undrainable_node_behavior     = optional(string)
     })
   }))
   default = {}
@@ -399,6 +445,14 @@ variable "spot_node_pool_settings" {
       contains(["Deallocate", "Delete"], v.eviction_policy)
     ])
     error_message = "eviction_policy must be either 'Deallocate' or 'Delete'."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.spot_node_pool_settings :
+      v.upgrade_settings.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(v.upgrade_settings.undrainable_node_behavior, "null"))
+    ])
+    error_message = "spot_node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every spot node pool."
   }
 }
 
@@ -448,10 +502,21 @@ variable "kata_node_pool_settings" {
     subnet_nodes_id      = optional(string, null)
     subnet_pods_id       = optional(string, null)
     upgrade_settings = object({
-      max_surge = string
+      max_surge                     = string
+      drain_timeout_in_minutes      = optional(number)
+      node_soak_duration_in_minutes = optional(number)
+      undrainable_node_behavior     = optional(string)
     })
   }))
   default = {}
+
+  validation {
+    condition = alltrue([
+      for k, v in var.kata_node_pool_settings :
+      v.upgrade_settings.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(v.upgrade_settings.undrainable_node_behavior, "null"))
+    ])
+    error_message = "kata_node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every kata node pool."
+  }
 }
 
 variable "monitoring_account_name" {
