@@ -107,14 +107,14 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.4 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.39 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.43 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.4 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.39 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.43 |
 
 ## Modules
 
