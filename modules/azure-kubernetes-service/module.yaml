@@ -2,9 +2,11 @@ name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 5.6.0
+version: 5.7.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
+  - kind: added
+    description: "Plumb `drain_timeout_in_minutes`, `node_soak_duration_in_minutes` and `undrainable_node_behavior` through every pool's `upgrade_settings` (default pool via top-level vars, user/spot/kata pools via their `*_node_pool_settings.upgrade_settings` object). Lets consumers extend the drain budget for slow-to-evict workloads (Kata VMs, large stateful pods) and choose `Cordon` so a single stuck eviction doesn't fail the whole AKS upgrade."
   - kind: added
     description: "Variable `kata_node_pool_settings` to deploy Kata Containers node pools with hardware-isolated VM workload runtime (KataVmIsolation). Uses azapi provider pending azurerm support."

@@ -161,7 +161,10 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     tags                         = var.tags
     only_critical_addons_enabled = true
     upgrade_settings {
-      max_surge = var.max_surge
+      max_surge                     = var.max_surge
+      drain_timeout_in_minutes      = var.drain_timeout_in_minutes
+      node_soak_duration_in_minutes = var.node_soak_duration_in_minutes
+      undrainable_node_behavior     = var.undrainable_node_behavior
     }
   }
 
@@ -235,7 +238,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   zones                       = each.value.zones
 
   upgrade_settings {
-    max_surge = each.value.upgrade_settings.max_surge
+    max_surge                     = each.value.upgrade_settings.max_surge
+    drain_timeout_in_minutes      = each.value.upgrade_settings.drain_timeout_in_minutes
+    node_soak_duration_in_minutes = each.value.upgrade_settings.node_soak_duration_in_minutes
+    undrainable_node_behavior     = each.value.upgrade_settings.undrainable_node_behavior
   }
 }
 
@@ -265,7 +271,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
   zones                       = each.value.zones
 
   upgrade_settings {
-    max_surge = each.value.upgrade_settings.max_surge
+    max_surge                     = each.value.upgrade_settings.max_surge
+    drain_timeout_in_minutes      = each.value.upgrade_settings.drain_timeout_in_minutes
+    node_soak_duration_in_minutes = each.value.upgrade_settings.node_soak_duration_in_minutes
+    undrainable_node_behavior     = each.value.upgrade_settings.undrainable_node_behavior
   }
 }
 
@@ -298,7 +307,10 @@ resource "azapi_resource" "kata_node_pool" {
       vnetSubnetID      = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
       workloadRuntime   = "KataVmIsolation"
       upgradeSettings = {
-        maxSurge = each.value.upgrade_settings.max_surge
+        maxSurge                  = each.value.upgrade_settings.max_surge
+        drainTimeoutInMinutes     = each.value.upgrade_settings.drain_timeout_in_minutes
+        nodeSoakDurationInMinutes = each.value.upgrade_settings.node_soak_duration_in_minutes
+        undrainableNodeBehavior   = each.value.upgrade_settings.undrainable_node_behavior
       }
     }
   }
