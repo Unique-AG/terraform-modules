@@ -62,6 +62,162 @@ You can find this a full example [here](https://azure.github.io/application-gate
 
 See the [private-ca example](./examples/private-ca/) for a complete working configuration.
 
+## Private Application Gateway (network isolation)
+
+The module supports deploying an Application Gateway with **no public IP** — a private-only frontend. The capability is GA (Microsoft Tech Community announcement, April 2026), though the Azure portal still labels the underlying subscription feature as **Preview**.
+
+See [`examples/private-only/`](./examples/private-only/) for a complete working configuration and [the Azure docs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment) for the platform reference.
+
+### Frontend modes
+
+| Mode | `public_frontend_ip_configuration` | `private_frontend_ip_configuration` | Use case |
+|------|--------------------------------------|---------------------------------------|----------|
+| Public only (default) | set | `null` | Internet-facing ingress |
+| Dual | set | set | Internet ingress + internal traffic on the same gateway |
+| **Private only** | `null` | set | Fully internal ingress; no public attack surface |
+
+### Prerequisites for private-only
+
+This module **does not** create any of these — they are consumer-owned by design (see [DESIGN.md](../../DESIGN.md), *Low coupling*):
+
+1. **Subscription feature** registered (one-time per subscription):
+   ```bash
+   az feature register --namespace Microsoft.Network \
+                       --name      EnableApplicationGatewayNetworkIsolation
+   # wait until "Registered" (up to ~30 minutes):
+   az feature show --namespace Microsoft.Network \
+                   --name      EnableApplicationGatewayNetworkIsolation \
+                   -o tsv --query properties.state
+   ```
+2. **SKU** must be `Standard_v2` or `WAF_v2` (enforced by a `lifecycle.precondition` in the module).
+3. **AppGW subnet delegated** to `Microsoft.Network/applicationGateways`. This has been **mandatory for any new AppGW v2 subnet since 2025-05-05** — it is not specific to private-only, but private-only deployments on undelegated subnets will fail.
+4. **NSG** allowing:
+   - **Inbound:** `AzureLoadBalancer` (health probes), client CIDRs / VPN / ExpressRoute ranges on `443`/`80`. The `GatewayManager` rule is *not* required for private-only.
+   - **Outbound:** `AzureMonitor` (diagnostics), `AzureKeyVault` (if KV-backed SSL certs), `Storage` (boot diagnostics in some modes), and your backend service tags or IPs. A pure deny-all outbound is **not achievable** on AppGW v2 — diagnostics will silently break.
+5. **Outbound Internet path** (NAT Gateway or NVA) if any backends are public endpoints. NAT Gateway adds a recurring cost (~$32/month + per-GB egress in Switzerland North as of 2026).
+6. **Internal DNS** (Private DNS Zone, VNet custom DNS, or hosts entries) publishing the gateway's private IP for the client-facing hostnames. The module does **not** create A records.
+7. **AGIC** version `1.7.x` or later if you are using the Application Gateway Ingress Controller (see "AGIC with private-only" below).
+
+### Variables for private-only
+
+```hcl
+module "application_gateway" {
+  source = "path/to/module"
+
+  # ... required base config ...
+
+  sku = {
+    name = "WAF_v2"
+    tier = "WAF_v2"
+  }
+
+  public_frontend_ip_configuration = null # explicit null = private-only
+
+  private_frontend_ip_configuration = {
+    private_ip_address = "10.0.0.5" # literal IP, Static allocation
+    address_allocation = "Static"   # or "Dynamic" (Azure assigns; omit private_ip_address)
+    subnet_resource_id = azurerm_subnet.appgw.id
+  }
+}
+```
+
+**Dynamic allocation:** if `address_allocation = "Dynamic"`, `private_ip_address` **must be null**. The assigned IP is not surfaced as a Terraform attribute on `azurerm_application_gateway`; read it from Azure via the CLI or a data source post-apply if needed.
+
+### AGIC with private-only
+
+- Minimum AGIC version: **`1.7.x`** (verify the exact patch released in your environment).
+- Helm values:
+  ```yaml
+  appgw:
+    usePrivateIP: true
+  ```
+- Per-ingress annotation (alternative / override): `appgw.ingress.kubernetes.io/use-private-ip: "true"`.
+- AGIC RBAC / managed identity requirements are unchanged from the public-frontend case.
+
+### Limitations (private-only specific)
+
+| Limitation | Note |
+|------------|------|
+| [Private Link on AppGW](https://learn.microsoft.com/en-us/azure/application-gateway/private-link) | **Unsupported** in combination with private-only. |
+| WAF v2 rate-limiting custom rules | Not supported on AppGW v2. |
+| Let's Encrypt HTTP-01 challenges | Impractical without a public listener — use DNS-01 or an internal CA. The `examples/private-only/` example sets `waf_custom_rules_allowed_https_challenges = false`. |
+| Network Watcher connection troubleshoot / NSG diagnostics | May surface errors; ops runbooks should note. |
+| Private endpoint backends over **global** VNet peering | Unhealthy backends; use regional peering. |
+| Mixed-era gateways on the same subnet | Limits NSG/UDR features; use a dedicated subnet per gateway generation. |
+| TCP idle > 4 min without client keep-alive | Contact `agprivateip-keepalive@microsoft.com`. |
+| In-place removal of an existing public frontend | **Rejected by Azure** — see migration guide below. |
+
+### Migration guide — `6.0.0`
+
+`6.0.0` adds private-only support and includes one breaking change.
+
+#### Breaking changes from `5.x`
+
+1. **`private_frontend_ip_configuration.ip_address_resource_id` renamed to `private_ip_address`** — the old name was misleading (it was always a literal IPv4, never a resource ID). Public callers (the default) are unaffected; dual-stack callers must rename one field.
+2. **`public_frontend_ip_configuration.ip_address` removed** — the field was unused by `main.tf`. No functional change; callers that set it must just drop it.
+
+If you only used `public_frontend_ip_configuration`, the upgrade is a no-op for your config (just bump the version pin).
+
+#### Existing public-only callers (no input changes required)
+
+After bumping the module version, plan should be clean:
+
+```bash
+terraform plan
+# expect: "No changes. Your infrastructure matches the configuration."
+```
+
+If you see any drift on `azurerm_application_gateway.appgw`, do not apply — investigate first. The module was validated against current `azurerm 4.x` to produce a zero-diff upgrade for public-only callers.
+
+#### Existing dual-stack callers (one-line rename)
+
+```diff
+ private_frontend_ip_configuration = {
+-  ip_address_resource_id = "10.0.0.5"
++  private_ip_address     = "10.0.0.5"
+   address_allocation     = "Static"
+   subnet_resource_id     = azurerm_subnet.appgw.id
+ }
+```
+
+After the rename, `terraform plan` should report no changes on the gateway itself.
+
+#### Greenfield private-only
+
+Use [`examples/private-only/`](./examples/private-only/) as a template. Confirm all prerequisites above are satisfied, then `terraform apply`.
+
+#### Brownfield: public → private-only
+
+> 🛑 **Azure does not support removing a public frontend in place.** Attempting `public_frontend_ip_configuration = null` on an existing public-frontend gateway will fail at apply time, regardless of feature registration. The migration is **deploy-new + cutover** — there is no `moved {}` shortcut.
+
+Recommended sequence:
+
+1. **Provision a new private-only gateway** alongside the existing one with a different `name_prefix` (or `explicit_name`). Place it on a **dedicated subnet** to avoid mixed-era limitations.
+2. **Dual-publish DNS:** add A records for the hostname(s) pointing at the new private IP, alongside the existing public records, with a low TTL.
+3. **Re-point AGIC** at the new gateway (`appgw-resource-id` in Helm values) — or stand up a second AGIC instance scoped to the new ingress controller.
+4. **Health-check from inside the VNet** (jumpbox / Bastion) and confirm backends respond.
+5. **Cut over** by removing the public DNS record and waiting for TTL.
+6. **Decommission** the old gateway and `azurerm_public_ip`:
+   - Remove the old module call (or `terraform destroy` for the old gateway).
+   - **State surgery note:** if your `azurerm_public_ip` is Terraform-managed, remove it from `.tf` explicitly — Terraform will not auto-prune it just because the AppGW no longer references it.
+   - Update `waf_custom_rules_allowed_ips` if it contained the public NAT/egress IP that no longer applies.
+
+#### Rollback
+
+- Feature unregistration is **not** required for rollback — already-deployed gateways are unaffected by subscription-feature state changes after creation.
+- Operational rollback is the same dual-publish discipline in reverse: stand a public-frontend gateway back up, flip DNS, wait for TTL.
+
+### Troubleshooting
+
+| Symptom | Likely cause |
+|---------|--------------|
+| `ApplicationGatewayFrontendIpCannotHavePublicIpAndSubnet` | Feature not registered, or you are attempting in-place public→private removal |
+| SKU validation error at apply | Feature not registered, or non-v2 SKU |
+| Subnet delegation error | AppGW subnet missing `Microsoft.Network/applicationGateways` delegation |
+| 502/503 from backends | NSG outbound rules blocking backend traffic or probes |
+| Diagnostic logs not flowing despite successful provision | NSG outbound missing `AzureMonitor` service tag |
+| AGIC keeps switching the listener to a non-existent public frontend | AGIC < 1.7 or `usePrivateIP: true` not set globally |
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -76,7 +232,7 @@ See the [private-ca example](./examples/private-ca/) for a complete working conf
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.73.0 |
 
 ## Modules
 
@@ -106,8 +262,8 @@ No modules.
 | <a name="input_metric_alerts_external_action_group_ids"></a> [metric\_alerts\_external\_action\_group\_ids](#input\_metric\_alerts\_external\_action\_group\_ids) | List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action\_group\_ids. If an alert defines actions or action\_group\_ids, those take precedence. | `list(string)` | `[]` | no |
 | <a name="input_monitor_diagnostic_setting"></a> [monitor\_diagnostic\_setting](#input\_monitor\_diagnostic\_setting) | Configuration for the application gateway diagnostic setting | <pre>object({<br/>    explicit_name              = optional(string)<br/>    log_analytics_workspace_id = string<br/>    enabled_log = optional(list(object({<br/>      category_group = string<br/>    })), [{ category_group = "allLogs" }])<br/>  })</pre> | `null` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
-| <a name="input_private_frontend_ip_configuration"></a> [private\_frontend\_ip\_configuration](#input\_private\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a private IP address. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    address_allocation      = optional(string, "Static")<br/>    subnet_resource_id      = string<br/>    is_active_http_listener = optional(bool, false)<br/>  })</pre> | `null` | no |
-| <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    ip_address              = optional(string)<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | n/a | yes |
+| <a name="input_private_frontend_ip_configuration"></a> [private\_frontend\_ip\_configuration](#input\_private\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a private IP address.<br/><br/>- `private_ip_address`: literal IPv4 (e.g. "10.0.0.5"). Required when `address_allocation = "Static"`; must be null when `address_allocation = "Dynamic"`.<br/>- `address_allocation`: "Static" (default) or "Dynamic". For Dynamic, Azure assigns an IP from the subnet — read it back via the Azure API after apply; the module does not expose it as an output.<br/>- `is_active_http_listener`: only meaningful in dual-stack (both public and private set). Exactly one of public/private must be `true`. In private-only mode this flag is ignored (private is the only frontend). | <pre>object({<br/>    explicit_name           = optional(string)<br/>    private_ip_address      = optional(string)<br/>    address_allocation      = optional(string, "Static")<br/>    subnet_resource_id      = string<br/>    is_active_http_listener = optional(bool, false)<br/>  })</pre> | `null` | no |
+| <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address.<br/><br/>Set to `null` to deploy a **private-only** Application Gateway. Requires the subscription to have `Microsoft.Network/EnableApplicationGatewayNetworkIsolation` registered, Standard\_v2 or WAF\_v2 SKU, the AppGW subnet delegated to `Microsoft.Network/applicationGateways`, and a `private_frontend_ip_configuration`. See README for full prerequisites. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | `null` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | The resource group to deploy the gateway to. | <pre>object({<br/>    name     = string<br/>    location = string<br/>  })</pre> | n/a | yes |
 | <a name="input_sku"></a> [sku](#input\_sku) | The SKU of the gateway | <pre>object({<br/>    name = string<br/>    tier = string<br/>  })</pre> | <pre>{<br/>  "name": "Standard_v2",<br/>  "tier": "Standard_v2"<br/>}</pre> | no |
 | <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101S",<br/>  "type": "Predefined"<br/>}</pre> | no |
@@ -129,8 +285,12 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_active_frontend_ip_configuration_name"></a> [active\_frontend\_ip\_configuration\_name](#output\_active\_frontend\_ip\_configuration\_name) | Name of the bootstrap http\_listener's frontend. AGIC may reshuffle which frontend serves which listener at runtime via annotations; this output reflects the module's initial wiring only. |
 | <a name="output_appgw_id"></a> [appgw\_id](#output\_appgw\_id) | The ID of the Application Gateway |
 | <a name="output_appgw_name"></a> [appgw\_name](#output\_appgw\_name) | The name of the Application Gateway |
+| <a name="output_frontend_ip_configuration_names"></a> [frontend\_ip\_configuration\_names](#output\_frontend\_ip\_configuration\_names) | Map of frontend mode (`public`, `private`) to the Application Gateway frontend block name. Nulls are filtered out — keys are only present for frontends that were actually configured. |
+| <a name="output_private_frontend_ip_address"></a> [private\_frontend\_ip\_address](#output\_private\_frontend\_ip\_address) | Private IP literal if configured with Static allocation; null otherwise. For Dynamic allocation, Azure assigns the IP and it is not exposed as a flat attribute on the resource — query via Azure CLI/data source after apply. |
+| <a name="output_public_frontend_ip_resource_id"></a> [public\_frontend\_ip\_resource\_id](#output\_public\_frontend\_ip\_resource\_id) | Resource ID of the public IP attached to the gateway; null when the gateway is private-only. |
 <!-- END_TF_DOCS -->
 
 ## Upgrade Guide
@@ -187,7 +347,7 @@ Nearly all variables where reworked to have consistent names and address their e
 |`min_capacity`|`autoscale_configuration.min_capacity`|
 |`name_prefix`|_unchanged_|
 |`private_frontend_enabled`|_replaced by mutually exclusive objects `public_frontend_ip_configuration` / `private_frontend_ip_configuration`_|
-|`private_ip`|`private_frontend_ip_configuration.ip_address_resource_id`|
+|`private_ip`|`private_frontend_ip_configuration.private_ip_address` (was `ip_address_resource_id` in 4.0.0 – 5.x; renamed in 6.0.0)|
 |`public_ip_address_id`|`public_frontend_ip_configuration.ip_address_resource_id`|
 |`request_buffering_enabled`|`global_request_buffering_enabled`|
 |`resource_group_location`|`resource_group.location`|

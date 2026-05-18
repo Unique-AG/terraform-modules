@@ -1,9 +1,17 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 5.1.1
+version: 6.0.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
-  - kind: fixed
-    description: "Provider deprecation warning for `enable_http2` → `http2_enabled`."
+  - kind: added
+    description: "Support private-only Application Gateway deployments by making `public_frontend_ip_configuration` optional. Adds `lifecycle.precondition` guards (at-least-one frontend, v2 SKU when private-only, Static/Dynamic IP coherence, dual-stack listener XOR). Supports `private_ip_address_allocation = \"Dynamic\"`."
+  - kind: added
+    description: "New outputs: `private_frontend_ip_address`, `public_frontend_ip_resource_id`, `frontend_ip_configuration_names`, `active_frontend_ip_configuration_name`."
+  - kind: added
+    description: "New `examples/private-only/` with subnet delegation and private-frontend wiring."
+  - kind: changed
+    description: "BREAKING: `private_frontend_ip_configuration.ip_address_resource_id` renamed to `private_ip_address` (the field has always been a literal IPv4, not a resource ID). Public-only callers are unaffected; dual-stack callers must rename one field. See README migration guide."
+  - kind: removed
+    description: "BREAKING (no-op for almost all callers): `public_frontend_ip_configuration.ip_address` field removed. It was never read by `main.tf`; callers that set it should drop it."
