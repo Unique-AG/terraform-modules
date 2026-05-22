@@ -79,6 +79,54 @@ The `customer_managed_key` object includes:
 
 This managed identity must have appropriate permissions (e.g., `Key Vault Crypto Service Encryption User`) to access the encryption key in the Key Vault.
 
+## Data Loss Prevention (DLP)
+
+Azure Cognitive Services supports outbound Data Loss Prevention (DLP) to restrict which external FQDNs an account can reach. This is **orthogonal to inbound access** controlled by `public_network_access_enabled` — DLP governs outbound egress from the service, not who can call the endpoint.
+
+| Terraform argument | ARM property |
+|---|---|
+| `outbound_network_access_restricted` | `restrictOutboundNetworkAccess` |
+| `fqdns` | `allowedFqdnList` |
+
+The Azure portal may not expose DLP settings for Cognitive Services accounts; configure via Terraform or the Azure REST API.
+
+**Operational notes:**
+
+- Changes can take up to ~15 minutes to propagate (per Microsoft documentation).
+- Microsoft documents a maximum of 1000 FQDNs in `allowedFqdnList`.
+- When outbound restriction is enabled, you must allowlist FQDNs for any integrations the account uses (e.g. Azure AI Search hostnames).
+
+See [Azure Cognitive Services Data Loss Prevention](https://learn.microsoft.com/en-us/azure/ai-services/cognitive-services-data-loss-prevention) for full details.
+
+### Example
+
+```hcl
+cognitive_accounts = {
+  prod = {
+    name                          = "aoai-prod"
+    custom_subdomain_name         = "aoai-prod"
+    location                      = "westeurope"
+    public_network_access_enabled = false
+
+    outbound_network_access_restricted = true
+    fqdns = [
+      "my-search.search.windows.net",
+    ]
+
+    cognitive_deployments = [
+      {
+        name           = "gpt-4o"
+        model_name     = "gpt-4o"
+        model_version  = "2024-08-06"
+        sku_capacity   = 10
+      },
+    ]
+  }
+}
+```
+
+Defaults (`outbound_network_access_restricted = false`, `fqdns = []`) preserve existing behaviour — no migration is required.
+
 ## Input `cognitive_accounts`
 
 To keep the module compatible with a range of Unique versions and iterations as well as features, the flexibility to manage secrets is quite large.
@@ -88,6 +136,9 @@ The module itself defaults to the most secure variants including allowing only W
 |Flag|Behaviour|
 |-|-
 `public_network_access_enabled`|defines, whether the accounts are exposed to the internet / public network
+|-|-
+`outbound_network_access_restricted`|when `true`, restricts outbound network access to FQDNs listed in `fqdns` (DLP egress control; independent of inbound access)
+`fqdns`|list of allowed outbound FQDNs; required when `outbound_network_access_restricted = true`
 |-|-
 `local_auth_enabled`|defines, whether key authentication is enabled or not
 `model_definitions_auth_strategy_injected`|Only takes effect when `local_auth_enabled` is `true`.<br/>Can be either `WorkloadIdentity` (injects the `WORKLOAD_IDENTITY` constant as key) or `ApiKey` (injects the API Key).
