@@ -1,0 +1,49 @@
+---
+description: Conventions for editing modules/*/module.yaml (version + changelog)
+globs: modules/*/module.yaml
+alwaysApply: false
+---
+
+# `module.yaml` changelog is per-version, not cumulative
+
+The `changes:` list in `modules/<module>/module.yaml` describes **only the version being released in `version:`**. Prior entries belong to prior tags and have already been published as their GitHub release notes.
+
+`.github/workflows/release.yaml` reads the whole `changes:` array verbatim and posts it as the release notes for the new `${module}@${version}` tag. Leaving stale entries in re-publishes them under the new version and produces a misleading changelog.
+
+## When bumping `version:`
+
+1. Replace the entire `changes:` list with entries that describe only the diff between the previous and the new version.
+2. Do not append to the existing list. The historical record lives in git history and prior GitHub releases.
+3. Follow semver (see `CONTRIBUTING.md`): `fixed` → patch, `added` / `changed` (backwards-compatible) → minor, breaking → major.
+4. Allowed `kind:` values follow keep-a-changelog: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
+
+## Example
+
+Previous state (released as `azure-foo@1.2.0`):
+
+```yaml
+version: 1.2.0
+changes:
+  - kind: added
+    description: "Variable `bar` to configure baz."
+```
+
+Bumping to `1.2.1` for a bugfix — correct:
+
+```yaml
+version: 1.2.1
+changes:
+  - kind: fixed
+    description: "`bar` is now respected when baz is null."
+```
+
+Bumping to `1.2.1` for a bugfix — wrong (carries over the 1.2.0 entry):
+
+```yaml
+version: 1.2.1
+changes:
+  - kind: fixed
+    description: "`bar` is now respected when baz is null."
+  - kind: added
+    description: "Variable `bar` to configure baz."
+```
