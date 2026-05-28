@@ -584,7 +584,7 @@ variable "private_dns_zone_id" {
 }
 
 variable "automatic_upgrade_channel" {
-  description = "The automatic upgrade channel for the Kubernetes Cluster."
+  description = "Kubernetes version auto-upgrade channel (Azure portal: Upgrades → Automatic upgrade channel). Controls when AKS rolls forward the cluster Kubernetes version. Possible values: patch, stable, rapid, node-image, none. Use maintenance_window_auto_upgrade to schedule when those upgrades are applied."
   type        = string
   default     = "stable"
 }
@@ -702,7 +702,7 @@ variable "defender_log_analytics_workspace_id" {
 }
 
 variable "maintenance_window_auto_upgrade" {
-  description = "The maintenance window for automatic upgrades of the Kubernetes cluster."
+  description = "Schedule for Kubernetes version auto-upgrades (Azure portal: Upgrades → Automatic upgrade scheduler). Defines when AKS may apply upgrades driven by automatic_upgrade_channel. Null (default) means no schedule is set and Azure applies upgrades at any time."
   type = object({
     frequency    = optional(string, "Weekly")
     interval     = optional(number, 2)
@@ -781,7 +781,7 @@ variable "maintenance_window_auto_upgrade" {
 }
 
 variable "maintenance_window_node_os" {
-  description = "The maintenance window for node OS upgrades of the Kubernetes cluster."
+  description = "Schedule for node OS image upgrades (Azure portal: Upgrades → Node OS upgrade scheduler). Defines when AKS may apply OS image replacements driven by node_os_upgrade_channel. Null (default) means no schedule is set and Azure applies upgrades at any time."
   type = object({
     frequency    = optional(string, "Weekly")
     interval     = optional(number, 1)
@@ -860,7 +860,7 @@ variable "maintenance_window_node_os" {
 }
 
 variable "node_os_upgrade_channel" {
-  description = "The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None."
+  description = "Node OS image upgrade channel (Azure portal: Upgrades → Node OS upgrade channel). Controls when AKS replaces the OS image on existing nodes independently of the Kubernetes version. Possible values: Unmanaged, SecurityPatch, NodeImage, None. Use maintenance_window_node_os to schedule when those upgrades are applied."
   type        = string
   default     = "NodeImage"
 
