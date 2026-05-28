@@ -17,8 +17,8 @@ resource "azurerm_monitor_activity_log_alert" "this" {
   location            = "global"
   tags                = var.tags
 
+  # No criteria.resource_id: it exact-matches and would drop child events (e.g. agentpools/write); scope covers them for Administrative.
   criteria {
-    resource_id    = azurerm_kubernetes_cluster.cluster.id
     operation_name = each.value.activity_log_criteria.operation_name
     category       = each.value.activity_log_criteria.category
     levels         = each.value.activity_log_criteria.levels
