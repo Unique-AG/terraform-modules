@@ -28,14 +28,14 @@ variable "cognitive_accounts" {
   type = map(object({
     custom_subdomain_name                    = string
     extra_tags                               = optional(map(string), {})
+    fqdns                                    = optional(list(string), [])
     kind                                     = optional(string, "OpenAI")
     local_auth_enabled                       = optional(bool, false)
     location                                 = string
     model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")
     name                                     = string
-    public_network_access_enabled            = optional(bool, false)
     outbound_network_access_restricted       = optional(bool, false)
-    fqdns                                    = optional(list(string), [])
+    public_network_access_enabled            = optional(bool, false)
     sku_name                                 = optional(string, "S0")
 
     customer_managed_key = optional(object({

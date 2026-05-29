@@ -8,7 +8,3 @@ changes:
   - kind: added
     description: "Per-account Data Loss Prevention (DLP) outbound egress control
       via outbound_network_access_restricted and fqdns on cognitive_accounts."
-  - kind: changed
-    description: "log_category_groups now takes precedence over log_categories
-      (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories
-      validation."
