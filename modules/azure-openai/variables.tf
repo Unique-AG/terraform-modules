@@ -28,11 +28,13 @@ variable "cognitive_accounts" {
   type = map(object({
     custom_subdomain_name                    = string
     extra_tags                               = optional(map(string), {})
+    fqdns                                    = optional(list(string), [])
     kind                                     = optional(string, "OpenAI")
     local_auth_enabled                       = optional(bool, false)
     location                                 = string
     model_definitions_auth_strategy_injected = optional(string, "WorkloadIdentity")
     name                                     = string
+    outbound_network_access_restricted       = optional(bool, false)
     public_network_access_enabled            = optional(bool, false)
     sku_name                                 = optional(string, "S0")
 
@@ -103,6 +105,13 @@ variable "cognitive_accounts" {
       ])
     ])
     error_message = "diagnostic_settings.log_categories must only contain valid values: 'Audit', 'AzureOpenAIRequestUsage', 'RequestResponse', 'Trace'"
+  }
+  validation {
+    condition = alltrue([
+      for account in var.cognitive_accounts :
+      !account.outbound_network_access_restricted || length(account.fqdns) > 0
+    ])
+    error_message = "When outbound_network_access_restricted is true, fqdns must contain at least one FQDN"
   }
 }
 
