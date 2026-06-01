@@ -41,15 +41,17 @@ locals {
 resource "azurerm_cognitive_account" "aca" {
   for_each = var.cognitive_accounts
 
-  custom_subdomain_name         = each.value.custom_subdomain_name
-  kind                          = each.value.kind
-  local_auth_enabled            = each.value.local_auth_enabled
-  location                      = each.value.location
-  name                          = each.value.name
-  public_network_access_enabled = each.value.public_network_access_enabled
-  resource_group_name           = var.resource_group_name
-  sku_name                      = each.value.sku_name
-  tags                          = merge(var.tags, each.value.extra_tags)
+  custom_subdomain_name              = each.value.custom_subdomain_name
+  fqdns                              = each.value.fqdns
+  kind                               = each.value.kind
+  local_auth_enabled                 = each.value.local_auth_enabled
+  location                           = each.value.location
+  name                               = each.value.name
+  outbound_network_access_restricted = each.value.outbound_network_access_restricted
+  public_network_access_enabled      = each.value.public_network_access_enabled
+  resource_group_name                = var.resource_group_name
+  sku_name                           = each.value.sku_name
+  tags                               = merge(var.tags, each.value.extra_tags)
 
   dynamic "identity" {
     for_each = each.value.customer_managed_key != null ? [1] : []
