@@ -143,7 +143,7 @@ variable "public_frontend_ip_configuration" {
   description = <<-EOT
     Configuration for the frontend_ip_configuration that leverages a public IP address.
 
-    Set to `null` to deploy a **private-only** Application Gateway. Requires the subscription to have `Microsoft.Network/EnableApplicationGatewayNetworkIsolation` registered, Standard_v2 or WAF_v2 SKU, the AppGW subnet delegated to `Microsoft.Network/applicationGateways`, and a `private_frontend_ip_configuration`. See README for full prerequisites.
+    Set to `null` to deploy a **private-only** Application Gateway. Requires the subscription to have `Microsoft.Network/EnableApplicationGatewayNetworkIsolation` registered, Standard_v2 or WAF_v2 SKU, the AppGW subnet delegated to `Microsoft.Network/applicationGateways`, and a `private_frontend_ip_configuration`. See examples/private-only/README.md for prerequisites.
   EOT
   type = object({
     explicit_name           = optional(string)

@@ -1,23 +1,5 @@
 # Private-only Application Gateway example.
-#
-# Prerequisites (consumer-owned, not module-managed):
-#   1. Register the subscription feature ONCE per subscription:
-#        az feature register --namespace Microsoft.Network \
-#                            --name      EnableApplicationGatewayNetworkIsolation
-#        # wait until: az feature show --namespace Microsoft.Network \
-#        #             --name EnableApplicationGatewayNetworkIsolation -o tsv --query properties.state
-#        # returns "Registered" (up to ~30 min)
-#   2. SKU must be Standard_v2 or WAF_v2.
-#   3. AppGW subnet must be delegated to Microsoft.Network/applicationGateways
-#      (mandatory for ALL new AppGW v2 since 2025-05-05, not just private-only).
-#   4. NSG and routing for the AppGW subnet must allow:
-#        - inbound: AzureLoadBalancer (health) + client CIDRs on 443/80
-#        - outbound: AzureMonitor (diagnostics) + AzureKeyVault (if KV-backed certs)
-#                  + backend service tags or IPs
-#      A pure deny-all outbound is NOT achievable on AppGW v2.
-#   5. Internal DNS (Private DNS Zone or VNet custom DNS) must publish the gateway's
-#      private IP for the hostname(s) clients will use.
-#   6. If using AGIC, version >= 1.7.x with `appgw.usePrivateIP: true` in helm values.
+# See README.md in this directory for prerequisites, migration, and troubleshooting.
 
 terraform {
   backend "local" {

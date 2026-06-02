@@ -17,12 +17,14 @@ locals {
   ) : null
 
   # Active listener resolution:
+  #   - public-only: always public (is_active_http_listener is only meaningful in dual-stack)
+  #   - private-only: always private
   #   - dual: honor public.is_active_http_listener (precondition guarantees XOR)
-  #   - public-only: public
-  #   - private-only: private (the public flag is moot — public FE doesn't exist)
   active_frontend_ip_configuration_name = (
-    local.has_public_frontend && var.public_frontend_ip_configuration.is_active_http_listener
-  ) ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
+    local.has_private_frontend && (
+      !local.has_public_frontend || !var.public_frontend_ip_configuration.is_active_http_listener
+    )
+  ) ? local.private_frontend_ip_config_name : local.public_frontend_ip_config_name
 
   # WAF Custom Rule Priority Calculation
   # Lower numbers = higher priority (evaluated first).
