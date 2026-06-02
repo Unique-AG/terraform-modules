@@ -97,34 +97,67 @@ variable "name_prefix" {
 }
 
 variable "private_frontend_ip_configuration" {
-  description = "Configuration for the frontend_ip_configuration that leverages a private IP address."
+  description = <<-EOT
+    Configuration for the frontend_ip_configuration that leverages a private IP address.
+
+    - `private_ip_address`: literal IPv4 (e.g. "10.0.0.5"). Required when `address_allocation = "Static"`; must be null when `address_allocation = "Dynamic"`.
+    - `address_allocation`: "Static" (default) or "Dynamic". For Dynamic, Azure assigns an IP from the subnet — read it back via the Azure API after apply; the module does not expose it as an output.
+    - `is_active_http_listener`: only meaningful in dual-stack (both public and private set). Exactly one of public/private must be `true`. In private-only mode this flag is ignored (private is the only frontend).
+  EOT
   type = object({
     explicit_name           = optional(string)
-    ip_address_resource_id  = string
+    private_ip_address      = optional(string)
     address_allocation      = optional(string, "Static")
     subnet_resource_id      = string
     is_active_http_listener = optional(bool, false)
   })
   default = null
-}
-
-variable "public_frontend_ip_configuration" {
-  description = "Configuration for the frontend_ip_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview."
-  type = object({
-    explicit_name           = optional(string)
-    ip_address_resource_id  = string
-    ip_address              = optional(string)
-    is_active_http_listener = optional(bool, true)
-  })
 
   validation {
-    condition     = can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/publicIPAddresses/.+$", var.public_frontend_ip_configuration.ip_address_resource_id))
-    error_message = "The ip_address_resource_id must be a valid Azure public IP address resource ID."
+    condition = (
+      var.private_frontend_ip_configuration == null
+      || contains(["Static", "Dynamic"], var.private_frontend_ip_configuration.address_allocation)
+    )
+    error_message = "private_frontend_ip_configuration.address_allocation must be either 'Static' or 'Dynamic'."
   }
 
   validation {
-    condition     = var.public_frontend_ip_configuration.ip_address == null || can(cidrhost(format("%s/32", var.public_frontend_ip_configuration.ip_address), 0))
-    error_message = "The ip_address must be a valid IPv4 address."
+    condition = (
+      var.private_frontend_ip_configuration == null
+      || var.private_frontend_ip_configuration.private_ip_address == null
+      || can(cidrhost(format("%s/32", var.private_frontend_ip_configuration.private_ip_address), 0))
+    )
+    error_message = "private_frontend_ip_configuration.private_ip_address must be a valid IPv4 address when provided."
+  }
+
+  validation {
+    condition = (
+      var.private_frontend_ip_configuration == null
+      || can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/virtualNetworks/.+/subnets/.+$", var.private_frontend_ip_configuration.subnet_resource_id))
+    )
+    error_message = "private_frontend_ip_configuration.subnet_resource_id must be a valid Azure subnet resource ID."
+  }
+}
+
+variable "public_frontend_ip_configuration" {
+  description = <<-EOT
+    Configuration for the frontend_ip_configuration that leverages a public IP address.
+
+    Set to `null` to deploy a **private-only** Application Gateway. Requires the subscription to have `Microsoft.Network/EnableApplicationGatewayNetworkIsolation` registered, Standard_v2 or WAF_v2 SKU, the AppGW subnet delegated to `Microsoft.Network/applicationGateways`, and a `private_frontend_ip_configuration`. See examples/private-only/README.md for prerequisites.
+  EOT
+  type = object({
+    explicit_name           = optional(string)
+    ip_address_resource_id  = string
+    is_active_http_listener = optional(bool, true)
+  })
+  default = null
+
+  validation {
+    condition = (
+      var.public_frontend_ip_configuration == null
+      || can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/publicIPAddresses/.+$", var.public_frontend_ip_configuration.ip_address_resource_id))
+    )
+    error_message = "public_frontend_ip_configuration.ip_address_resource_id must be a valid Azure public IP address resource ID."
   }
 }
 

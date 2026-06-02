@@ -62,6 +62,29 @@ You can find this a full example [here](https://azure.github.io/application-gate
 
 See the [private-ca example](./examples/private-ca/) for a complete working configuration.
 
+## Private Application Gateway (network isolation)
+
+The module supports deploying an Application Gateway with **no public IP** — a private-only frontend. This capability is [generally available on Application Gateway v2](https://techcommunity.microsoft.com/blog/azureinfrastructureblog/general-availability-of-private-application-gateway-on-azure-application-gate/4508294) (April 2026); the Azure portal may still label the subscription feature as Preview.
+
+See [`examples/private-only/`](./examples/private-only/) for a working Terraform configuration and [`examples/private-only/README.md`](./examples/private-only/README.md) for prerequisites, AGIC notes, migration paths, and troubleshooting. Platform reference: [Azure docs — private deployment](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment).
+
+### Frontend modes
+
+| Mode | `public_frontend_ip_configuration` | `private_frontend_ip_configuration` | Use case |
+|------|--------------------------------------|---------------------------------------|----------|
+| Public only (default) | set | `null` | Internet-facing ingress |
+| Dual | set | set | Internet ingress + internal traffic on the same gateway |
+| **Private only** | `null` | set | Fully internal ingress; no public exposure |
+
+### Upgrade to `6.0.0`
+
+`6.0.0` adds private-only support with breaking changes from `5.x`:
+
+1. **`private_frontend_ip_configuration.ip_address_resource_id` renamed to `private_ip_address`** — the old name was misleading (it was always a literal IPv4, never a resource ID). Public callers (the default) are unaffected; dual-stack callers must rename one field.
+2. **`public_frontend_ip_configuration.ip_address` removed** — the field was unused by `main.tf`. No functional change; callers that set it must just drop it.
+
+If you only used `public_frontend_ip_configuration`, bump the version — no input changes required. See [`examples/private-only/README.md`](./examples/private-only/README.md) for more details.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -106,8 +129,8 @@ No modules.
 | <a name="input_metric_alerts_external_action_group_ids"></a> [metric\_alerts\_external\_action\_group\_ids](#input\_metric\_alerts\_external\_action\_group\_ids) | List of external Action Group IDs to apply to all metric alerts that do not explicitly define actions or action\_group\_ids. If an alert defines actions or action\_group\_ids, those take precedence. | `list(string)` | `[]` | no |
 | <a name="input_monitor_diagnostic_setting"></a> [monitor\_diagnostic\_setting](#input\_monitor\_diagnostic\_setting) | Configuration for the application gateway diagnostic setting | <pre>object({<br/>    explicit_name              = optional(string)<br/>    log_analytics_workspace_id = string<br/>    enabled_log = optional(list(object({<br/>      category_group = string<br/>    })), [{ category_group = "allLogs" }])<br/>  })</pre> | `null` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming resources | `string` | n/a | yes |
-| <a name="input_private_frontend_ip_configuration"></a> [private\_frontend\_ip\_configuration](#input\_private\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a private IP address. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    address_allocation      = optional(string, "Static")<br/>    subnet_resource_id      = string<br/>    is_active_http_listener = optional(bool, false)<br/>  })</pre> | `null` | no |
-| <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address. Might become nullable once https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment leaves Preview. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    ip_address              = optional(string)<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | n/a | yes |
+| <a name="input_private_frontend_ip_configuration"></a> [private\_frontend\_ip\_configuration](#input\_private\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a private IP address.<br/><br/>- `private_ip_address`: literal IPv4 (e.g. "10.0.0.5"). Required when `address_allocation = "Static"`; must be null when `address_allocation = "Dynamic"`.<br/>- `address_allocation`: "Static" (default) or "Dynamic". For Dynamic, Azure assigns an IP from the subnet — read it back via the Azure API after apply; the module does not expose it as an output.<br/>- `is_active_http_listener`: only meaningful in dual-stack (both public and private set). Exactly one of public/private must be `true`. In private-only mode this flag is ignored (private is the only frontend). | <pre>object({<br/>    explicit_name           = optional(string)<br/>    private_ip_address      = optional(string)<br/>    address_allocation      = optional(string, "Static")<br/>    subnet_resource_id      = string<br/>    is_active_http_listener = optional(bool, false)<br/>  })</pre> | `null` | no |
+| <a name="input_public_frontend_ip_configuration"></a> [public\_frontend\_ip\_configuration](#input\_public\_frontend\_ip\_configuration) | Configuration for the frontend\_ip\_configuration that leverages a public IP address.<br/><br/>Set to `null` to deploy a **private-only** Application Gateway. Requires the subscription to have `Microsoft.Network/EnableApplicationGatewayNetworkIsolation` registered, Standard\_v2 or WAF\_v2 SKU, the AppGW subnet delegated to `Microsoft.Network/applicationGateways`, and a `private_frontend_ip_configuration`. See examples/private-only/README.md for prerequisites. | <pre>object({<br/>    explicit_name           = optional(string)<br/>    ip_address_resource_id  = string<br/>    is_active_http_listener = optional(bool, true)<br/>  })</pre> | `null` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | The resource group to deploy the gateway to. | <pre>object({<br/>    name     = string<br/>    location = string<br/>  })</pre> | n/a | yes |
 | <a name="input_sku"></a> [sku](#input\_sku) | The SKU of the gateway | <pre>object({<br/>    name = string<br/>    tier = string<br/>  })</pre> | <pre>{<br/>  "name": "Standard_v2",<br/>  "tier": "Standard_v2"<br/>}</pre> | no |
 | <a name="input_ssl_policy"></a> [ssl\_policy](#input\_ssl\_policy) | SSL policy configuration | <pre>object({<br/>    name = string<br/>    type = string<br/>  })</pre> | <pre>{<br/>  "name": "AppGwSslPolicy20220101S",<br/>  "type": "Predefined"<br/>}</pre> | no |
@@ -129,8 +152,12 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_active_frontend_ip_configuration_name"></a> [active\_frontend\_ip\_configuration\_name](#output\_active\_frontend\_ip\_configuration\_name) | Name of the bootstrap http\_listener's frontend. AGIC may reshuffle which frontend serves which listener at runtime via annotations; this output reflects the module's initial wiring only. |
 | <a name="output_appgw_id"></a> [appgw\_id](#output\_appgw\_id) | The ID of the Application Gateway |
 | <a name="output_appgw_name"></a> [appgw\_name](#output\_appgw\_name) | The name of the Application Gateway |
+| <a name="output_frontend_ip_configuration_names"></a> [frontend\_ip\_configuration\_names](#output\_frontend\_ip\_configuration\_names) | Map of frontend mode (`public`, `private`) to the Application Gateway frontend block name. Nulls are filtered out — keys are only present for frontends that were actually configured. |
+| <a name="output_private_frontend_ip_address"></a> [private\_frontend\_ip\_address](#output\_private\_frontend\_ip\_address) | Private IP literal if configured with Static allocation; null otherwise. For Dynamic allocation, Azure assigns the IP and it is not exposed as a flat attribute on the resource — query via Azure CLI/data source after apply. |
+| <a name="output_public_frontend_ip_resource_id"></a> [public\_frontend\_ip\_resource\_id](#output\_public\_frontend\_ip\_resource\_id) | Resource ID of the public IP attached to the gateway; null when the gateway is private-only. |
 <!-- END_TF_DOCS -->
 
 ## Upgrade Guide
@@ -187,7 +214,7 @@ Nearly all variables where reworked to have consistent names and address their e
 |`min_capacity`|`autoscale_configuration.min_capacity`|
 |`name_prefix`|_unchanged_|
 |`private_frontend_enabled`|_replaced by mutually exclusive objects `public_frontend_ip_configuration` / `private_frontend_ip_configuration`_|
-|`private_ip`|`private_frontend_ip_configuration.ip_address_resource_id`|
+|`private_ip`|`private_frontend_ip_configuration.private_ip_address` (was `ip_address_resource_id` in 4.0.0 – 5.x; renamed in 6.0.0)|
 |`public_ip_address_id`|`public_frontend_ip_configuration.ip_address_resource_id`|
 |`request_buffering_enabled`|`global_request_buffering_enabled`|
 |`resource_group_location`|`resource_group.location`|

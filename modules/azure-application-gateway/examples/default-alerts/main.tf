@@ -67,4 +67,3 @@ module "application_gateway" {
     environment = "example"
   }
 }
-

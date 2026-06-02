@@ -1,8 +1,30 @@
 locals {
-  waf_enabled                           = var.sku.tier == "WAF_v2"
-  public_frontend_ip_config_name        = var.public_frontend_ip_configuration.explicit_name != null ? var.public_frontend_ip_configuration.explicit_name : "${var.name_prefix}-feip"
-  private_frontend_ip_config_name       = try(var.private_frontend_ip_configuration.explicit_name, "${var.name_prefix}-privatefeip")
-  active_frontend_ip_configuration_name = var.public_frontend_ip_configuration.is_active_http_listener ? local.public_frontend_ip_config_name : local.private_frontend_ip_config_name
+  waf_enabled = var.sku.tier == "WAF_v2"
+
+  has_public_frontend  = var.public_frontend_ip_configuration != null
+  has_private_frontend = var.private_frontend_ip_configuration != null
+
+  public_frontend_ip_config_name = local.has_public_frontend ? (
+    var.public_frontend_ip_configuration.explicit_name != null
+    ? var.public_frontend_ip_configuration.explicit_name
+    : "${var.name_prefix}-feip"
+  ) : null
+
+  private_frontend_ip_config_name = local.has_private_frontend ? (
+    var.private_frontend_ip_configuration.explicit_name != null
+    ? var.private_frontend_ip_configuration.explicit_name
+    : "${var.name_prefix}-privatefeip"
+  ) : null
+
+  # Active listener resolution:
+  #   - public-only: always public (is_active_http_listener is only meaningful in dual-stack)
+  #   - private-only: always private
+  #   - dual: honor public.is_active_http_listener (precondition guarantees XOR)
+  active_frontend_ip_configuration_name = (
+    local.has_private_frontend && (
+      !local.has_public_frontend || !var.public_frontend_ip_configuration.is_active_http_listener
+    )
+  ) ? local.private_frontend_ip_config_name : local.public_frontend_ip_config_name
 
   # WAF Custom Rule Priority Calculation
   # Lower numbers = higher priority (evaluated first).
@@ -371,21 +393,30 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   # PUBLIC FRONTEND IP CONFIGURATION - Internet-facing endpoint
-  # Associates the Application Gateway with a public IP address for internet access
-  frontend_ip_configuration {
-    name                 = local.public_frontend_ip_config_name
-    public_ip_address_id = var.public_frontend_ip_configuration.ip_address_resource_id
+  # Associates the Application Gateway with a public IP address for internet access.
+  # Omitted when var.public_frontend_ip_configuration is null (private-only deployment).
+  dynamic "frontend_ip_configuration" {
+    for_each = local.has_public_frontend ? [var.public_frontend_ip_configuration] : []
+    content {
+      name                 = local.public_frontend_ip_config_name
+      public_ip_address_id = frontend_ip_configuration.value.ip_address_resource_id
+    }
   }
 
   # PRIVATE FRONTEND IP CONFIGURATION - Internal endpoint
-  # Provides internal access to the Application Gateway within the VNet
+  # Provides internal access to the Application Gateway within the VNet.
+  # For Dynamic allocation, private_ip_address must be null (Azure assigns from subnet).
   dynamic "frontend_ip_configuration" {
-    for_each = var.private_frontend_ip_configuration != null ? [1] : []
+    for_each = local.has_private_frontend ? [var.private_frontend_ip_configuration] : []
     content {
       name                          = local.private_frontend_ip_config_name
-      private_ip_address            = var.private_frontend_ip_configuration.ip_address_resource_id
-      private_ip_address_allocation = var.private_frontend_ip_configuration.address_allocation != null ? var.private_frontend_ip_configuration.address_allocation : "Static"
-      subnet_id                     = var.private_frontend_ip_configuration.subnet_resource_id
+      subnet_id                     = frontend_ip_configuration.value.subnet_resource_id
+      private_ip_address_allocation = frontend_ip_configuration.value.address_allocation
+      private_ip_address = (
+        frontend_ip_configuration.value.address_allocation == "Static"
+        ? frontend_ip_configuration.value.private_ip_address
+        : null
+      )
     }
   }
 
@@ -498,8 +529,53 @@ resource "azurerm_application_gateway" "appgw" {
 
   # LIFECYCLE CONFIGURATION - Terraform state management
   # Prevents Terraform from managing certain settings that are controlled by external systems
-  # (like Kubernetes Ingress Controller)
+  # (like Kubernetes Ingress Controller).
+  #
+  # Note: `frontend_ip_configuration` is intentionally NOT in ignore_changes — the module
+  # must re-assert the desired frontend shape (public, private, or dual). AGIC does not
+  # manage these blocks today; if that ever changes upstream, revisit.
+  #
+  # Preconditions live here (not as variable validations) because they reference multiple
+  # variables. Variable-level `validation` blocks cannot reference other variables on
+  # Terraform < 1.9, and the module pins `>= 1.5` in provider.tf.
   lifecycle {
+    precondition {
+      condition     = var.public_frontend_ip_configuration != null || var.private_frontend_ip_configuration != null
+      error_message = "At least one of public_frontend_ip_configuration or private_frontend_ip_configuration must be set."
+    }
+
+    precondition {
+      # Private-only mode (public null + private set) requires a v2 SKU per Azure platform.
+      condition = (
+        var.public_frontend_ip_configuration != null
+        || var.private_frontend_ip_configuration == null
+        || contains(["Standard_v2", "WAF_v2"], var.sku.tier)
+      )
+      error_message = "Private-only Application Gateway requires Standard_v2 or WAF_v2 SKU."
+    }
+
+    precondition {
+      # Static allocation requires an IP literal; Dynamic must NOT have one.
+      condition = (
+        var.private_frontend_ip_configuration == null
+        || (var.private_frontend_ip_configuration.address_allocation == "Static"
+        && var.private_frontend_ip_configuration.private_ip_address != null)
+        || (var.private_frontend_ip_configuration.address_allocation == "Dynamic"
+        && var.private_frontend_ip_configuration.private_ip_address == null)
+      )
+      error_message = "private_frontend_ip_configuration: Static allocation requires private_ip_address; Dynamic allocation must omit it."
+    }
+
+    precondition {
+      # In dual-stack mode, exactly one frontend must claim the bootstrap http_listener.
+      condition = (
+        var.public_frontend_ip_configuration == null
+        || var.private_frontend_ip_configuration == null
+        || var.public_frontend_ip_configuration.is_active_http_listener != var.private_frontend_ip_configuration.is_active_http_listener
+      )
+      error_message = "In dual-stack mode, exactly one of public/private is_active_http_listener must be true (XOR)."
+    }
+
     ignore_changes = [
       # these settings are all ignored as they are controlled by the Application Gateway Ingress Controller
       backend_http_settings,
