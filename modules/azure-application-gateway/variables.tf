@@ -565,6 +565,16 @@ variable "waf_managed_rules" {
         }
       },
       {
+        match_variable          = "RequestArgNames"
+        selector                = "variables.input.text,variables.text,messages.content,text"
+        selector_match_operator = "EqualsAny"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-930-APPLICATION-ATTACK-LFI"
+        }
+      },
+      {
         match_variable          = "RequestCookieNames"
         selector                = "__Host-uniqueid.useragent"
         selector_match_operator = "EqualsAny"
