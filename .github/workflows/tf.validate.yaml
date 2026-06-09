@@ -24,7 +24,7 @@ jobs:
           terraform_version: 1.14.9
       - name: Generate Documentation
         run: |
-          ./scripts/tf-docs.sh
+          ./scripts/tf-docs.sh --all
           if [[ $(git diff --stat) != '' ]]; then
             echo -e '\033[0;31mDocumentation outdated!\033[0m ❌'
             git diff --color
@@ -35,7 +35,7 @@ jobs:
 
       - name: Format Terraform
         run: |
-          ./scripts/tf-fmt.sh
+          ./scripts/tf-fmt.sh --all
           if [[ $(git diff --stat) != '' ]]; then
             echo -e '\033[0;31mTerraform not formatted!\033[0m ❌'
             git diff --color
@@ -45,10 +45,10 @@ jobs:
           fi
 
       - name: Examples
-        run: ./scripts/examples.sh
+        run: ./scripts/examples.sh --all
 
       - name: Report
-        run: ./scripts/trivy.sh trivy.sarif
+        run: ./scripts/trivy.sh --all trivy.sarif
 
       # agreed with security, we run on PR for simplicity for now until we have no findings. from then on we can block PRs that introduce new findings.
       - name: Upload Sarif results
