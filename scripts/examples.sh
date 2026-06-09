@@ -4,48 +4,36 @@
 # SPDX-SnippetCopyrightText: 2024 © Unique AG
 # SPDX-SnippetEnd
 ## Reference: https://github.com/norwoodj/helm-docs
-set -euo pipefail
-
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "Repo root: $REPO_ROOT"
-cd "$REPO_ROOT"
 
-modules=()
-run_all=false
+# Set the base directory to the modules folder
+BASE_DIR="modules"
 
-if [ "$#" -eq 0 ]; then
-  run_all=true
-fi
+# Exit on any error
+set -e
 
-for arg in "$@"; do
-  if [ "$arg" = "--all" ]; then
-    run_all=true
-  else
-    modules+=("$arg")
-  fi
-done
-
-if [ "$run_all" = true ]; then
-  modules=(modules/*)
-fi
-
-for module in "${modules[@]}"; do
+for module in "$BASE_DIR"/*; do
   if [ -d "$module" ]; then
     echo "Processing module: $module"
 
+    # Iterate over each example in the module's examples directory
     for example in "$module/examples"/*; do
       if [ -d "$example" ]; then
         echo "  Processing example: $example"
 
+        # Change to the example directory
         cd "$example" || exit
 
+        # Run terraform init and validate
         echo "    Running terraform init"
-        terraform init -upgrade -input=false || exit 1
+        terraform init -upgrade -input=false || exit 1 # if any example error occurs, exit the script
 
         echo "    Running terraform validate"
-        terraform validate || exit 1
+        terraform validate || exit 1 # if any example error occurs, exit the script
 
-        cd "$REPO_ROOT" || exit
+        # Return to the base directory
+        cd - > /dev/null || exit
       fi
     done
   fi
