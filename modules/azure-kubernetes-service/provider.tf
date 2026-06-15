@@ -4,8 +4,8 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      # 4.43+ required for upgrade_settings.undrainable_node_behavior
-      version = "~> 4.43"
+      # 4.57+ required for node_provisioning_profile.
+      version = "~> 4.57"
     }
     azapi = {
       source  = "Azure/azapi"

@@ -2,9 +2,9 @@ name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 5.7.1
+version: 6.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Activity-log alerts (including the default `aks_agent_pool_write_error`) now actually fire. The previous `criteria.resource_id = <cluster id>` filter required an exact match and silently dropped events on child resources (e.g. `.../agentpools/<name>` writes). The cluster `scopes` value alone covers child resources for Administrative events."
+  - kind: changed
+    description: "BREAKING: Replaced the `kubernetes_default_node_*` variables with the `default_node_pool` object, added `node_autoscaling` to choose between Cluster Autoscaler, AKS node auto-provisioning, or fixed node pools, and removed the implicit default `stable` and `burst` user pools from `node_pool_settings`."

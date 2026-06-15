@@ -138,26 +138,38 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
   }
 
-  auto_scaler_profile {
-    max_graceful_termination_sec     = 14400
-    skip_nodes_with_local_storage    = false
-    expander                         = "least-waste"
-    scale_down_unneeded              = "10m"
-    scale_down_utilization_threshold = 0.6
+  dynamic "auto_scaler_profile" {
+    for_each = var.node_autoscaling.mode == "cluster-autoscaler" ? [1] : []
+    content {
+      max_graceful_termination_sec     = 14400
+      skip_nodes_with_local_storage    = false
+      expander                         = "least-waste"
+      scale_down_unneeded              = "10m"
+      scale_down_utilization_threshold = 0.6
+    }
+  }
+
+  dynamic "node_provisioning_profile" {
+    for_each = var.node_autoscaling.mode == "node-auto-provisioning" ? [1] : []
+    content {
+      mode               = "Auto"
+      default_node_pools = var.node_autoscaling.node_auto_provisioning.default_node_pools
+    }
   }
 
   default_node_pool {
     name                         = "default"
-    temporary_name_for_rotation  = "defaultrepl"
-    vm_size                      = var.kubernetes_default_node_size
-    auto_scaling_enabled         = true
-    min_count                    = var.kubernetes_default_node_count_min
-    max_count                    = var.kubernetes_default_node_count_max
-    os_disk_size_gb              = var.kubernetes_default_node_os_disk_size
+    temporary_name_for_rotation  = var.default_node_pool.temporary_name_for_rotation
+    vm_size                      = var.default_node_pool.vm_size
+    auto_scaling_enabled         = var.node_autoscaling.mode == "cluster-autoscaler"
+    min_count                    = var.node_autoscaling.mode == "cluster-autoscaler" ? var.default_node_pool.min_count : null
+    max_count                    = var.node_autoscaling.mode == "cluster-autoscaler" ? var.default_node_pool.max_count : null
+    node_count                   = var.node_autoscaling.mode == "cluster-autoscaler" ? null : var.default_node_pool.node_count
+    os_disk_size_gb              = var.default_node_pool.os_disk_size_gb
     type                         = "VirtualMachineScaleSets"
     vnet_subnet_id               = var.default_subnet_nodes_id
     pod_subnet_id                = var.segregated_node_and_pod_subnets_enabled ? coalesce(var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
-    zones                        = var.kubernetes_default_node_zones
+    zones                        = var.default_node_pool.zones
     tags                         = var.tags
     only_critical_addons_enabled = true
     upgrade_settings {
