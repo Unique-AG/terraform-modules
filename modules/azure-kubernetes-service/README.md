@@ -114,8 +114,8 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | 2.10.0 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.76.0 |
+| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.4 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.57 |
 
 ## Modules
 
