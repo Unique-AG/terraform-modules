@@ -24,39 +24,44 @@ fi
 
 echo "Search directory: $TARGET_DIR"
 
+examples=()
+
 if [ -d "$TARGET_DIR/examples" ]; then
-  modules=("$TARGET_DIR")
+  examples=("$TARGET_DIR/examples"/*)
+elif [ "$(basename "$TARGET_DIR")" = "examples" ]; then
+  examples=("$TARGET_DIR"/*)
+elif compgen -G "$TARGET_DIR/*.tf" > /dev/null; then
+  examples=("$TARGET_DIR")
 else
-  modules=("$TARGET_DIR"/*)
+  for module in "$TARGET_DIR"/*; do
+    if [ -d "$module/examples" ]; then
+      examples+=("$module/examples"/*)
+    fi
+  done
 fi
 
 processed_examples=0
 
-for module in "${modules[@]}"; do
-  if [ -d "$module" ]; then
-    echo "Processing module: $module"
+for example in "${examples[@]}"; do
+  if [ -d "$example" ]; then
+    echo "Processing example: $example"
 
-    for example in "$module/examples"/*; do
-      if [ -d "$example" ]; then
-        echo "  Processing example: $example"
+    cd "$example" || exit
 
-        cd "$example" || exit
+    echo "  Running terraform init"
+    terraform init -upgrade -input=false
 
-        echo "    Running terraform init"
-        terraform init -upgrade -input=false
+    echo "  Running terraform validate"
+    terraform validate
 
-        echo "    Running terraform validate"
-        terraform validate
-
-        cd - > /dev/null || exit
-        processed_examples=$((processed_examples + 1))
-      fi
-    done
+    cd - > /dev/null || exit
+    processed_examples=$((processed_examples + 1))
   fi
 done
 
 if [ "$processed_examples" -eq 0 ]; then
-  echo "No examples found in $TARGET_DIR."
+  echo "No examples found in $TARGET_DIR." >&2
+  exit 1
 else
   echo "All $processed_examples examples processed successfully."
 fi
