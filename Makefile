@@ -12,5 +12,5 @@ quality:
 
 examples:
 	@echo "Testing examples..."
-	@./scripts/examples.sh
+	@./scripts/examples.sh $(path)
 	@echo "Examples completed."

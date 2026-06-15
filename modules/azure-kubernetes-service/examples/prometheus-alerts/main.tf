@@ -102,17 +102,19 @@ module "aks" {
     environment = "test"
     purpose     = "prometheus-alerts-demo"
   }
-  resource_group_location              = local.location
-  node_rg_name                         = "node-rg-${local.unique_suffix}"
-  default_subnet_nodes_id              = azurerm_subnet.aks_subnet.id
-  default_subnet_pods_id               = azurerm_subnet.aks_subnet_pods.id
-  cluster_name                         = "aks-prometheus-alerts-${local.unique_suffix}"
-  tenant_id                            = data.azurerm_client_config.current.tenant_id
-  kubernetes_version                   = "1.32.3"
-  kubernetes_default_node_size         = "Standard_D2s_v5"
-  kubernetes_default_node_count_min    = 1
-  kubernetes_default_node_count_max    = 3
-  kubernetes_default_node_os_disk_size = 30
+  resource_group_location = local.location
+  node_rg_name            = "node-rg-${local.unique_suffix}"
+  default_subnet_nodes_id = azurerm_subnet.aks_subnet.id
+  default_subnet_pods_id  = azurerm_subnet.aks_subnet_pods.id
+  cluster_name            = "aks-prometheus-alerts-${local.unique_suffix}"
+  tenant_id               = data.azurerm_client_config.current.tenant_id
+  kubernetes_version      = "1.32.3"
+  default_node_pool = {
+    vm_size         = "Standard_D2s_v5"
+    min_count       = 1
+    max_count       = 3
+    os_disk_size_gb = 30
+  }
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.aks_logs.id
     location            = azurerm_log_analytics_workspace.aks_logs.location

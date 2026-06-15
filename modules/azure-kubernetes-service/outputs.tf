@@ -52,3 +52,8 @@ output "grafana_identity_principal_id" {
   description = "The principal ID of the Grafana identity."
   value       = var.azure_prometheus_grafana_monitor.enabled ? azurerm_dashboard_grafana.grafana[0].identity[0].principal_id : null
 }
+
+output "node_autoscaling" {
+  description = "Configured cluster node autoscaling mode."
+  value       = var.node_autoscaling
+}

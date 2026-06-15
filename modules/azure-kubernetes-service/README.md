@@ -15,16 +15,17 @@ Listing the SKUs specifically gives you insights wether your planned SKU is avai
 
 ## Examples
 
-The module includes two example configurations:
+The module includes several example configurations:
 
 1. **Simple Example** (`./examples/simple/`): Basic AKS cluster with default settings
 2. **Custom Node Pools Example** (`./examples/custom-pools/`): Advanced configuration with multiple node pools
+3. **Node Auto-Provisioning Example** (`./examples/node-auto-provisioning/`): AKS node auto-provisioning configuration
 
 To run an example:
 
 1. Navigate to the example directory:
    ```bash
-   cd modules/azure-kubernetes-service/examples/simple  # or custom-pools
+   cd modules/azure-kubernetes-service/examples/simple  # or another example directory
    ```
 
 2. Initialize and apply:
@@ -107,14 +108,14 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.4 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.43 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.57 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.4 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.43 |
+| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | 2.10.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.76.0 |
 
 ## Modules
 
@@ -164,6 +165,7 @@ No modules.
 | <a name="input_container_insights_streams"></a> [container\_insights\_streams](#input\_container\_insights\_streams) | Container Insights data collection streams. Defaults to the Group-Default stream.<br/><br/>DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor. | `list(string)` | <pre>[<br/>  "Microsoft-ContainerInsights-Group-Default"<br/>]</pre> | no |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_default_action_group_ids"></a> [default\_action\_group\_ids](#input\_default\_action\_group\_ids) | List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications. | `list(string)` | n/a | yes |
+| <a name="input_default_node_pool"></a> [default\_node\_pool](#input\_default\_node\_pool) | Default system node pool configuration. | <pre>object({<br/>    vm_size                     = optional(string, "Standard_D2s_v5")<br/>    node_count                  = optional(number)<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    os_disk_size_gb             = optional(number, 100)<br/>    zones                       = optional(list(string), ["1", "3"])<br/>    temporary_name_for_rotation = optional(string, "defaultrepl")<br/>  })</pre> | <pre>{<br/>  "max_count": 5,<br/>  "min_count": 2<br/>}</pre> | no |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
 | <a name="input_default_subnet_pods_id"></a> [default\_subnet\_pods\_id](#input\_default\_subnet\_pods\_id) | The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | `null` | no |
 | <a name="input_defender_log_analytics_workspace_id"></a> [defender\_log\_analytics\_workspace\_id](#input\_defender\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace for Microsoft Defender | `string` | `null` | no |
@@ -171,11 +173,6 @@ No modules.
 | <a name="input_dns_service_ip"></a> [dns\_service\_ip](#input\_dns\_service\_ip) | The DNS service IP for the Kubernetes Cluster. | `string` | `"172.20.0.10"` | no |
 | <a name="input_drain_timeout_in_minutes"></a> [drain\_timeout\_in\_minutes](#input\_drain\_timeout\_in\_minutes) | Maximum minutes AKS will wait for pods on a node to drain during an upgrade. AKS uses a short internal default (~6 min) which is too tight for slow-to-evict workloads (Kata-VM, large stateful pods, custom controllers). Range 0-1440. | `number` | `null` | no |
 | <a name="input_kata_node_pool_settings"></a> [kata\_node\_pool\_settings](#input\_kata\_node\_pool\_settings) | Settings for Kata Containers node pools with hardware-isolated VM workload runtime.<br/>Kata Containers provide strong isolation by running each container in a lightweight<br/>VM, offering an additional security boundary between containers and the host.<br/><br/>The following label and taint are automatically added to every Kata pool:<br/>  - Label: workload-runtime=kata<br/>  - Taint: workload-runtime=kata:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass<br/>with handler 'kata' for pods that should run in Kata containers:<br/><br/>  apiVersion: node.k8s.io/v1<br/>  kind: RuntimeClass<br/>  metadata:<br/>    name: kata<br/>  handler: kata<br/>  scheduling:<br/>    nodeSelector:<br/>      workload-runtime: kata<br/>    tolerations:<br/>      - key: workload-runtime<br/>        operator: Equal<br/>        value: kata<br/>        effect: NoSchedule<br/><br/>Note: Kata node pools require VM sizes that support nested virtualization.<br/>The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload\_runtime. | <pre>map(object({<br/>    vm_size              = string<br/>    min_count            = optional(number)<br/>    max_count            = optional(number)<br/>    max_pods             = optional(number)<br/>    os_disk_size_gb      = number<br/>    os_sku               = optional(string, "AzureLinux")<br/>    os_type              = optional(string, "Linux")<br/>    node_labels          = optional(map(string), {})<br/>    node_taints          = optional(list(string), [])<br/>    auto_scaling_enabled = bool<br/>    mode                 = optional(string, "User")<br/>    zones                = list(string)<br/>    subnet_nodes_id      = optional(string, null)<br/>    subnet_pods_id       = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
-| <a name="input_kubernetes_default_node_count_max"></a> [kubernetes\_default\_node\_count\_max](#input\_kubernetes\_default\_node\_count\_max) | The maximum number of nodes in the default node pool. | `number` | `5` | no |
-| <a name="input_kubernetes_default_node_count_min"></a> [kubernetes\_default\_node\_count\_min](#input\_kubernetes\_default\_node\_count\_min) | The minimum number of nodes in the default node pool. | `number` | `2` | no |
-| <a name="input_kubernetes_default_node_os_disk_size"></a> [kubernetes\_default\_node\_os\_disk\_size](#input\_kubernetes\_default\_node\_os\_disk\_size) | The OS disk size in GB for default node pool VMs. | `number` | `100` | no |
-| <a name="input_kubernetes_default_node_size"></a> [kubernetes\_default\_node\_size](#input\_kubernetes\_default\_node\_size) | The size of the default node pool VMs. | `string` | `"Standard_D2s_v5"` | no |
-| <a name="input_kubernetes_default_node_zones"></a> [kubernetes\_default\_node\_zones](#input\_kubernetes\_default\_node\_zones) | The availability zones for the default node pool. | `list(string)` | <pre>[<br/>  "1",<br/>  "3"<br/>]</pre> | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked. | `string` | `null` | no |
 | <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled) | Specifies whether the local account is disabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | The Log Analytics Workspace configuration for monitoring and logging. | <pre>object({<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | `null` | no |
@@ -188,8 +185,9 @@ No modules.
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
 | <a name="input_monitoring_account_name"></a> [monitoring\_account\_name](#input\_monitoring\_account\_name) | The name of the monitoring account | `string` | `"MonitoringAccount1"` | no |
 | <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster.<br/><br/>outbound\_type:<br/>  - "loadBalancer" (default) - Requires exactly one of managed\_outbound\_ip\_count,<br/>    outbound\_ip\_address\_ids, or outbound\_ip\_prefix\_ids. These are mutually exclusive.<br/>  - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.<br/><br/>Cilium requirements:<br/>  - network\_data\_plane = "cilium" requires network\_plugin = "azure"<br/>  - network\_policy = "cilium" requires network\_data\_plane = "cilium"<br/>  - advanced\_networking\_enabled requires network\_data\_plane = "cilium" | <pre>object({<br/>    network_data_plane          = optional(string)<br/>    network_plugin              = optional(string, "azure")<br/>    network_plugin_mode         = optional(string, null)<br/>    network_policy              = optional(string)<br/>    service_cidr                = optional(string, "172.20.0.0/16")<br/>    dns_service_ip              = optional(string, "172.20.0.10")<br/>    outbound_type               = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count   = optional(number, null)<br/>    outbound_ip_address_ids     = optional(list(string), null)<br/>    outbound_ip_prefix_ids      = optional(list(string), null)<br/>    idle_timeout_in_minutes     = optional(number, 30)<br/>    advanced_networking_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
+| <a name="input_node_autoscaling"></a> [node\_autoscaling](#input\_node\_autoscaling) | Cluster node autoscaling mode. Use cluster-autoscaler for managed node pool autoscaling, node-auto-provisioning for AKS NAP, or none for fixed pools only. | <pre>object({<br/>    mode = optional(string, "cluster-autoscaler")<br/>    node_auto_provisioning = optional(object({<br/>      default_node_pools = optional(string, "None")<br/>    }), {})<br/>  })</pre> | <pre>{<br/>  "mode": "cluster-autoscaler"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
-| <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | <pre>{<br/>  "burst": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 0,<br/>    "mode": "User",<br/>    "node_count": 0,<br/>    "node_labels": {<br/>      "pool": "burst"<br/>    },<br/>    "node_taints": [<br/>      "burst=true:NoSchedule"<br/>    ],<br/>    "os_disk_size_gb": 100,<br/>    "temporary_name_for_rotation": "burstrepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  },<br/>  "stable": {<br/>    "auto_scaling_enabled": true,<br/>    "max_count": 10,<br/>    "min_count": 2,<br/>    "mode": "User",<br/>    "node_count": 1,<br/>    "node_labels": {<br/>      "pool": "stable"<br/>    },<br/>    "node_taints": [],<br/>    "os_disk_size_gb": 100,<br/>    "os_sku": "AzureLinux",<br/>    "temporary_name_for_rotation": "stablerepl",<br/>    "upgrade_settings": {<br/>      "max_surge": "10%"<br/>    },<br/>    "vm_size": "Standard_D8s_v5",<br/>    "zones": [<br/>      "1",<br/>      "3"<br/>    ]<br/>  }<br/>}</pre> | no |
+| <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_node_rg_name"></a> [node\_rg\_name](#input\_node\_rg\_name) | The name of the node resource group for the AKS cluster. | `string` | n/a | yes |
 | <a name="input_node_soak_duration_in_minutes"></a> [node\_soak\_duration\_in\_minutes](#input\_node\_soak\_duration\_in\_minutes) | Time AKS waits after a new node becomes Ready before moving on to the next node during an upgrade. Range 0-30. | `number` | `null` | no |
 | <a name="input_oidc_issuer_enabled"></a> [oidc\_issuer\_enabled](#input\_oidc\_issuer\_enabled) | The OIDC issuer URL for the Kubernetes Cluster. | `bool` | `true` | no |
@@ -230,9 +228,114 @@ No modules.
 | <a name="output_kubernetes_node_rg_name"></a> [kubernetes\_node\_rg\_name](#output\_kubernetes\_node\_rg\_name) | The name of the node resource group. This name is important as the CSI driver identity is created there. |
 | <a name="output_kublet_identity_client_id"></a> [kublet\_identity\_client\_id](#output\_kublet\_identity\_client\_id) | The client ID of the identity used by the kubelet. |
 | <a name="output_kublet_identity_object_id"></a> [kublet\_identity\_object\_id](#output\_kublet\_identity\_object\_id) | The object ID of the identity used by the kubelet. |
+| <a name="output_node_autoscaling"></a> [node\_autoscaling](#output\_node\_autoscaling) | Configured cluster node autoscaling mode. |
 <!-- END_TF_DOCS -->
 
 ## Upgrading
+
+### ~> `6.0.0`
+
+Version 6.0.0 replaces the separate default node pool variables with a single `default_node_pool` object and adds explicit cluster node autoscaling modes.
+
+#### Default Node Pool Changes
+
+The following variables have been removed:
+
+- `kubernetes_default_node_size`
+- `kubernetes_default_node_count_min`
+- `kubernetes_default_node_count_max`
+- `kubernetes_default_node_os_disk_size`
+- `kubernetes_default_node_zones`
+
+Move their values into `default_node_pool`:
+
+```hcl
+# Before (5.x)
+kubernetes_default_node_size         = "Standard_D2s_v5"
+kubernetes_default_node_count_min    = 2
+kubernetes_default_node_count_max    = 5
+kubernetes_default_node_os_disk_size = 100
+kubernetes_default_node_zones        = ["1", "3"]
+
+# After (6.0.0)
+default_node_pool = {
+  vm_size         = "Standard_D2s_v5"
+  min_count       = 2
+  max_count       = 5
+  os_disk_size_gb = 100
+  zones           = ["1", "3"]
+}
+```
+
+#### Node Autoscaling Modes
+
+Cluster Autoscaler remains the default:
+
+```hcl
+node_autoscaling = {
+  mode = "cluster-autoscaler"
+}
+```
+
+To use AKS node auto-provisioning, set `mode = "node-auto-provisioning"`, set a fixed `default_node_pool.node_count`, and disable per-pool autoscaling on all regular, spot, and Kata node pools:
+
+```hcl
+node_autoscaling = {
+  mode = "node-auto-provisioning"
+  node_auto_provisioning = {
+    default_node_pools = "None"
+  }
+}
+
+default_node_pool = {
+  node_count = 2
+}
+```
+
+#### Explicit User Node Pools
+
+`node_pool_settings` now defaults to `{}`. Earlier versions created implicit `stable` and `burst` user pools when callers omitted this variable. To keep those pools during the 6.0.0 upgrade, copy them into the caller configuration before upgrading:
+
+```hcl
+node_pool_settings = {
+  stable = {
+    vm_size         = "Standard_D8s_v5"
+    min_count       = 2
+    max_count       = 10
+    os_disk_size_gb = 100
+    os_sku          = "AzureLinux"
+    node_labels = {
+      pool = "stable"
+    }
+    node_taints                 = []
+    auto_scaling_enabled        = true
+    mode                        = "User"
+    zones                       = ["1", "3"]
+    temporary_name_for_rotation = "stablerepl"
+    upgrade_settings = {
+      max_surge = "10%"
+    }
+  }
+  burst = {
+    vm_size         = "Standard_D8s_v5"
+    min_count       = 0
+    max_count       = 10
+    os_disk_size_gb = 100
+    os_sku          = "AzureLinux"
+    node_labels = {
+      pool = "burst"
+    }
+    node_taints                 = ["burst=true:NoSchedule"]
+    auto_scaling_enabled        = true
+    mode                        = "User"
+    zones                       = ["1", "3"]
+    temporary_name_for_rotation = "burstrepl"
+    upgrade_settings = {
+      max_surge = "10%"
+    }
+  }
+}
+```
 
 ### ~> `5.0.0`
 
