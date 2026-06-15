@@ -1,42 +1,67 @@
 #!/bin/bash
 # SPDX-SnippetBegin
 # SPDX-License-Identifier: Proprietary
-# SPDX-SnippetCopyrightText: 2024 © Unique AG
+# SPDX-SnippetCopyrightText: 2026 © Unique AG
 # SPDX-SnippetEnd
-## Reference: https://github.com/norwoodj/helm-docs
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 echo "Repo root: $REPO_ROOT"
 
-# Set the base directory to the modules folder
-BASE_DIR="modules"
-
-# Exit on any error
 set -e
+shopt -s nullglob
 
-for module in "$BASE_DIR"/*; do
-  if [ -d "$module" ]; then
-    echo "Processing module: $module"
+TARGET_DIR_ARG="${1:-modules}"
 
-    # Iterate over each example in the module's examples directory
-    for example in "$module/examples"/*; do
-      if [ -d "$example" ]; then
-        echo "  Processing example: $example"
+if [[ "$TARGET_DIR_ARG" = /* ]]; then
+  TARGET_DIR="$TARGET_DIR_ARG"
+else
+  TARGET_DIR="$REPO_ROOT/$TARGET_DIR_ARG"
+fi
 
-        # Change to the example directory
-        cd "$example" || exit
+if [ ! -d "$TARGET_DIR" ]; then
+  echo "Target directory does not exist: $TARGET_DIR" >&2
+  exit 1
+fi
 
-        # Run terraform init and validate
-        echo "    Running terraform init"
-        terraform init -upgrade -input=false || exit 1 # if any example error occurs, exit the script
+echo "Search directory: $TARGET_DIR"
 
-        echo "    Running terraform validate"
-        terraform validate || exit 1 # if any example error occurs, exit the script
+examples=()
 
-        # Return to the base directory
-        cd - > /dev/null || exit
-      fi
-    done
+if [ -d "$TARGET_DIR/examples" ]; then
+  examples=("$TARGET_DIR/examples"/*)
+elif [ "$(basename "$TARGET_DIR")" = "examples" ]; then
+  examples=("$TARGET_DIR"/*)
+elif compgen -G "$TARGET_DIR/*.tf" > /dev/null; then
+  examples=("$TARGET_DIR")
+else
+  for module in "$TARGET_DIR"/*; do
+    if [ -d "$module/examples" ]; then
+      examples+=("$module/examples"/*)
+    fi
+  done
+fi
+
+processed_examples=0
+
+for example in "${examples[@]}"; do
+  if [ -d "$example" ]; then
+    echo "Processing example: $example"
+
+    cd "$example" || exit
+
+    echo "  Running terraform init"
+    terraform init -upgrade -input=false
+
+    echo "  Running terraform validate"
+    terraform validate
+
+    cd - > /dev/null || exit
+    processed_examples=$((processed_examples + 1))
   fi
 done
 
-echo "All modules and examples processed successfully."
+if [ "$processed_examples" -eq 0 ]; then
+  echo "No examples found in $TARGET_DIR." >&2
+  exit 1
+else
+  echo "All $processed_examples examples processed successfully."
+fi

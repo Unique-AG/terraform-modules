@@ -124,47 +124,99 @@ variable "node_rg_name" {
   }
 }
 
-variable "kubernetes_default_node_size" {
-  description = "The size of the default node pool VMs."
-  type        = string
-  default     = "Standard_D2s_v5"
+variable "default_node_pool" {
+  description = "Default system node pool configuration."
+  type = object({
+    vm_size                     = optional(string, "Standard_D2s_v5")
+    node_count                  = optional(number)
+    min_count                   = optional(number)
+    max_count                   = optional(number)
+    os_disk_size_gb             = optional(number, 100)
+    zones                       = optional(list(string), ["1", "3"])
+    temporary_name_for_rotation = optional(string, "defaultrepl")
+  })
+  default = {
+    min_count = 2
+    max_count = 5
+  }
 
   validation {
-    condition     = length(var.kubernetes_default_node_size) > 0
-    error_message = "The default node size must not be empty."
+    condition     = length(var.default_node_pool.vm_size) > 0
+    error_message = "default_node_pool.vm_size must not be empty."
+  }
+
+  validation {
+    condition     = var.default_node_pool.node_count == null || var.default_node_pool.node_count >= 1
+    error_message = "default_node_pool.node_count must be at least 1 when set."
+  }
+
+  validation {
+    condition     = var.default_node_pool.min_count == null || var.default_node_pool.min_count >= 1
+    error_message = "default_node_pool.min_count must be at least 1 when set."
+  }
+
+  validation {
+    condition     = var.default_node_pool.max_count == null || var.default_node_pool.max_count >= 1
+    error_message = "default_node_pool.max_count must be at least 1 when set."
+  }
+
+  validation {
+    condition     = var.default_node_pool.os_disk_size_gb >= 30
+    error_message = "default_node_pool.os_disk_size_gb must be at least 30 GB."
+  }
+
+  validation {
+    condition     = var.node_autoscaling.mode != "cluster-autoscaler" || (var.default_node_pool.min_count != null && var.default_node_pool.max_count != null && var.default_node_pool.min_count <= var.default_node_pool.max_count)
+    error_message = "default_node_pool.min_count and default_node_pool.max_count are required for cluster-autoscaler mode, and min_count must be less than or equal to max_count."
+  }
+
+  validation {
+    condition     = var.node_autoscaling.mode == "cluster-autoscaler" || var.default_node_pool.node_count != null
+    error_message = "default_node_pool.node_count is required when node_autoscaling.mode is node-auto-provisioning or none."
   }
 }
 
-variable "kubernetes_default_node_count_min" {
-  description = "The minimum number of nodes in the default node pool."
-  type        = number
-  default     = 2
-
-  validation {
-    condition     = var.kubernetes_default_node_count_min >= 1
-    error_message = "The minimum node count must be at least 1."
+variable "node_autoscaling" {
+  description = "Cluster node autoscaling mode. Use cluster-autoscaler for managed node pool autoscaling, node-auto-provisioning for AKS NAP, or none for fixed pools only."
+  type = object({
+    mode = optional(string, "cluster-autoscaler")
+    node_auto_provisioning = optional(object({
+      default_node_pools = optional(string, "None")
+    }), {})
+  })
+  default = {
+    mode = "cluster-autoscaler"
   }
-}
-
-variable "kubernetes_default_node_count_max" {
-  description = "The maximum number of nodes in the default node pool."
-  type        = number
-  default     = 5
 
   validation {
-    condition     = var.kubernetes_default_node_count_max >= 1
-    error_message = "The maximum node count must be at least one."
+    condition     = contains(["cluster-autoscaler", "node-auto-provisioning", "none"], var.node_autoscaling.mode)
+    error_message = "node_autoscaling.mode must be cluster-autoscaler, node-auto-provisioning, or none."
   }
-}
-
-variable "kubernetes_default_node_os_disk_size" {
-  description = "The OS disk size in GB for default node pool VMs."
-  type        = number
-  default     = 100
 
   validation {
-    condition     = var.kubernetes_default_node_os_disk_size >= 30
-    error_message = "The OS disk size must be at least 30 GB."
+    condition     = contains(["Auto", "None"], var.node_autoscaling.node_auto_provisioning.default_node_pools)
+    error_message = "node_autoscaling.node_auto_provisioning.default_node_pools must be Auto or None."
+  }
+
+  validation {
+    condition = !contains(["node-auto-provisioning", "none"], var.node_autoscaling.mode) ? true : alltrue([
+      for k, v in var.node_pool_settings : v.auto_scaling_enabled == false
+    ])
+    error_message = "When node_autoscaling.mode is node-auto-provisioning or none, all node_pool_settings entries must have auto_scaling_enabled = false."
+  }
+
+  validation {
+    condition = !contains(["node-auto-provisioning", "none"], var.node_autoscaling.mode) ? true : alltrue([
+      for k, v in var.spot_node_pool_settings : v.auto_scaling_enabled == false
+    ])
+    error_message = "When node_autoscaling.mode is node-auto-provisioning or none, all spot_node_pool_settings entries must have auto_scaling_enabled = false."
+  }
+
+  validation {
+    condition = !contains(["node-auto-provisioning", "none"], var.node_autoscaling.mode) ? true : alltrue([
+      for k, v in var.kata_node_pool_settings : v.auto_scaling_enabled == false
+    ])
+    error_message = "When node_autoscaling.mode is node-auto-provisioning or none, all kata_node_pool_settings entries must have auto_scaling_enabled = false."
   }
 }
 
@@ -327,45 +379,7 @@ variable "node_pool_settings" {
     ])
     error_message = "node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every node pool."
   }
-  default = {
-    stable = {
-      vm_size         = "Standard_D8s_v5"
-      node_count      = 1
-      min_count       = 2
-      max_count       = 10
-      os_disk_size_gb = 100
-      os_sku          = "AzureLinux"
-      node_labels = {
-        pool = "stable"
-      }
-      node_taints                 = []
-      auto_scaling_enabled        = true
-      mode                        = "User"
-      zones                       = ["1", "3"]
-      temporary_name_for_rotation = "stablerepl"
-      upgrade_settings = {
-        max_surge = "10%"
-      }
-    }
-    burst = {
-      vm_size         = "Standard_D8s_v5"
-      node_count      = 0
-      min_count       = 0
-      max_count       = 10
-      os_disk_size_gb = 100
-      node_labels = {
-        pool = "burst"
-      }
-      node_taints                 = ["burst=true:NoSchedule"]
-      auto_scaling_enabled        = true
-      mode                        = "User"
-      zones                       = ["1", "3"]
-      temporary_name_for_rotation = "burstrepl"
-      upgrade_settings = {
-        max_surge = "10%"
-      }
-    }
-  }
+  default = {}
 }
 
 variable "spot_node_pool_settings" {
@@ -599,12 +613,6 @@ variable "dns_service_ip" {
   description = "The DNS service IP for the Kubernetes Cluster."
   type        = string
   default     = "172.20.0.10"
-}
-
-variable "kubernetes_default_node_zones" {
-  description = "The availability zones for the default node pool."
-  type        = list(string)
-  default     = ["1", "3"]
 }
 
 variable "admin_group_object_ids" {
