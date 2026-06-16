@@ -666,6 +666,8 @@ variable "metric_alerts" {
         operator = string # Include, Exclude, StartsWith
         values   = list(string)
       })), [])
+      # Backend HTTP setting names to exclude (BackendResponseStatus metric only)
+      excluded_backend_settings = optional(list(string), [])
     }))
 
     # Dynamic criteria (alternative to static criteria)
@@ -760,12 +762,6 @@ variable "metric_alerts" {
     ])
     error_message = "Window size must be one of: PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, P1D and must be greater than frequency."
   }
-}
-
-variable "metric_alert_excluded_backend_settings" {
-  description = "List of backend HTTP setting names to exclude from metric alerts that use the BackendResponseStatus metric (e.g. the default 5xx alert). Use exact AGIC-generated BackendHttpSetting dimension values. Empty list applies no exclusion."
-  type        = list(string)
-  default     = []
 }
 
 variable "metric_alerts_external_action_group_ids" {
