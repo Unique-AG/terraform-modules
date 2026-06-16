@@ -705,14 +705,14 @@ variable "metric_alerts" {
   default = {
     default_5xx_error_alert = {
       name        = "Application Gateway 5xx Error"
-      description = "Alert when 5xx errors are above 100 for more than 1 hour"
+      description = "Alert when backend 5xx errors are above 100 for more than 1 hour"
       severity    = 1
       frequency   = "PT1M"
       window_size = "PT1H"
       enabled     = true
       criteria = {
         metric_namespace = "microsoft.network/applicationgateways"
-        metric_name      = "ResponseStatus"
+        metric_name      = "BackendResponseStatus"
         aggregation      = "Total"
         operator         = "GreaterThan"
         threshold        = 100
@@ -760,6 +760,12 @@ variable "metric_alerts" {
     ])
     error_message = "Window size must be one of: PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, P1D and must be greater than frequency."
   }
+}
+
+variable "metric_alert_excluded_backend_settings" {
+  description = "List of backend HTTP setting names to exclude from metric alerts that use the BackendResponseStatus metric (e.g. the default 5xx alert). Use exact AGIC-generated BackendHttpSetting dimension values. Empty list applies no exclusion."
+  type        = list(string)
+  default     = []
 }
 
 variable "metric_alerts_external_action_group_ids" {

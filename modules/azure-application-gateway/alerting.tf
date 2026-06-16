@@ -1,3 +1,11 @@
+locals {
+  excluded_backend_dimensions = length(var.metric_alert_excluded_backend_settings) > 0 ? [{
+    name     = "BackendHttpSetting"
+    operator = "Exclude"
+    values   = var.metric_alert_excluded_backend_settings
+  }] : []
+}
+
 resource "azurerm_monitor_metric_alert" "application_gateway_metric_alerts" {
   for_each = var.metric_alerts
 
@@ -25,7 +33,10 @@ resource "azurerm_monitor_metric_alert" "application_gateway_metric_alerts" {
       skip_metric_validation = criteria.value.skip_metric_validation
 
       dynamic "dimension" {
-        for_each = criteria.value.dimension
+        for_each = concat(
+          criteria.value.dimension,
+          criteria.value.metric_name == "BackendResponseStatus" ? local.excluded_backend_dimensions : []
+        )
         content {
           name     = dimension.value.name
           operator = dimension.value.operator
