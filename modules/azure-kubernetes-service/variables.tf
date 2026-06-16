@@ -132,6 +132,7 @@ variable "default_node_pool" {
     min_count                   = optional(number)
     max_count                   = optional(number)
     os_disk_size_gb             = optional(number, 100)
+    os_sku                      = optional(string)
     zones                       = optional(list(string), ["1", "3"])
     temporary_name_for_rotation = optional(string, "defaultrepl")
   })
@@ -163,6 +164,11 @@ variable "default_node_pool" {
   validation {
     condition     = var.default_node_pool.os_disk_size_gb >= 30
     error_message = "default_node_pool.os_disk_size_gb must be at least 30 GB."
+  }
+
+  validation {
+    condition     = var.default_node_pool.os_sku == null || contains(["AzureLinux", "AzureLinux3", "Ubuntu", "Ubuntu2204", "Ubuntu2404"], var.default_node_pool.os_sku)
+    error_message = "default_node_pool.os_sku must be one of AzureLinux, AzureLinux3, Ubuntu, Ubuntu2204, or Ubuntu2404."
   }
 
   validation {
