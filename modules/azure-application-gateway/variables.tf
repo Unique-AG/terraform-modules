@@ -666,8 +666,6 @@ variable "metric_alerts" {
         operator = string # Include, Exclude, StartsWith
         values   = list(string)
       })), [])
-      # Backend HTTP setting names to exclude (BackendResponseStatus metric only)
-      excluded_backend_settings = optional(list(string), [])
     }))
 
     # Dynamic criteria (alternative to static criteria)

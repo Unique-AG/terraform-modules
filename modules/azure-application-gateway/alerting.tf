@@ -25,14 +25,7 @@ resource "azurerm_monitor_metric_alert" "application_gateway_metric_alerts" {
       skip_metric_validation = criteria.value.skip_metric_validation
 
       dynamic "dimension" {
-        for_each = concat(
-          criteria.value.dimension,
-          length(criteria.value.excluded_backend_settings) > 0 ? [{
-            name     = "BackendHttpSetting"
-            operator = "Exclude"
-            values   = criteria.value.excluded_backend_settings
-          }] : []
-        )
+        for_each = criteria.value.dimension
         content {
           name     = dimension.value.name
           operator = dimension.value.operator
