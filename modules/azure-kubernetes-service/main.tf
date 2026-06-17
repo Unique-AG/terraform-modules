@@ -145,6 +145,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
       skip_nodes_with_local_storage    = false
       expander                         = "least-waste"
       scale_down_unneeded              = "10m"
+      scale_down_delay_after_delete    = "2m"
       scale_down_utilization_threshold = 0.6
     }
   }
