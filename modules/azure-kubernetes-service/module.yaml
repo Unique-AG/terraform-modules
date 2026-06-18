@@ -2,9 +2,9 @@ name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 6.2.0
+version: 6.3.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Set `scale_down_delay_after_delete` to `2m` to prevent Cilium BPF state corruption during rapid consecutive node deletions by the cluster autoscaler."
+    description: "Variable `node_autoscaling.profile` to make all cluster-autoscaler `auto_scaler_profile` fields configurable. Defaults are unchanged."

@@ -189,6 +189,14 @@ variable "node_autoscaling" {
     node_auto_provisioning = optional(object({
       default_node_pools = optional(string, "None")
     }), {})
+    profile = optional(object({
+      max_graceful_termination_sec     = optional(number, 14400)
+      skip_nodes_with_local_storage    = optional(bool, false)
+      expander                         = optional(string, "least-waste")
+      scale_down_unneeded              = optional(string, "10m")
+      scale_down_delay_after_delete    = optional(string, "2m")
+      scale_down_utilization_threshold = optional(number, 0.6)
+    }), {})
   })
   default = {
     mode = "cluster-autoscaler"
@@ -202,6 +210,11 @@ variable "node_autoscaling" {
   validation {
     condition     = contains(["Auto", "None"], var.node_autoscaling.node_auto_provisioning.default_node_pools)
     error_message = "node_autoscaling.node_auto_provisioning.default_node_pools must be Auto or None."
+  }
+
+  validation {
+    condition     = contains(["least-waste", "random", "most-pods", "priority"], var.node_autoscaling.profile.expander)
+    error_message = "node_autoscaling.profile.expander must be one of: least-waste, random, most-pods, priority."
   }
 
   validation {
