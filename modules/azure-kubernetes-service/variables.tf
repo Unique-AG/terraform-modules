@@ -194,7 +194,7 @@ variable "node_autoscaling" {
       skip_nodes_with_local_storage    = optional(bool, false)
       expander                         = optional(string, "least-waste")
       scale_down_unneeded              = optional(string, "10m")
-      scale_down_delay_after_delete    = optional(string, "2m")
+      scale_down_delay_after_delete    = optional(string, "120s")
       scale_down_utilization_threshold = optional(number, 0.6)
     }), {})
   })
@@ -215,6 +215,11 @@ variable "node_autoscaling" {
   validation {
     condition     = contains(["least-waste", "random", "most-pods", "priority"], var.node_autoscaling.profile.expander)
     error_message = "node_autoscaling.profile.expander must be one of: least-waste, random, most-pods, priority."
+  }
+
+  validation {
+    condition     = can(regex("^[0-9]+s$", var.node_autoscaling.profile.scale_down_delay_after_delete))
+    error_message = "node_autoscaling.profile.scale_down_delay_after_delete must be in seconds format (e.g. \"120s\"). The Azure AKS API rejects minute-format values for this parameter — it uses the same unit as scan-interval."
   }
 
   validation {
