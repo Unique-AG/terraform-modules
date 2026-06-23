@@ -2,9 +2,9 @@ name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
 # upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 6.3.1
+version: 7.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Default for `node_autoscaling.profile.scale_down_delay_after_delete` corrected from \"2m\" to \"120s\". The Azure AKS API only accepts seconds for this parameter. A validation now enforces seconds format at plan time."
+  - kind: changed
+    description: "`node_autoscaling.profile` renamed to `node_autoscaling.cluster_autoscaler`. Callers that set this sub-object explicitly must rename the key."

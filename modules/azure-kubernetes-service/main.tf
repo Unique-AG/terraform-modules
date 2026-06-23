@@ -141,12 +141,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   dynamic "auto_scaler_profile" {
     for_each = var.node_autoscaling.mode == "cluster-autoscaler" ? [1] : []
     content {
-      max_graceful_termination_sec     = var.node_autoscaling.profile.max_graceful_termination_sec
-      skip_nodes_with_local_storage    = var.node_autoscaling.profile.skip_nodes_with_local_storage
-      expander                         = var.node_autoscaling.profile.expander
-      scale_down_unneeded              = var.node_autoscaling.profile.scale_down_unneeded
-      scale_down_delay_after_delete    = var.node_autoscaling.profile.scale_down_delay_after_delete
-      scale_down_utilization_threshold = var.node_autoscaling.profile.scale_down_utilization_threshold
+      max_graceful_termination_sec     = var.node_autoscaling.cluster_autoscaler.max_graceful_termination_sec
+      skip_nodes_with_local_storage    = var.node_autoscaling.cluster_autoscaler.skip_nodes_with_local_storage
+      expander                         = var.node_autoscaling.cluster_autoscaler.expander
+      scale_down_unneeded              = var.node_autoscaling.cluster_autoscaler.scale_down_unneeded
+      scale_down_delay_after_delete    = var.node_autoscaling.cluster_autoscaler.scale_down_delay_after_delete
+      scale_down_utilization_threshold = var.node_autoscaling.cluster_autoscaler.scale_down_utilization_threshold
     }
   }
 
