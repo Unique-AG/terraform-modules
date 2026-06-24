@@ -604,6 +604,20 @@ variable "waf_managed_rules" {
           version         = "3.2"
           rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
         }
+      },
+      # MCP Hub OAuth dynamic client registration (RFC 7591) sends redirect_uris with
+      # http://127.0.0.1:<port> for VS Code and other external MCP clients. OWASP CRS
+      # 931100 false-positives on that JSON field (RFI: URL parameter using IP address).
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "redirect_uris"
+        selector_match_operator = "Equals"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          excluded_rules  = ["931100"]
+          rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
+        }
       }
     ]
   }
