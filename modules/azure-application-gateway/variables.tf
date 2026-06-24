@@ -618,6 +618,20 @@ variable "waf_managed_rules" {
           excluded_rules  = ["931100"]
           rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
         }
+      },
+      # MCP Hub OAuth authorization endpoint (/authorize) receives redirect_uri (singular)
+      # as a query parameter with http://127.0.0.1:<port> from VS Code and other external
+      # MCP clients. Same OWASP CRS 931100 false-positive (RFI: URL parameter using IP address).
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "redirect_uri"
+        selector_match_operator = "Equals"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          excluded_rules  = ["931100"]
+          rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
+        }
       }
     ]
   }

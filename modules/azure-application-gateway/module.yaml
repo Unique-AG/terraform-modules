@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 6.3.0
+version: 6.4.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
   - kind: changed
-    description: "add targeted WAF exclusion for OWASP rule 931100 (RFI URL using IP address) on MCP Hub OAuth redirect_uris"
+    description: "add targeted WAF exclusion for OWASP rule 931100 (RFI URL using IP address) on MCP Hub OAuth redirect_uri argument (/authorize endpoint)"
