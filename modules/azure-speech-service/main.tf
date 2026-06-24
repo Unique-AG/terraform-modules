@@ -10,28 +10,11 @@ resource "azurerm_cognitive_account" "aca" {
   public_network_access_enabled = each.value.public_network_access_enabled
 
   dynamic "identity" {
-    for_each = each.value.identity != null || each.value.customer_managed_key != null ? [1] : []
+    for_each = each.value.identity != null ? [1] : []
     content {
-      type = (
-        each.value.identity != null &&
-        each.value.identity.type == "SystemAssigned" &&
-        each.value.customer_managed_key != null
-        ) ? "SystemAssigned, UserAssigned" : (
-        each.value.identity != null ? each.value.identity.type : "UserAssigned"
-      )
-      identity_ids = (
-        each.value.identity != null &&
-        each.value.identity.type == "SystemAssigned" &&
-        each.value.customer_managed_key == null
-        ) ? null : concat(
-        each.value.identity != null && each.value.identity.identity_ids != null ? each.value.identity.identity_ids : [],
-        each.value.customer_managed_key != null ? [each.value.customer_managed_key.user_assigned_identity.resource_id] : []
-      )
+      type         = each.value.identity.type
+      identity_ids = each.value.identity.identity_ids
     }
-  }
-
-  lifecycle {
-    ignore_changes = [customer_managed_key]
   }
 }
 
@@ -105,11 +88,6 @@ resource "azurerm_role_assignment" "workload_identity" {
 }
 
 locals {
-  accounts_with_cmk = {
-    for k, v in var.accounts : k => v
-    if v.customer_managed_key != null
-  }
-
   azure_speech_service_endpoints = [
     for key, value in var.accounts : azurerm_cognitive_account.aca[key].endpoint
   ]
@@ -122,10 +100,3 @@ locals {
   ]
 }
 
-resource "azurerm_cognitive_account_customer_managed_key" "cmk" {
-  for_each = local.accounts_with_cmk
-
-  cognitive_account_id = azurerm_cognitive_account.aca[each.key].id
-  key_vault_key_id     = each.value.customer_managed_key.key_vault_key_id
-  identity_client_id   = each.value.customer_managed_key.user_assigned_identity.client_id
-}

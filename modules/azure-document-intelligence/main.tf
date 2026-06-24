@@ -10,17 +10,6 @@ resource "azurerm_cognitive_account" "aca" {
   local_auth_enabled            = each.value.local_auth_enabled
   custom_subdomain_name         = each.value.custom_subdomain_name
 
-  dynamic "identity" {
-    for_each = each.value.customer_managed_key != null ? [1] : []
-    content {
-      type         = "UserAssigned"
-      identity_ids = [each.value.customer_managed_key.user_assigned_identity.resource_id]
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [customer_managed_key]
-  }
 }
 
 locals {
@@ -29,11 +18,6 @@ locals {
     for account_key, account in var.accounts :
     account_key => coalesce(account.diagnostic_settings, var.diagnostic_settings)
     if account.diagnostic_settings != null || var.diagnostic_settings != null
-  }
-
-  accounts_with_cmk = {
-    for k, v in var.accounts : k => v
-    if v.customer_managed_key != null
   }
 
   azure_document_intelligence_endpoints = [
@@ -67,14 +51,6 @@ resource "azurerm_private_endpoint" "pe" {
     name                 = "default"
     private_dns_zone_ids = [each.value.private_endpoint.private_dns_zone_id]
   }
-}
-
-resource "azurerm_cognitive_account_customer_managed_key" "cmk" {
-  for_each = local.accounts_with_cmk
-
-  cognitive_account_id = azurerm_cognitive_account.aca[each.key].id
-  key_vault_key_id     = each.value.customer_managed_key.key_vault_key_id
-  identity_client_id   = each.value.customer_managed_key.user_assigned_identity.client_id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "cognitive_account" {

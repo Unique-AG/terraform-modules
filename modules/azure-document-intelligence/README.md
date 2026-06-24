@@ -32,7 +32,6 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_cognitive_account.aca](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account) | resource |
-| [azurerm_cognitive_account_customer_managed_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/cognitive_account_customer_managed_key) | resource |
 | [azurerm_key_vault_secret.azure_document_intelligence_endpoint_definitions](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.azure_document_intelligence_endpoints](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -43,7 +42,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_accounts"></a> [accounts](#input\_accounts) | Values for the cognitive accounts.<br/><br/>Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.<br/>If both are null for an account, no diagnostic setting is created for that account.<br/><br/>`log_categories` vs `log_category_groups`: mutually exclusive in Azure Monitor (each `enabled_log` block sets exactly one).<br/>This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).<br/>`log_category_groups` is dynamic — new categories Azure adds to the group are auto-enabled.<br/>`log_categories` locks the exact list. Valid values when using explicit categories: Audit, AzureOpenAIRequestUsage, RequestResponse, Trace. | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "FormRecognizer")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    customer_managed_key = optional(object({<br/>      key_vault_key_id = string<br/>      user_assigned_identity = object({<br/>        client_id   = string<br/>        resource_id = string<br/>      })<br/>    }))<br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>      vnet_location       = optional(string)<br/>    }))<br/><br/>    diagnostic_settings = optional(object({<br/>      log_analytics_workspace_id = string<br/>      log_categories             = optional(list(string), ["Audit"])<br/>      log_category_groups        = optional(list(string), [])<br/>      metric_categories          = optional(list(string), ["AllMetrics"])<br/>    }))<br/>  }))</pre> | n/a | yes |
+| <a name="input_accounts"></a> [accounts](#input\_accounts) | Values for the cognitive accounts.<br/><br/>Diagnostic settings precedence: each account's `diagnostic_settings` overrides the module-level `var.diagnostic_settings`.<br/>If both are null for an account, no diagnostic setting is created for that account.<br/><br/>`log_categories` vs `log_category_groups`: mutually exclusive in Azure Monitor (each `enabled_log` block sets exactly one).<br/>This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).<br/>`log_category_groups` is dynamic — new categories Azure adds to the group are auto-enabled.<br/>`log_categories` locks the exact list. Valid values when using explicit categories: Audit, AzureOpenAIRequestUsage, RequestResponse, Trace. | <pre>map(object({<br/>    location                      = string<br/>    account_kind                  = optional(string, "FormRecognizer")<br/>    account_sku_name              = optional(string, "S0")<br/>    custom_subdomain_name         = optional(string)<br/>    local_auth_enabled            = optional(bool, false)<br/>    public_network_access_enabled = optional(bool, false)<br/>    private_endpoint = optional(object({<br/>      private_dns_zone_id = string<br/>      subnet_id           = string<br/>      vnet_location       = optional(string)<br/>    }))<br/><br/>    diagnostic_settings = optional(object({<br/>      log_analytics_workspace_id = string<br/>      log_categories             = optional(list(string), ["Audit"])<br/>      log_category_groups        = optional(list(string), [])<br/>      metric_categories          = optional(list(string), ["AllMetrics"])<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings) | Global diagnostic settings configuration for Azure Cognitive Services accounts.<br/>If null, diagnostic settings are not created (unless overridden per account).<br/><br/>Per-account diagnostic\_settings take precedence over this global setting.<br/>This serves as a fallback for accounts that don't specify their own settings.<br/><br/>Available log categories (when using explicit `log_categories` and `log_category_groups` is empty):<br/>  - Audit: Audit logs (default, recommended minimum)<br/>  - AzureOpenAIRequestUsage: Token usage and request metering for applicable cognitive services<br/>  - RequestResponse: Logs all request and response data including prompts and completions<br/>  - Trace: Detailed trace logs<br/><br/>`log_categories` and `log_category_groups` are mutually exclusive at the Azure API (each enabled log block sets exactly one).<br/>This module mirrors the Azure portal: if `log_category_groups` is non-empty, `log_categories` is ignored (group takes precedence).<br/>Use `log_category_groups` for dynamic groups such as `audit` or `allLogs`; see Azure Monitor documentation for valid values.<br/><br/>WARNING: Enabling 'RequestResponse' or 'Trace' categories will log sensitive data such as<br/>user prompts and model responses. It is YOUR responsibility to:<br/>  - Restrict access to the Log Analytics workspace appropriately<br/>  - Ensure compliance with data protection regulations (GDPR, etc.)<br/>  - Implement appropriate retention policies<br/>  - Consider the cost implications of high-volume logging | <pre>object({<br/>    log_analytics_workspace_id = string<br/>    log_categories             = optional(list(string), ["Audit"])<br/>    log_category_groups        = optional(list(string), [])<br/>    metric_categories          = optional(list(string), ["AllMetrics"])<br/>  })</pre> | `null` | no |
 | <a name="input_doc_intelligence_name"></a> [doc\_intelligence\_name](#input\_doc\_intelligence\_name) | The name prefix for the cognitive accounts | `string` | n/a | yes |
 | <a name="input_endpoint_definitions_secret_name"></a> [endpoint\_definitions\_secret\_name](#input\_endpoint\_definitions\_secret\_name) | Name of the secret for the endpoint definitions | `string` | `"azure-document-intelligence-endpoint-definitions"` | no |
@@ -66,21 +65,6 @@ No modules.
 | <a name="output_primary_access_keys"></a> [primary\_access\_keys](#output\_primary\_access\_keys) | The primary access key of the Cognitive Services Account |
 <!-- END_TF_DOCS -->
 
-## Customer-Managed Keys (CMK)
-
-This module supports encryption with customer-managed keys through the `customer_managed_key` configuration in the `accounts` variable.
-
-> [!IMPORTANT]
-> ⚠️ Azure requires that the Key Vault containing the encryption key MUST be in the same region as the Cognitive Services account. Ensure your Key Vault is created in the same region as the account location.
-
-The `customer_managed_key` object includes:
-- `key_vault_key_id`: The full resource ID of the Key Vault key used for encryption
-- `user_assigned_identity`: A managed identity configuration with:
-  - `client_id`: The client ID of the user-assigned managed identity
-  - `resource_id`: The resource ID of the user-assigned managed identity
-
-This managed identity must have appropriate permissions (e.g., `Key Vault Crypto Service Encryption User`) to access the encryption key in the Key Vault.
-
 ### `accounts.*.private_endpoint.vnet_location`
 
 With `>=3.1.0` Private Endpoints can be provisioned in a separate location. Supplying the variable is mandatory if the VNet resides in another location than the Cognitive Account itself.
@@ -92,6 +76,10 @@ With `>=3.1.0` Private Endpoints can be provisioned in a separate location. Supp
 | `> 3.0.0` | `unique.ai`: `~> 2025.16` |
 
 ## Upgrading
+
+### ~> `4.0.0`
+
+Remove any `customer_managed_key` blocks from `accounts` entries. The `azurerm_cognitive_account_customer_managed_key` resource is no longer managed by this module.
 
 ### ~> `3.0.0`
 

@@ -5,13 +5,6 @@ variable "accounts" {
     account_sku_name              = optional(string, "S0")
     custom_subdomain_name         = optional(string)
     public_network_access_enabled = optional(bool, false)
-    customer_managed_key = optional(object({
-      key_vault_key_id = string
-      user_assigned_identity = object({
-        client_id   = string
-        resource_id = string
-      })
-    }))
     identity = optional(object({
       type         = string
       identity_ids = list(string)

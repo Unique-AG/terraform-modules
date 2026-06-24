@@ -1,10 +1,9 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version: 4.3.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.26
 changes:
-  - kind: changed
-    description: "enabled_log_category_groups now takes precedence over
-      enabled_log_categories (mirrors Azure portal)."
+  - kind: removed
+    description: "customer_managed_key support removed from accounts; identity block reverted to simple form."

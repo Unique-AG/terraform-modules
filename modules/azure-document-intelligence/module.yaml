@@ -1,11 +1,9 @@
 name: azure-document-intelligence
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-document-intelligence
-version: 3.4.0
+version: 4.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: changed
-    description: "log_category_groups now takes precedence over log_categories
-      (mirrors Azure portal); AzureOpenAIRequestUsage added to log_categories
-      validation."
+  - kind: removed
+    description: "customer_managed_key support removed from accounts."
