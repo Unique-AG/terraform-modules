@@ -596,9 +596,10 @@ resource "azurerm_application_gateway" "appgw" {
 resource "azurerm_monitor_diagnostic_setting" "agw_diagnostic" {
   count = var.monitor_diagnostic_setting != null ? 1 : 0
 
-  name                       = var.monitor_diagnostic_setting != null ? (var.monitor_diagnostic_setting.explicit_name != null ? var.monitor_diagnostic_setting.explicit_name : "log-${var.name_prefix}-appgw") : "log-${var.name_prefix}-appgw"
-  target_resource_id         = azurerm_application_gateway.appgw.id
-  log_analytics_workspace_id = var.monitor_diagnostic_setting.log_analytics_workspace_id
+  name                           = var.monitor_diagnostic_setting != null ? (var.monitor_diagnostic_setting.explicit_name != null ? var.monitor_diagnostic_setting.explicit_name : "log-${var.name_prefix}-appgw") : "log-${var.name_prefix}-appgw"
+  target_resource_id             = azurerm_application_gateway.appgw.id
+  log_analytics_destination_type = var.monitor_diagnostic_setting.log_analytics_destination_type
+  log_analytics_workspace_id     = var.monitor_diagnostic_setting.log_analytics_workspace_id
 
   dynamic "enabled_log" {
     for_each = var.monitor_diagnostic_setting.enabled_log != null ? var.monitor_diagnostic_setting.enabled_log : []

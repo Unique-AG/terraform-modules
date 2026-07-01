@@ -78,13 +78,23 @@ variable "global_response_buffering_enabled" {
 variable "monitor_diagnostic_setting" {
   description = "Configuration for the application gateway diagnostic setting"
   type = object({
-    explicit_name              = optional(string)
-    log_analytics_workspace_id = string
+    explicit_name                  = optional(string)
+    log_analytics_destination_type = optional(string, "AzureDiagnostics")
+    log_analytics_workspace_id     = string
     enabled_log = optional(list(object({
       category_group = string
     })), [{ category_group = "allLogs" }])
   })
   default = null
+
+  validation {
+    condition = (
+      var.monitor_diagnostic_setting == null
+      || var.monitor_diagnostic_setting.log_analytics_destination_type == null
+      || contains(["AzureDiagnostics", "Dedicated"], var.monitor_diagnostic_setting.log_analytics_destination_type)
+    )
+    error_message = "monitor_diagnostic_setting.log_analytics_destination_type must be either AzureDiagnostics or Dedicated."
+  }
 }
 
 variable "name_prefix" {

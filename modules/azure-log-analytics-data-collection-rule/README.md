@@ -6,7 +6,7 @@ Creates an Azure Monitor Data Collection Rule (DCR) with `kind = WorkspaceTransf
 
 - Contributor on the resource group hosting the DCR
 - Contributor on the Log Analytics workspace
-- Diagnostic settings (or other non-DCR ingestion) sending Application Gateway access logs to `AzureDiagnostics`
+- Diagnostic settings (or other non-DCR ingestion) sending Application Gateway access logs to `AzureDiagnostics` or `AGWAccessLogs`
 
 ## Workspace DCR linking
 
@@ -47,16 +47,43 @@ Only one workspace DCR may exist per workspace. Additional table transforms belo
 
 ## Default redaction
 
-With no overrides, the module redacts matching query parameters in `AzureDiagnostics.requestQuery_s` when `Category == "ApplicationGatewayAccessLog"`, producing values like `token=[Redacted]`.
+With no overrides, the module redacts matching query parameters in `AGWAccessLogs.RequestQuery`, producing values like `token=[Redacted]`. This matches Application Gateway diagnostic settings using resource-specific tables (`log_analytics_destination_type = "Dedicated"`).
 
 Disable by setting `redact_query_string_parameters = {}` and supplying custom `transformations`, or extend defaults:
 
 ```hcl
 redact_query_string_parameters = {
-  AzureDiagnostics = {
-    query_column    = "requestQuery_s"
-    category_filter = "ApplicationGatewayAccessLog"
+  AGWAccessLogs = {
+    query_column    = "RequestQuery"
     parameter_names = ["token", "access_token", "code"]
+  }
+}
+```
+
+For legacy Application Gateway diagnostic settings that still write to `AzureDiagnostics`, target `AzureDiagnostics.requestQuery_s`:
+
+```hcl
+redact_query_string_parameters = {
+  AzureDiagnostics = {
+    category_filter = "ApplicationGatewayAccessLog"
+    query_column    = "requestQuery_s"
+    parameter_names = ["token"]
+  }
+}
+```
+
+During migration from `AzureDiagnostics` to resource-specific tables, include both table shapes in the same DCR:
+
+```hcl
+redact_query_string_parameters = {
+  AGWAccessLogs = {
+    query_column    = "RequestQuery"
+    parameter_names = ["token"]
+  }
+  AzureDiagnostics = {
+    category_filter = "ApplicationGatewayAccessLog"
+    query_column    = "requestQuery_s"
+    parameter_names = ["token"]
   }
 }
 ```
@@ -92,7 +119,7 @@ A table name must not appear in both `redact_query_string_parameters` and `trans
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.79.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
 
 ## Modules
 
@@ -112,7 +139,7 @@ No modules.
 | <a name="input_log_analytics_destination_name"></a> [log\_analytics\_destination\_name](#input\_log\_analytics\_destination\_name) | Destination name referenced by data flows. Must match the destinations.log\_analytics name block. | `string` | `"law"` | no |
 | <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | ARM resource ID of the Log Analytics workspace this DCR transforms data for.<br/><br/>When the same workspace sets `data_collection_rule_id` to this module's `dcr_id`, pass a<br/>hand-built ARM ID string here (subscription + resource group + workspace name). Do not pass<br/>`azurerm_log_analytics_workspace.*.id` directly or Terraform will report a dependency cycle. | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming the DCR when explicit\_name is not set. | `string` | `"dcr-law"` | no |
-| <a name="input_redact_query_string_parameters"></a> [redact\_query\_string\_parameters](#input\_redact\_query\_string\_parameters) | Per-table configuration for redacting sensitive query-string parameters before ingestion.<br/>Keys are Log Analytics table names (for example AzureDiagnostics). Generates a transformKql<br/>data flow per key unless the same table is defined in `transformations`. | <pre>map(object({<br/>    category_filter = optional(string)<br/>    parameter_names = list(string)<br/>    query_column    = string<br/>    redacted_value  = optional(string, "[Redacted]")<br/>  }))</pre> | <pre>{<br/>  "AzureDiagnostics": {<br/>    "category_filter": "ApplicationGatewayAccessLog",<br/>    "parameter_names": [<br/>      "token"<br/>    ],<br/>    "query_column": "requestQuery_s"<br/>  }<br/>}</pre> | no |
+| <a name="input_redact_query_string_parameters"></a> [redact\_query\_string\_parameters](#input\_redact\_query\_string\_parameters) | Per-table configuration for redacting sensitive query-string parameters before ingestion.<br/>Keys are Log Analytics table names (for example AzureDiagnostics or AGWAccessLogs). Generates a transformKql<br/>data flow per key unless the same table is defined in `transformations`. | <pre>map(object({<br/>    category_filter = optional(string)<br/>    parameter_names = list(string)<br/>    query_column    = string<br/>    redacted_value  = optional(string, "[Redacted]")<br/>  }))</pre> | <pre>{<br/>  "AGWAccessLogs": {<br/>    "parameter_names": [<br/>      "token"<br/>    ],<br/>    "query_column": "RequestQuery"<br/>  }<br/>}</pre> | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Resource group where the DCR is deployed. | <pre>object({<br/>    location = string<br/>    name     = string<br/>  })</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to the DCR. | `map(string)` | `{}` | no |
 | <a name="input_transformations"></a> [transformations](#input\_transformations) | Raw transformKql queries keyed by Log Analytics table name. Use for cases not covered by<br/>redact\_query\_string\_parameters. A table key must not appear in both variables. | `map(string)` | `{}` | no |

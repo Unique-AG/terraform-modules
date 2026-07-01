@@ -35,7 +35,7 @@ variable "name_prefix" {
 variable "redact_query_string_parameters" {
   description = <<-EOT
     Per-table configuration for redacting sensitive query-string parameters before ingestion.
-    Keys are Log Analytics table names (for example AzureDiagnostics). Generates a transformKql
+    Keys are Log Analytics table names (for example AzureDiagnostics or AGWAccessLogs). Generates a transformKql
     data flow per key unless the same table is defined in `transformations`.
   EOT
   type = map(object({
@@ -45,10 +45,9 @@ variable "redact_query_string_parameters" {
     redacted_value  = optional(string, "[Redacted]")
   }))
   default = {
-    AzureDiagnostics = {
-      category_filter = "ApplicationGatewayAccessLog"
+    AGWAccessLogs = {
       parameter_names = ["token"]
-      query_column    = "requestQuery_s"
+      query_column    = "RequestQuery"
     }
   }
 
