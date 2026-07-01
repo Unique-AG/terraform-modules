@@ -1,0 +1,7 @@
+name: azure-log-analytics-data-collection-rule
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-data-collection-rule
+version: 1.0.0
+changes:
+  - kind: added
+    description: "Log Analytics Data Collection Rule with secure-by-default redaction of token query parameters from dedicated Application Gateway access logs"
