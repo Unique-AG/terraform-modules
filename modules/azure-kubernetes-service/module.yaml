@@ -1,10 +1,13 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-# upcoming majors: overhaul complete logging setup (accomodating for Cilium network policies and their forwarded or dropped traffic logs)
-version: 6.3.1
+version: 7.0.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Default for `node_autoscaling.profile.scale_down_delay_after_delete` corrected from \"2m\" to \"120s\". The Azure AKS API only accepts seconds for this parameter. A validation now enforces seconds format at plan time."
+  - kind: removed
+    description: "Variables `diagnostic_logs_categories`, `container_insights_streams`, `container_insights_enabled`, `basic_log_tables`, `log_table_plan`, and `retention_in_days`. Log Analytics workspace table resources are no longer managed by this module."
+  - kind: added
+    description: "Variables `control_plane_logs` and `data_plane_logs` to configure AKS control-plane diagnostic logs and Container Insights data-plane telemetry independently. `data_plane_logs.enabled` defaults to `false` (was implicitly always on when `log_analytics_workspace` was set)."
+  - kind: changed
+    description: "Default AKS control-plane diagnostic log categories now include only `cluster-autoscaler`. Pass the previous category list explicitly via `control_plane_logs.categories` to preserve all old control-plane logs."
