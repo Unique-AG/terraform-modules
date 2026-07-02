@@ -319,56 +319,39 @@ variable "tenant_id" {
 
 }
 
-variable "retention_in_days" {
-  description = "The retention period in days for the Log Analytics Workspace."
-  type        = number
-  default     = 30
+variable "control_plane_logs" {
+  description = <<-EOT
+    AKS control-plane diagnostic logs (cluster-autoscaler, kube-audit-admin, kube-scheduler,
+    csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller), streamed
+    directly from Azure Monitor diagnostic settings into log_analytics_workspace. No agent
+    required. Defaults to cluster-autoscaler only. Has no effect when log_analytics_workspace is null.
+    See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
+  EOT
+  type = object({
+    enabled    = optional(bool, true)
+    categories = optional(list(string), null)
+  })
+  default = {}
+}
+
+variable "data_plane_logs" {
+  description = <<-EOT
+    AKS data-plane telemetry via the Container Insights add-on (the oms_agent AKS profile)
+    and a dedicated Data Collection Rule. Covers container logs and/or Cilium network flow
+    logs depending on `streams`. Only needed for clusters without a self-hosted
+    observability stack (Loki/Alloy/Tailscale) already covering this signal. Defaults to
+    disabled. Has no effect when log_analytics_workspace is null.
+  EOT
+  type = object({
+    enabled = optional(bool, false)
+    streams = optional(list(string), ["Microsoft-ContainerInsights-Group-Default"])
+  })
+  default = {}
 
   validation {
-    condition     = var.retention_in_days >= 7
-    error_message = "The retention period must be at least 7 days."
+    condition     = !var.data_plane_logs.enabled || length(var.data_plane_logs.streams) > 0
+    error_message = "data_plane_logs.streams must not be empty when data_plane_logs.enabled is true."
   }
-}
-
-variable "log_table_plan" {
-  description = "The pricing tier for the Log Analytics Workspace Table."
-  type        = string
-  default     = "Basic"
-}
-
-# DEPRECATION NOTICE: The three variables below (`diagnostic_logs_categories`, `basic_log_tables`,
-# `container_insights_streams`) are transitional. An upcoming major version will introduce a
-# breaking refactor of the entire logging setup. These variables will be removed and replaced.
-
-variable "diagnostic_logs_categories" {
-  description = <<-EOT
-    AKS diagnostic log categories to enable. Only categories present in the supported set are used.
-    See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
-
-    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
-  EOT
-  type        = list(string)
-  default     = null
-}
-
-variable "basic_log_tables" {
-  description = <<-EOT
-    Log Analytics workspace tables to configure with the specified log table plan.
-
-    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
-  EOT
-  type        = list(string)
-  default     = ["ContainerLogV2", "AKSControlPlane"]
-}
-
-variable "container_insights_streams" {
-  description = <<-EOT
-    Container Insights data collection streams. Defaults to the Group-Default stream.
-
-    DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor.
-  EOT
-  type        = list(string)
-  default     = ["Microsoft-ContainerInsights-Group-Default"]
 }
 
 variable "node_pool_settings" {

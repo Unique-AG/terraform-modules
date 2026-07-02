@@ -108,9 +108,6 @@ module "aks" {
     location            = azurerm_log_analytics_workspace.aks_law.location
     resource_group_name = azurerm_resource_group.aks_rg.name
   }
-  retention_in_days = 30
-  log_table_plan    = "Basic"
-
   network_profile = {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]

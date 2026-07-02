@@ -99,6 +99,46 @@ module "aks" {
 
 Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is enabled. See the [prometheus-alerts example](./examples/prometheus-alerts/) and [activity-log-alerts example](./examples/activity-log-alerts/).
 
+## Logging
+
+`log_analytics_workspace` is the shared sink. Two independent toggles control what is sent there:
+
+| Variable | What it ships | Default |
+|---|---|---|
+| `control_plane_logs` | AKS resource diagnostic logs (kube-audit-admin, cluster-autoscaler, kube-scheduler, CSI controllers) via Azure Monitor diagnostic settings — no agent | `enabled = true`, `categories = ["cluster-autoscaler"]` |
+| `data_plane_logs` | Container Insights telemetry (container logs, perf counters, Cilium network flow logs) via the `oms_agent` add-on and a Data Collection Rule | `enabled = false` |
+
+**Control-plane only** (clusters with Loki/Alloy/Tailscale covering data-plane signal):
+
+```hcl
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+
+  log_analytics_workspace = { ... }
+  # control_plane_logs defaults to cluster-autoscaler only
+  # data_plane_logs defaults to enabled = false
+}
+```
+
+**Control-plane + Azure-native data-plane** (e.g. Cilium network flow logs for tenants without a self-hosted observability stack):
+
+```hcl
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+
+  log_analytics_workspace = { ... }
+  control_plane_logs = {
+    categories = ["cluster-autoscaler"]
+  }
+  data_plane_logs = {
+    enabled = true
+    streams = ["Microsoft-ContainerNetworkLogs"]
+  }
+}
+```
+
+Manage Log Analytics table plans and retention outside this module.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -130,7 +170,6 @@ No modules.
 | [azurerm_kubernetes_cluster.cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_kubernetes_cluster_node_pool.spot_node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
-| [azurerm_log_analytics_workspace_table.basic_log_table](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace_table) | resource |
 | [azurerm_monitor_action_group.aks_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
 | [azurerm_monitor_activity_log_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_activity_log_alert) | resource |
 | [azurerm_monitor_alert_prometheus_rule_group.cluster_level_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_alert_prometheus_rule_group) | resource |
@@ -160,23 +199,21 @@ No modules.
 | <a name="input_automatic_upgrade_channel"></a> [automatic\_upgrade\_channel](#input\_automatic\_upgrade\_channel) | The automatic upgrade channel for the Kubernetes Cluster. | `string` | `"stable"` | no |
 | <a name="input_azure_policy_enabled"></a> [azure\_policy\_enabled](#input\_azure\_policy\_enabled) | Specifies whether Azure Policy is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 11)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
-| <a name="input_basic_log_tables"></a> [basic\_log\_tables](#input\_basic\_log\_tables) | Log Analytics workspace tables to configure with the specified log table plan.<br/><br/>DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor. | `list(string)` | <pre>[<br/>  "ContainerLogV2",<br/>  "AKSControlPlane"<br/>]</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
-| <a name="input_container_insights_streams"></a> [container\_insights\_streams](#input\_container\_insights\_streams) | Container Insights data collection streams. Defaults to the Group-Default stream.<br/><br/>DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor. | `list(string)` | <pre>[<br/>  "Microsoft-ContainerInsights-Group-Default"<br/>]</pre> | no |
+| <a name="input_control_plane_logs"></a> [control\_plane\_logs](#input\_control\_plane\_logs) | AKS control-plane diagnostic logs (cluster-autoscaler, kube-audit-admin, kube-scheduler,<br/>csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller), streamed<br/>directly from Azure Monitor diagnostic settings into log\_analytics\_workspace. No agent<br/>required. Defaults to cluster-autoscaler only. Has no effect when log\_analytics\_workspace is null.<br/>See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs | <pre>object({<br/>    enabled    = optional(bool, true)<br/>    categories = optional(list(string), null)<br/>  })</pre> | `{}` | no |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_default_action_group_ids"></a> [default\_action\_group\_ids](#input\_default\_action\_group\_ids) | List of action group IDs to use for alerts that don't have explicit actions defined. Required to receive alert notifications. | `list(string)` | n/a | yes |
 | <a name="input_default_node_pool"></a> [default\_node\_pool](#input\_default\_node\_pool) | Default system node pool configuration. | <pre>object({<br/>    vm_size                     = optional(string, "Standard_D2s_v5")<br/>    node_count                  = optional(number)<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    os_disk_size_gb             = optional(number, 100)<br/>    os_sku                      = optional(string)<br/>    zones                       = optional(list(string), ["1", "3"])<br/>    temporary_name_for_rotation = optional(string, "defaultrepl")<br/>  })</pre> | <pre>{<br/>  "max_count": 5,<br/>  "min_count": 2<br/>}</pre> | no |
 | <a name="input_default_subnet_nodes_id"></a> [default\_subnet\_nodes\_id](#input\_default\_subnet\_nodes\_id) | The ID of the subnet for nodes. Primarily used for the default node pool. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | n/a | yes |
 | <a name="input_default_subnet_pods_id"></a> [default\_subnet\_pods\_id](#input\_default\_subnet\_pods\_id) | The ID of the subnet for pods. Primarily used for the default node pool. If not provided, the node subnet will be used for pods. While this can be null for backwards compatibility, segregating pods and nodes into separate subnets is recommended for production environments. For additional node pools, supply subnet settings in the node\_pool\_settings for more granular control. | `string` | `null` | no |
+| <a name="input_data_plane_logs"></a> [data\_plane\_logs](#input\_data\_plane\_logs) | AKS data-plane telemetry via the Container Insights add-on (the oms\_agent AKS profile)<br/>and a dedicated Data Collection Rule. Covers container logs and/or Cilium network flow<br/>logs depending on `streams`. Only needed for clusters without a self-hosted<br/>observability stack (Loki/Alloy/Tailscale) already covering this signal. Defaults to<br/>disabled. Has no effect when log\_analytics\_workspace is null. | <pre>object({<br/>    enabled = optional(bool, false)<br/>    streams = optional(list(string), ["Microsoft-ContainerInsights-Group-Default"])<br/>  })</pre> | `{}` | no |
 | <a name="input_defender_log_analytics_workspace_id"></a> [defender\_log\_analytics\_workspace\_id](#input\_defender\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace for Microsoft Defender | `string` | `null` | no |
-| <a name="input_diagnostic_logs_categories"></a> [diagnostic\_logs\_categories](#input\_diagnostic\_logs\_categories) | AKS diagnostic log categories to enable. Only categories present in the supported set are used.<br/>See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs<br/><br/>DEPRECATED: Will be removed in the next major version as part of a breaking logging refactor. | `list(string)` | `null` | no |
 | <a name="input_dns_service_ip"></a> [dns\_service\_ip](#input\_dns\_service\_ip) | The DNS service IP for the Kubernetes Cluster. | `string` | `"172.20.0.10"` | no |
 | <a name="input_drain_timeout_in_minutes"></a> [drain\_timeout\_in\_minutes](#input\_drain\_timeout\_in\_minutes) | Maximum minutes AKS will wait for pods on a node to drain during an upgrade. AKS uses a short internal default (~6 min) which is too tight for slow-to-evict workloads (Kata-VM, large stateful pods, custom controllers). Range 0-1440. | `number` | `null` | no |
 | <a name="input_kata_node_pool_settings"></a> [kata\_node\_pool\_settings](#input\_kata\_node\_pool\_settings) | Settings for Kata Containers node pools with hardware-isolated VM workload runtime.<br/>Kata Containers provide strong isolation by running each container in a lightweight<br/>VM, offering an additional security boundary between containers and the host.<br/><br/>The following label and taint are automatically added to every Kata pool:<br/>  - Label: workload-runtime=kata<br/>  - Taint: workload-runtime=kata:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass<br/>with handler 'kata' for pods that should run in Kata containers:<br/><br/>  apiVersion: node.k8s.io/v1<br/>  kind: RuntimeClass<br/>  metadata:<br/>    name: kata<br/>  handler: kata<br/>  scheduling:<br/>    nodeSelector:<br/>      workload-runtime: kata<br/>    tolerations:<br/>      - key: workload-runtime<br/>        operator: Equal<br/>        value: kata<br/>        effect: NoSchedule<br/><br/>Note: Kata node pools require VM sizes that support nested virtualization.<br/>The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload\_runtime. | <pre>map(object({<br/>    vm_size              = string<br/>    min_count            = optional(number)<br/>    max_count            = optional(number)<br/>    max_pods             = optional(number)<br/>    os_disk_size_gb      = number<br/>    os_sku               = optional(string, "AzureLinux")<br/>    os_type              = optional(string, "Linux")<br/>    node_labels          = optional(map(string), {})<br/>    node_taints          = optional(list(string), [])<br/>    auto_scaling_enabled = bool<br/>    mode                 = optional(string, "User")<br/>    zones                = list(string)<br/>    subnet_nodes_id      = optional(string, null)<br/>    subnet_pods_id       = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked. | `string` | `null` | no |
 | <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled) | Specifies whether the local account is disabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | The Log Analytics Workspace configuration for monitoring and logging. | <pre>object({<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | `null` | no |
-| <a name="input_log_table_plan"></a> [log\_table\_plan](#input\_log\_table\_plan) | The pricing tier for the Log Analytics Workspace Table. | `string` | `"Basic"` | no |
 | <a name="input_maintenance_window_auto_upgrade"></a> [maintenance\_window\_auto\_upgrade](#input\_maintenance\_window\_auto\_upgrade) | The maintenance window for automatic upgrades of the Kubernetes cluster. | <pre>object({<br/>    frequency    = optional(string, "Weekly")<br/>    interval     = optional(number, 2)<br/>    duration     = optional(number, 6)<br/>    day_of_week  = optional(string, "Sunday")<br/>    day_of_month = optional(number, null)<br/>    week_index   = optional(string, null)<br/>    start_time   = optional(string, "18:00")<br/>    utc_offset   = optional(string, "+00:00")<br/>    start_date   = optional(string, null)<br/>    not_allowed = optional(list(object({<br/>      start = string<br/>      end   = string<br/>    })), [])<br/>  })</pre> | `null` | no |
 | <a name="input_maintenance_window_day"></a> [maintenance\_window\_day](#input\_maintenance\_window\_day) | The day of the maintenance window. | `string` | `"Sunday"` | no |
 | <a name="input_maintenance_window_end"></a> [maintenance\_window\_end](#input\_maintenance\_window\_end) | The end hour of the maintenance window. | `number` | `23` | no |
@@ -202,7 +239,6 @@ No modules.
 | <a name="input_prometheus_ux_recording_rules"></a> [prometheus\_ux\_recording\_rules](#input\_prometheus\_ux\_recording\_rules) | UX level recording rules for Prometheus monitoring | <pre>list(object({<br/>    enabled    = optional(bool, true)<br/>    record     = string<br/>    expression = string<br/>    labels     = optional(map(string))<br/>  }))</pre> | `null` | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | The location of the resource group. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group. | `string` | n/a | yes |
-| <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | The retention period in days for the Log Analytics Workspace. | `number` | `30` | no |
 | <a name="input_segregated_node_and_pod_subnets_enabled"></a> [segregated\_node\_and\_pod\_subnets\_enabled](#input\_segregated\_node\_and\_pod\_subnets\_enabled) | Some legacy or smaller clusters might not want to split nodes and pods into different subnets. Falsifying this will force the module to only use 1 subnet for both nodes and pods. It is not recommended for production use cases. | `bool` | `true` | no |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The service CIDR for the Kubernetes Cluster. | `string` | `"172.20.0.0/16"` | no |
 | <a name="input_sku_tier"></a> [sku\_tier](#input\_sku\_tier) | The SKU tier for the Kubernetes Cluster. | `string` | `"Standard"` | no |
@@ -232,6 +268,57 @@ No modules.
 <!-- END_TF_DOCS -->
 
 ## Upgrading
+
+### ~> `7.0.0`
+
+Version 7.0.0 replaces the flat AKS logging variables with two object variables that split control-plane diagnostics from Container Insights data-plane telemetry. It also stops managing Log Analytics workspace tables; manage table plan and retention in the caller when needed.
+
+#### Removed variables
+
+- `diagnostic_logs_categories`
+- `container_insights_streams`
+- `container_insights_enabled`
+- `basic_log_tables`
+- `log_table_plan`
+- `retention_in_days`
+
+#### Variable mapping
+
+| Before (6.x) | After (7.0.0) |
+|---|---|
+| `diagnostic_logs_categories = ["cluster-autoscaler"]` | `control_plane_logs = { categories = ["cluster-autoscaler"] }` |
+| `diagnostic_logs_categories = null` (all categories) | `control_plane_logs = { categories = ["cloud-controller-manager", "cluster-autoscaler", "csi-azuredisk-controller", "csi-azurefile-controller", "csi-snapshot-controller", "kube-audit-admin", "kube-scheduler"] }` |
+| `container_insights_streams = ["Microsoft-ContainerNetworkLogs"]` | `data_plane_logs = { enabled = true, streams = ["Microsoft-ContainerNetworkLogs"] }` |
+| *(implicit: CI always on when LAW set)* | `data_plane_logs = { enabled = true }` to preserve previous behaviour |
+| `container_insights_enabled = false` | `data_plane_logs = {}` (default: `enabled = false`) |
+| `basic_log_tables`, `log_table_plan`, `retention_in_days` | Manage `azurerm_log_analytics_workspace_table` resources outside this module |
+
+> [!IMPORTANT]
+> Container Insights is **off by default** in 7.0.0. If you currently pass `container_insights_streams` (or rely on the implicit default stream), you **must** set `data_plane_logs = { enabled = true, streams = [...] }` or data-plane ingestion will stop after upgrade. Control-plane diagnostics now default to `cluster-autoscaler` only; pass all previous categories explicitly if you need to preserve the old default.
+
+> [!NOTE]
+> Carrying logging settings over 1:1 preserves the AKS diagnostic setting, Container Insights add-on, and data collection rule. `azurerm_log_analytics_workspace_table.basic_log_table` resources are removed from the module and should be imported or recreated in caller-owned Terraform if you still want Terraform to manage table plans or retention.
+
+```hcl
+# Before (6.x)
+diagnostic_logs_categories  = ["cluster-autoscaler"]
+container_insights_streams  = ["Microsoft-ContainerNetworkLogs"]
+
+# After (7.0.0) — equivalent AKS logging resources
+control_plane_logs = {
+  categories = ["cluster-autoscaler"]
+}
+data_plane_logs = {
+  enabled = true
+  streams = ["Microsoft-ContainerNetworkLogs"]
+}
+```
+
+```hcl
+# After (7.0.0) — control-plane only (new recommended default for self-hosted observability)
+# control_plane_logs defaults to cluster-autoscaler only
+# data_plane_logs defaults to enabled = false
+```
 
 ### ~> `6.0.0`
 
