@@ -147,8 +147,8 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_data_flow_tables"></a> [data\_flow\_tables](#output\_data\_flow\_tables) | Log Analytics table names configured with ingestion-time transformations. |
-| <a name="output_dcr_id"></a> [dcr\_id](#output\_dcr\_id) | Resource ID of the workspace-transform DCR, or null when data_collection_rule is disabled. |
-| <a name="output_dcr_name"></a> [dcr\_name](#output\_dcr\_name) | Name of the workspace-transform DCR, or null when data_collection_rule is disabled. |
+| <a name="output_dcr_id"></a> [dcr\_id](#output\_dcr\_id) | Resource ID of the workspace-transform DCR, or null when data\_collection\_rule is disabled. |
+| <a name="output_dcr_name"></a> [dcr\_name](#output\_dcr\_name) | Name of the workspace-transform DCR, or null when data\_collection\_rule is disabled. |
 | <a name="output_workspace_id"></a> [workspace\_id](#output\_workspace\_id) | Resource ID of the Log Analytics workspace. |
 | <a name="output_workspace_location"></a> [workspace\_location](#output\_workspace\_location) | Azure region of the Log Analytics workspace. |
 | <a name="output_workspace_name"></a> [workspace\_name](#output\_workspace\_name) | Name of the Log Analytics workspace. |
