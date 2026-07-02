@@ -108,36 +108,7 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 | `control_plane_logs` | AKS resource diagnostic logs (kube-audit-admin, cluster-autoscaler, kube-scheduler, CSI controllers) via Azure Monitor diagnostic settings — no agent | `enabled = true`, `categories = ["cluster-autoscaler"]` |
 | `data_plane_logs` | Container Insights telemetry (container logs, perf counters, Cilium network flow logs) via the `oms_agent` add-on and a Data Collection Rule | `enabled = false` |
 
-**Control-plane only** (clusters with Loki/Alloy/Tailscale covering data-plane signal):
-
-```hcl
-module "aks" {
-  source = "./modules/azure-kubernetes-service"
-
-  log_analytics_workspace = { ... }
-  # control_plane_logs defaults to cluster-autoscaler only
-  # data_plane_logs defaults to enabled = false
-}
-```
-
-**Control-plane + Azure-native data-plane** (e.g. Cilium network flow logs for tenants without a self-hosted observability stack):
-
-```hcl
-module "aks" {
-  source = "./modules/azure-kubernetes-service"
-
-  log_analytics_workspace = { ... }
-  control_plane_logs = {
-    categories = ["cluster-autoscaler"]
-  }
-  data_plane_logs = {
-    enabled = true
-    streams = ["Microsoft-ContainerNetworkLogs"]
-  }
-}
-```
-
-Manage Log Analytics table plans and retention outside this module.
+For a complete customized logging setup, including Azure-native data-plane logs and caller-managed Log Analytics tables, see [the logging example](./examples/logging-test/).
 
 # Module
 
@@ -299,26 +270,7 @@ Version 7.0.0 replaces the flat AKS logging variables with two object variables 
 > [!NOTE]
 > Carrying logging settings over 1:1 preserves the AKS diagnostic setting, Container Insights add-on, and data collection rule. `azurerm_log_analytics_workspace_table.basic_log_table` resources are removed from the module and should be imported or recreated in caller-owned Terraform if you still want Terraform to manage table plans or retention.
 
-```hcl
-# Before (6.x)
-diagnostic_logs_categories  = ["cluster-autoscaler"]
-container_insights_streams  = ["Microsoft-ContainerNetworkLogs"]
-
-# After (7.0.0) — equivalent AKS logging resources
-control_plane_logs = {
-  categories = ["cluster-autoscaler"]
-}
-data_plane_logs = {
-  enabled = true
-  streams = ["Microsoft-ContainerNetworkLogs"]
-}
-```
-
-```hcl
-# After (7.0.0) — control-plane only (new recommended default for self-hosted observability)
-# control_plane_logs defaults to cluster-autoscaler only
-# data_plane_logs defaults to enabled = false
-```
+See [the logging example](./examples/logging-test/) for a 7.0.0 configuration with customized control-plane logs, Azure-native data-plane logs, and caller-managed Log Analytics tables.
 
 ### ~> `6.0.0`
 

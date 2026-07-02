@@ -23,6 +23,13 @@ resource "azurerm_log_analytics_workspace" "aks_law" {
   }
 }
 
+resource "azurerm_log_analytics_workspace_table" "aks_control_plane" {
+  name                    = "AKSControlPlane"
+  plan                    = "Basic"
+  total_retention_in_days = 30
+  workspace_id            = azurerm_log_analytics_workspace.aks_law.id
+}
+
 resource "azurerm_public_ip" "aks_ingress" {
   name                = "aks-ingress-pip"
   sku                 = "Standard"
@@ -102,12 +109,19 @@ module "aks" {
     os_disk_size_gb = 30
   }
 
-  # Enable logging with the Log Analytics Workspace
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.aks_law.id
     location            = azurerm_log_analytics_workspace.aks_law.location
     resource_group_name = azurerm_resource_group.aks_rg.name
   }
+  control_plane_logs = {
+    categories = ["cluster-autoscaler"]
+  }
+  data_plane_logs = {
+    enabled = true
+    streams = ["Microsoft-ContainerNetworkLogs"]
+  }
+
   network_profile = {
     network_plugin          = "azure"
     outbound_ip_address_ids = [azurerm_public_ip.aks_ingress.id]
