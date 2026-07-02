@@ -1,12 +1,12 @@
 # Log Analytics Workspace
 
-Creates one Azure Log Analytics workspace with a workspace-transform Data Collection Rule (DCR) and optional Basic-plan table configuration.
+Creates one Azure Log Analytics workspace with a workspace-transform Data Collection Rule (DCR) and default Basic-plan tables.
 
 ## Usage
 
 ### Default tenant LAW
 
-Default tenant configuration. `basic_log_tables` defaults to empty, while the workspace-transform DCR is created and attached by default.
+Default tenant configuration. `ContainerLogV2` and `AKSControlPlane` are configured as Basic-plan tables, while the workspace-transform DCR is created and attached by default.
 
 ```hcl
 module "law" {
@@ -19,7 +19,7 @@ module "law" {
 }
 ```
 
-### Workspace with Basic tables
+### Override Basic tables
 
 ```hcl
 module "law" {
@@ -31,10 +31,7 @@ module "law" {
   retention_in_days   = 90
   tags                = local.tags
 
-  basic_log_tables = {
-    ContainerLogV2  = { retention_in_days = 30 }
-    AKSControlPlane = { retention_in_days = 30 }
-  }
+  basic_log_tables = {}
 }
 ```
 
@@ -109,7 +106,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_basic_log_tables"></a> [basic\_log\_tables](#input\_basic\_log\_tables) | Log Analytics workspace tables to configure with the Basic plan. | <pre>map(object({<br/>    retention_in_days = optional(number)<br/>  }))</pre> | `{}` | no |
+| <a name="input_basic_log_tables"></a> [basic\_log\_tables](#input\_basic\_log\_tables) | Log Analytics workspace tables to configure with the Basic plan. | <pre>map(object({<br/>    retention_in_days = optional(number)<br/>  }))</pre> | <pre>{<br/>  "AKSControlPlane": {<br/>    "retention_in_days": 30<br/>  },<br/>  "ContainerLogV2": {<br/>    "retention_in_days": 30<br/>  }<br/>}</pre> | no |
 | <a name="input_data_collection_rule"></a> [data\_collection\_rule](#input\_data\_collection\_rule) | Workspace-transform DCR configuration. By default, creates a DCR with kind<br/>WorkspaceTransforms and attaches it to the workspace via defaultDataCollectionRuleResourceId.<br/>Set to null or enabled = false to skip DCR creation and attachment. | <pre>object({<br/>    destination_name = optional(string)<br/>    enabled          = optional(bool, true)<br/>    name             = optional(string)<br/>    transformations  = optional(map(string))<br/>  })</pre> | `{}` | no |
 | <a name="input_local_authentication_enabled"></a> [local\_authentication\_enabled](#input\_local\_authentication\_enabled) | Whether local authentication using workspace keys is enabled. | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Azure region for the workspace and optional DCR. | `string` | n/a | yes |

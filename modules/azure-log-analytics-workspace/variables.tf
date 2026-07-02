@@ -3,7 +3,14 @@ variable "basic_log_tables" {
   type = map(object({
     retention_in_days = optional(number)
   }))
-  default = {}
+  default = {
+    AKSControlPlane = {
+      retention_in_days = 30
+    }
+    ContainerLogV2 = {
+      retention_in_days = 30
+    }
+  }
 }
 
 variable "data_collection_rule" {
