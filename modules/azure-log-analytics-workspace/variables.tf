@@ -8,9 +8,9 @@ variable "basic_log_tables" {
 
 variable "data_collection_rule" {
   description = <<-EOT
-    Optional workspace-transform DCR. Set to null to skip DCR creation and attachment.
-    When set, creates a DCR with kind WorkspaceTransforms and attaches it to the workspace
-    via defaultDataCollectionRuleResourceId.
+    Workspace-transform DCR configuration. By default, creates a DCR with kind
+    WorkspaceTransforms and attaches it to the workspace via defaultDataCollectionRuleResourceId.
+    Set to null or enabled = false to skip DCR creation and attachment.
   EOT
   type = object({
     destination_name = optional(string)
@@ -18,7 +18,7 @@ variable "data_collection_rule" {
     name             = optional(string)
     transformations  = optional(map(string))
   })
-  default = null
+  default = {}
 }
 
 variable "local_authentication_enabled" {

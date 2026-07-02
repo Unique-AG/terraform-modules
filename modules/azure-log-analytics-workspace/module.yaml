@@ -4,4 +4,4 @@ sources:
 version: 1.0.0
 changes:
   - kind: added
-    description: "Initial release consolidating one Log Analytics workspace, optional Basic-plan tables, and an optional workspace-transform DCR with automatic attachment."
+    description: "Initial release consolidating one Log Analytics workspace, a default-on workspace-transform DCR with automatic attachment, and optional Basic-plan tables."

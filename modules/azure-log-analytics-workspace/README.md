@@ -1,12 +1,12 @@
 # Log Analytics Workspace
 
-Creates one Azure Log Analytics workspace with optional Basic-plan table configuration and an optional workspace-transform Data Collection Rule (DCR).
+Creates one Azure Log Analytics workspace with a workspace-transform Data Collection Rule (DCR) and optional Basic-plan table configuration.
 
 ## Usage
 
 ### Default tenant LAW
 
-Workspace-only configuration used by enterprise tenants. `basic_log_tables` and `data_collection_rule` default to disabled.
+Default tenant configuration. `basic_log_tables` defaults to empty, while the workspace-transform DCR is created and attached by default.
 
 ```hcl
 module "law" {
@@ -38,32 +38,9 @@ module "law" {
 }
 ```
 
-### Workspace with Basic tables and workspace-transform DCR
-
-The module creates the DCR, attaches it via `defaultDataCollectionRuleResourceId`, and avoids a Terraform dependency cycle between workspace and DCR.
-
-```hcl
-module "law" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.0.0"
-
-  name                = "law-example-prod"
-  location            = azurerm_resource_group.core.location
-  resource_group_name = azurerm_resource_group.core.name
-  retention_in_days   = 90
-  tags                = local.tags
-
-  basic_log_tables = {
-    ContainerLogV2  = { retention_in_days = 30 }
-    AKSControlPlane = { retention_in_days = 30 }
-  }
-
-  data_collection_rule = {}
-}
-```
-
 ## Default redaction
 
-When `data_collection_rule` is set, the module redacts token-bearing query strings in `AGWAccessLogs.RequestUri`, `RequestQuery`, and `OriginalRequestUriWithArgs` unless `transformations` is overridden:
+By default, the DCR redacts token-bearing query strings in `AGWAccessLogs.RequestUri`, `RequestQuery`, and `OriginalRequestUriWithArgs`. Override `data_collection_rule.transformations` to replace that default:
 
 ```hcl
 data_collection_rule = {
@@ -90,7 +67,7 @@ data_collection_rule = {
 
 When overriding `transformations`, include every table that needs a transform. Tables without a transform still ingest normally.
 
-Set `data_collection_rule = null` to skip DCR creation entirely.
+Set `data_collection_rule = null` or `data_collection_rule = { enabled = false }` to skip DCR creation entirely.
 
 ## References
 
@@ -133,7 +110,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_basic_log_tables"></a> [basic\_log\_tables](#input\_basic\_log\_tables) | Log Analytics workspace tables to configure with the Basic plan. | <pre>map(object({<br/>    retention_in_days = optional(number)<br/>  }))</pre> | `{}` | no |
-| <a name="input_data_collection_rule"></a> [data\_collection\_rule](#input\_data\_collection\_rule) | Optional workspace-transform DCR. Set to null to skip DCR creation and attachment.<br/>When set, creates a DCR with kind WorkspaceTransforms and attaches it to the workspace<br/>via defaultDataCollectionRuleResourceId. | <pre>object({<br/>    destination_name = optional(string)<br/>    enabled          = optional(bool, true)<br/>    name             = optional(string)<br/>    transformations  = optional(map(string))<br/>  })</pre> | `null` | no |
+| <a name="input_data_collection_rule"></a> [data\_collection\_rule](#input\_data\_collection\_rule) | Workspace-transform DCR configuration. By default, creates a DCR with kind<br/>WorkspaceTransforms and attaches it to the workspace via defaultDataCollectionRuleResourceId.<br/>Set to null or enabled = false to skip DCR creation and attachment. | <pre>object({<br/>    destination_name = optional(string)<br/>    enabled          = optional(bool, true)<br/>    name             = optional(string)<br/>    transformations  = optional(map(string))<br/>  })</pre> | `{}` | no |
 | <a name="input_local_authentication_enabled"></a> [local\_authentication\_enabled](#input\_local\_authentication\_enabled) | Whether local authentication using workspace keys is enabled. | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Azure region for the workspace and optional DCR. | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Name of the Log Analytics workspace. | `string` | n/a | yes |
