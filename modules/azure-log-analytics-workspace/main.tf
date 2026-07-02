@@ -54,9 +54,13 @@ resource "azurerm_monitor_data_collection_rule" "this" {
   dynamic "data_flow" {
     for_each = local.dcr_transformations
     content {
-      destinations  = [local.dcr_destination_name]
-      streams       = ["Microsoft-Table-${data_flow.key}"]
-      transform_kql = trimspace(data_flow.value)
+      destinations = [local.dcr_destination_name]
+      streams      = ["Microsoft-Table-${data_flow.key}"]
+      transform_kql = trimspace(replace(
+        data_flow.value,
+        "\n",
+        " "
+      ))
     }
   }
 
