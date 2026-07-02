@@ -1,96 +1,47 @@
-# Azure Log Analytics Data Collection Rule
+# Log Analytics Workspace Transform DCR
 
 Creates an Azure Monitor Data Collection Rule (DCR) with `kind = WorkspaceTransforms` that runs KQL on incoming Log Analytics data before it is stored.
 
-## Prerequisites
+## Usage
 
-- Contributor on the resource group hosting the DCR
-- Contributor on the Log Analytics workspace
-- Diagnostic settings (or other non-DCR ingestion) sending Application Gateway access logs to `AzureDiagnostics` or `AGWAccessLogs`
-
-## Workspace DCR linking
-
-This DCR has no effect until the workspace references it via `data_collection_rule_id` (`defaultDataCollectionRuleResourceId` in Azure).
-
-**Terraform cycle:** if the DCR's `workspace_resource_id` is `azurerm_log_analytics_workspace.law.id` and the workspace sets `data_collection_rule_id = module.*.dcr_id`, Terraform reports a dependency cycle.
-
-Pass a **hand-built workspace ARM ID** into this module's `log_analytics_workspace_id`. Only wire the workspace → DCR direction through Terraform:
+Azure applies a workspace-transform DCR only after the workspace references it via `data_collection_rule_id` or `defaultDataCollectionRuleResourceId`.
 
 ```hcl
-locals {
-  law_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${data.azurerm_resource_group.core.name}/providers/Microsoft.OperationalInsights/workspaces/law-${var.tenant_name}-${var.tenant_environment}"
-}
-
-resource "azurerm_log_analytics_workspace" "law" {
-  name                        = "law-${var.tenant_name}-${var.tenant_environment}"
-  location                    = data.azurerm_resource_group.core.location
-  resource_group_name         = data.azurerm_resource_group.core.name
-  sku                         = "PerGB2018"
-  retention_in_days           = 90
-  data_collection_rule_id     = module.law_data_collection_rule.dcr_id
-}
-
 module "law_data_collection_rule" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-data-collection-rule?depth=1&ref=azure-log-analytics-data-collection-rule-1.0.0"
+  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-data-collection-rule?depth=1&ref=azure-log-analytics-data-collection-rule-2.0.0"
 
-  log_analytics_workspace_id = local.law_id
+  name                       = "dcr-law-${azurerm_log_analytics_workspace.law.name}"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+
   resource_group = {
-    name     = data.azurerm_resource_group.core.name
-    location = data.azurerm_resource_group.core.location
+    name     = azurerm_resource_group.core.name
+    location = azurerm_resource_group.core.location
   }
-  workspace_name = "law-${var.tenant_name}-${var.tenant_environment}"
-  tags         = local.tags
+
+  tags = local.tags
 }
 ```
 
-Only one workspace DCR may exist per workspace. Additional table transforms belong in the same DCR via `transformations` or `redact_query_string_parameters`.
+If the workspace also depends on this module's `dcr_id`, pass a hand-built workspace ARM ID to `log_analytics_workspace_id` to avoid a Terraform dependency cycle.
 
 ## Default redaction
 
-With no overrides, the module redacts matching query parameters in `AGWAccessLogs.RequestQuery`, producing values like `token=[Redacted]`. This matches Application Gateway diagnostic settings using resource-specific tables (`log_analytics_destination_type = "Dedicated"`).
+By default, the module redacts token-bearing query strings in `AGWAccessLogs.RequestUri`, `RequestQuery`, and `OriginalRequestUriWithArgs`.
 
-Disable by setting `redact_query_string_parameters = {}` and supplying custom `transformations`, or extend defaults:
-
-```hcl
-redact_query_string_parameters = {
-  AGWAccessLogs = {
-    query_column    = "RequestQuery"
-    parameter_names = ["token", "access_token", "code"]
-  }
-}
-```
-
-For legacy Application Gateway diagnostic settings that still write to `AzureDiagnostics`, target `AzureDiagnostics.requestQuery_s`:
+Override the default by replacing `transformations`:
 
 ```hcl
-redact_query_string_parameters = {
-  AzureDiagnostics = {
-    category_filter = "ApplicationGatewayAccessLog"
-    query_column    = "requestQuery_s"
-    parameter_names = ["token"]
-  }
-}
-```
-
-During migration from `AzureDiagnostics` to resource-specific tables, include both table shapes in the same DCR:
-
-```hcl
-redact_query_string_parameters = {
-  AGWAccessLogs = {
-    query_column    = "RequestQuery"
-    parameter_names = ["token"]
-  }
-  AzureDiagnostics = {
-    category_filter = "ApplicationGatewayAccessLog"
-    query_column    = "requestQuery_s"
-    parameter_names = ["token"]
-  }
+transformations = {
+  AGWAccessLogs = <<-KQL
+    source
+    | extend RequestQuery = iif(RequestQuery contains "token=", "[Redacted]", RequestQuery)
+  KQL
 }
 ```
 
 ## Raw transformations
 
-For tables or logic not covered by `redact_query_string_parameters`:
+`transformations` is a map of Log Analytics table name to KQL:
 
 ```hcl
 transformations = {
@@ -98,7 +49,7 @@ transformations = {
 }
 ```
 
-A table name must not appear in both `redact_query_string_parameters` and `transformations`.
+When overriding `transformations`, include every table that needs a transform. Tables without a transform still ingest normally.
 
 ## References
 
@@ -135,15 +86,12 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_explicit_name"></a> [explicit\_name](#input\_explicit\_name) | Name for the DCR when the default is not desired. | `string` | `null` | no |
-| <a name="input_log_analytics_destination_name"></a> [log\_analytics\_destination\_name](#input\_log\_analytics\_destination\_name) | Destination name referenced by data flows. Must match the destinations.log\_analytics name block. | `string` | `"law"` | no |
-| <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | ARM resource ID of the Log Analytics workspace this DCR transforms data for.<br/><br/>When the same workspace sets `data_collection_rule_id` to this module's `dcr_id`, pass a<br/>hand-built ARM ID string here (subscription + resource group + workspace name). Do not pass<br/>`azurerm_log_analytics_workspace.*.id` directly or Terraform will report a dependency cycle. | `string` | n/a | yes |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming the DCR when explicit\_name is not set. | `string` | `"dcr-law"` | no |
-| <a name="input_redact_query_string_parameters"></a> [redact\_query\_string\_parameters](#input\_redact\_query\_string\_parameters) | Per-table configuration for redacting sensitive query-string parameters before ingestion.<br/>Keys are Log Analytics table names (for example AzureDiagnostics or AGWAccessLogs). Generates a transformKql<br/>data flow per key unless the same table is defined in `transformations`. | <pre>map(object({<br/>    category_filter = optional(string)<br/>    parameter_names = list(string)<br/>    query_column    = string<br/>    redacted_value  = optional(string, "[Redacted]")<br/>  }))</pre> | <pre>{<br/>  "AGWAccessLogs": {<br/>    "parameter_names": [<br/>      "token"<br/>    ],<br/>    "query_column": "RequestQuery"<br/>  }<br/>}</pre> | no |
+| <a name="input_explicit_log_analytics_destination_name"></a> [explicit\_log\_analytics\_destination\_name](#input\_explicit\_log\_analytics\_destination\_name) | Log Analytics destination name when the default is not desired. | `string` | `null` | no |
+| <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | ARM resource ID of the Log Analytics workspace this DCR transforms data for. | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | Name of the Data Collection Rule. | `string` | n/a | yes |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Resource group where the DCR is deployed. | <pre>object({<br/>    location = string<br/>    name     = string<br/>  })</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to the DCR. | `map(string)` | `{}` | no |
-| <a name="input_transformations"></a> [transformations](#input\_transformations) | Raw transformKql queries keyed by Log Analytics table name. Use for cases not covered by<br/>redact\_query\_string\_parameters. A table key must not appear in both variables. | `map(string)` | `{}` | no |
-| <a name="input_workspace_name"></a> [workspace\_name](#input\_workspace\_name) | Log Analytics workspace name. Used only for the default DCR name when explicit\_name is null. | `string` | `null` | no |
+| <a name="input_transformations"></a> [transformations](#input\_transformations) | Raw transformKql queries keyed by Log Analytics table name. | `map(string)` | <pre>{<br/>  "AGWAccessLogs": "source\n\| extend RequestUri = iif(RequestUri contains \"token=\" and indexof(RequestUri, \"?\") >= 0, strcat(substring(RequestUri, 0, indexof(RequestUri, \"?\")), \"?[Redacted]\"), RequestUri)\n\| extend RequestQuery = iif(RequestQuery contains \"token=\", \"[Redacted]\", RequestQuery)\n\| extend OriginalRequestUriWithArgs = iif(OriginalRequestUriWithArgs contains \"token=\" and indexof(OriginalRequestUriWithArgs, \"?\") >= 0, strcat(substring(OriginalRequestUriWithArgs, 0, indexof(OriginalRequestUriWithArgs, \"?\")), \"?[Redacted]\"), OriginalRequestUriWithArgs)\n"<br/>}</pre> | no |
 
 ## Outputs
 

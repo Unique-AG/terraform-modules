@@ -10,5 +10,5 @@ output "dcr_name" {
 
 output "data_flow_tables" {
   description = "Log Analytics table names configured with ingestion-time transformations."
-  value       = keys(local.data_flow_transformations)
+  value       = keys(var.transformations)
 }
