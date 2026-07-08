@@ -131,16 +131,6 @@ resource "azurerm_storage_container" "container" {
   container_access_type = each.value.access_type
 }
 
-# Moves the count-indexed state address to the for_each key so consumers using the
-# default `blob` subresource (the module default, and every known caller) get a pure
-# state move with no Azure resource replacement.
-# If you were using `private_endpoint` with a non-blob subresource you must add a
-# corresponding `moved` block in your calling module to avoid destroy+create.
-moved {
-  from = azurerm_private_endpoint.storage_account_pe[0]
-  to   = azurerm_private_endpoint.storage_account_pe["blob"]
-}
-
 resource "azurerm_private_endpoint" "storage_account_pe" {
   for_each = local.private_endpoints
 
