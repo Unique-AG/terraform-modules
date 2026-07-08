@@ -199,11 +199,12 @@ variable "private_endpoint" {
 }
 
 variable "private_endpoints" {
-  description = "Private endpoints for the storage account, keyed by the target subresource name (e.g. \"blob\", \"file\"). Azure storage accounts only permit a single subresource per private endpoint, so each entry results in its own azurerm_private_endpoint. Preferred over the deprecated `private_endpoint`."
+  description = "Private endpoints for the storage account, keyed by the target subresource name (e.g. \"blob\", \"file\"). Azure storage accounts only permit a single subresource per private endpoint, so each entry results in its own azurerm_private_endpoint. Preferred over the deprecated `private_endpoint`. Set `name` to override the Azure resource name (default: `<storage-name>-<subresource>-pe`); the private service connection name is derived as `<name without -pe suffix>-psc`."
   type = map(object({
     subnet_id           = string
     private_dns_zone_id = string
     location            = optional(string)
+    name                = optional(string)
     tags                = optional(map(string), {})
   }))
   default  = {}

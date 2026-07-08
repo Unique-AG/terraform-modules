@@ -149,18 +149,14 @@ resource "azurerm_private_endpoint" "storage_account_pe" {
 resource "azurerm_private_endpoint" "storage_account_pe_map" {
   for_each = var.private_endpoints
 
-  # "blob" keeps the suffix-less Azure name convention so migrating from
-  # `private_endpoint` to `private_endpoints = { blob = {...} }` produces no
-  # Azure resource replacement — only the Terraform state address changes,
-  # which callers handle with a moved block in their own root module.
-  name                = each.key == "blob" ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
+  name                = coalesce(each.value.name, "${var.name}-${each.key}-pe")
   location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
   subnet_id           = each.value.subnet_id
   tags                = merge(var.tags, each.value.tags)
 
   private_service_connection {
-    name                           = each.key == "blob" ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
+    name                           = "${trimsuffix(coalesce(each.value.name, "${var.name}-${each.key}-pe"), "-pe")}-psc"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
     subresource_names              = [each.key]
