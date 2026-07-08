@@ -162,7 +162,7 @@ variable "connection_settings" {
 }
 
 variable "private_endpoint" {
-  description = "Configuration for private endpoint"
+  description = "DEPRECATED: use `private_endpoints` instead, e.g. `private_endpoints = { blob = { subnet_id = ..., private_dns_zone_id = ... } }`. Will be removed in a future major version. Configuration for a single private endpoint on the storage account."
   type = object({
     subnet_id           = string
     private_dns_zone_id = string
@@ -172,7 +172,10 @@ variable "private_endpoint" {
   })
   default = null
 
-
+  validation {
+    condition     = var.private_endpoint == null ? true : length(var.private_endpoint.subresource_names) == 1
+    error_message = "private_endpoint.subresource_names must contain exactly one subresource (Azure only permits one per private endpoint). Use private_endpoints to configure more than one."
+  }
   validation {
     condition = var.private_endpoint == null ? true : alltrue([
       for subresource in var.private_endpoint.subresource_names : contains(
@@ -192,6 +195,41 @@ variable "private_endpoint" {
       can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
     )
     error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}
+
+variable "private_endpoints" {
+  description = "Private endpoints for the storage account, keyed by the target subresource name (e.g. \"blob\", \"file\"). Azure storage accounts only permit a single subresource per private endpoint, so each entry results in its own azurerm_private_endpoint. Preferred over the deprecated `private_endpoint`."
+  type = map(object({
+    subnet_id           = string
+    private_dns_zone_id = string
+    location            = optional(string)
+    tags                = optional(map(string), {})
+  }))
+  default  = {}
+  nullable = false
+
+  validation {
+    condition = alltrue([
+      for subresource in keys(var.private_endpoints) : contains(
+        ["blob", "table", "queue", "file", "web", "dfs"], subresource
+      )
+    ])
+    error_message = "private_endpoints keys must be one of: blob, table, queue, file, web, dfs"
+  }
+  validation {
+    condition = alltrue([
+      for ep in values(var.private_endpoints) :
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", ep.subnet_id))
+    ])
+    error_message = "Each private_endpoints entry subnet_id must be a valid Azure resource ID for a subnet"
+  }
+  validation {
+    condition = alltrue([
+      for ep in values(var.private_endpoints) :
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", ep.private_dns_zone_id))
+    ])
+    error_message = "Each private_endpoints entry private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
   }
 }
 

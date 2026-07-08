@@ -3,6 +3,19 @@ locals {
   self_cmk                 = var.self_cmk != null && var.customer_managed_key == null
   store_connection_strings = var.connection_settings != null && var.shared_access_key_enabled
   change_feed_enabled      = var.data_protection_settings.change_feed_enabled && var.data_protection_settings.change_feed_retention_days > 0
+
+  # Coerce the deprecated singular `private_endpoint` into the same map shape as
+  # `private_endpoints`, keyed by its subresource name. `private_endpoints` wins on key collision.
+  private_endpoint_legacy = var.private_endpoint == null ? {} : {
+    (var.private_endpoint.subresource_names[0]) = {
+      subnet_id           = var.private_endpoint.subnet_id
+      private_dns_zone_id = var.private_endpoint.private_dns_zone_id
+      location            = var.private_endpoint.location
+      tags                = var.private_endpoint.tags
+    }
+  }
+
+  private_endpoints = merge(local.private_endpoint_legacy, var.private_endpoints)
 }
 
 check "connection_settings_requires_shared_access_key" {
@@ -118,24 +131,33 @@ resource "azurerm_storage_container" "container" {
   container_access_type = each.value.access_type
 }
 
+moved {
+  from = azurerm_private_endpoint.storage_account_pe[0]
+  to   = azurerm_private_endpoint.storage_account_pe["blob"]
+}
+
 resource "azurerm_private_endpoint" "storage_account_pe" {
-  count               = var.private_endpoint != null ? 1 : 0
-  name                = "${var.name}-pe"
-  location            = coalesce(var.private_endpoint.location, var.location)
+  for_each = local.private_endpoints
+
+  # "blob" keeps the original suffix-less name so the moved block above is a pure
+  # state move with no Azure resource replacement (name/PSC name are ForceNew).
+  # Every other subresource is necessarily new and gets a disambiguating suffix.
+  name                = each.key == "blob" ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
+  location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
-  subnet_id           = var.private_endpoint.subnet_id
-  tags                = merge(var.tags, var.private_endpoint.tags)
+  subnet_id           = each.value.subnet_id
+  tags                = merge(var.tags, each.value.tags)
 
   private_service_connection {
-    name                           = "${var.name}-psc"
+    name                           = each.key == "blob" ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
-    subresource_names              = var.private_endpoint.subresource_names
+    subresource_names              = [each.key]
   }
 
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [var.private_endpoint.private_dns_zone_id]
+    private_dns_zone_ids = [each.value.private_dns_zone_id]
   }
 }
 
