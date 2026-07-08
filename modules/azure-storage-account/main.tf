@@ -131,6 +131,11 @@ resource "azurerm_storage_container" "container" {
   container_access_type = each.value.access_type
 }
 
+# Moves the count-indexed state address to the for_each key so consumers using the
+# default `blob` subresource (the module default, and every known caller) get a pure
+# state move with no Azure resource replacement.
+# If you were using `private_endpoint` with a non-blob subresource you must add a
+# corresponding `moved` block in your calling module to avoid destroy+create.
 moved {
   from = azurerm_private_endpoint.storage_account_pe[0]
   to   = azurerm_private_endpoint.storage_account_pe["blob"]
@@ -139,17 +144,18 @@ moved {
 resource "azurerm_private_endpoint" "storage_account_pe" {
   for_each = local.private_endpoints
 
-  # "blob" keeps the original suffix-less name so the moved block above is a pure
-  # state move with no Azure resource replacement (name/PSC name are ForceNew).
-  # Every other subresource is necessarily new and gets a disambiguating suffix.
-  name                = each.key == "blob" ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
+  # Endpoints migrated from the deprecated `private_endpoint` variable keep their
+  # original suffix-less names (ForceNew fields) regardless of subresource type,
+  # so upgrading is a no-op in Azure for those endpoints.
+  # Endpoints declared via `private_endpoints` directly always get a disambiguating suffix.
+  name                = (var.private_endpoint != null && each.key == var.private_endpoint.subresource_names[0]) ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
   location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
   subnet_id           = each.value.subnet_id
   tags                = merge(var.tags, each.value.tags)
 
   private_service_connection {
-    name                           = each.key == "blob" ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
+    name                           = (var.private_endpoint != null && each.key == var.private_endpoint.subresource_names[0]) ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
     subresource_names              = [each.key]

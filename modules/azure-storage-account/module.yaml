@@ -6,6 +6,6 @@ compatibility:
   unique.ai: ~> 2025.24
 changes:
   - kind: added
-    description: "Variable `private_endpoints` (map keyed by subresource name, e.g. `blob`, `file`) allowing multiple private endpoints per storage account. A `moved` block re-points the existing `azurerm_private_endpoint.storage_account_pe[0]` state address to `[\"blob\"]` so upgrading causes no resource replacement."
+    description: "Variable `private_endpoints` (map keyed by subresource name, e.g. `blob`, `file`) allowing multiple private endpoints per storage account. A `moved` block re-points the existing `azurerm_private_endpoint.storage_account_pe[0]` state address to `[\"blob\"]` so upgrading causes no resource replacement for consumers using the default `blob` subresource. Consumers using a non-default subresource via the old `private_endpoint` variable must add a corresponding `moved` block in their calling module."
   - kind: deprecated
     description: "Variable `private_endpoint` is deprecated in favour of `private_endpoints`. It continues to work and is now validated to accept exactly one subresource name. Will be removed in a future major version."
