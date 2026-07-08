@@ -134,18 +134,18 @@ resource "azurerm_storage_container" "container" {
 resource "azurerm_private_endpoint" "storage_account_pe" {
   for_each = local.private_endpoints
 
-  # Endpoints migrated from the deprecated `private_endpoint` variable keep their
-  # original suffix-less names (ForceNew fields) regardless of subresource type,
-  # so upgrading is a no-op in Azure for those endpoints.
-  # Endpoints declared via `private_endpoints` directly always get a disambiguating suffix.
-  name                = (var.private_endpoint != null && each.key == var.private_endpoint.subresource_names[0]) ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
+  # "blob" always gets the original suffix-less names (ForceNew fields) regardless
+  # of which variable delivered it, so switching from `private_endpoint` to
+  # `private_endpoints = { blob = {...} }` causes no Azure resource replacement.
+  # All other subresources are by definition new and get a disambiguating suffix.
+  name                = each.key == "blob" ? "${var.name}-pe" : "${var.name}-${each.key}-pe"
   location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
   subnet_id           = each.value.subnet_id
   tags                = merge(var.tags, each.value.tags)
 
   private_service_connection {
-    name                           = (var.private_endpoint != null && each.key == var.private_endpoint.subresource_names[0]) ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
+    name                           = each.key == "blob" ? "${var.name}-psc" : "${var.name}-${each.key}-psc"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
     subresource_names              = [each.key]
