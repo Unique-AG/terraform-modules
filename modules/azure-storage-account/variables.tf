@@ -161,43 +161,6 @@ variable "connection_settings" {
   default = null
 }
 
-variable "private_endpoint" {
-  description = "DEPRECATED: use `private_endpoints` instead, e.g. `private_endpoints = { blob = { subnet_id = ..., private_dns_zone_id = ... } }`. Will be removed in a future major version. Configuration for a single private endpoint on the storage account."
-  type = object({
-    subnet_id           = string
-    private_dns_zone_id = string
-    location            = optional(string)
-    subresource_names   = optional(list(string), ["blob"])
-    tags                = optional(map(string), {})
-  })
-  default = null
-
-  validation {
-    condition     = var.private_endpoint == null ? true : length(var.private_endpoint.subresource_names) == 1
-    error_message = "private_endpoint.subresource_names must contain exactly one subresource (Azure only permits one per private endpoint). Use private_endpoints to configure more than one."
-  }
-  validation {
-    condition = var.private_endpoint == null ? true : alltrue([
-      for subresource in var.private_endpoint.subresource_names : contains(
-        ["blob", "table", "queue", "file", "web", "dfs"], subresource
-      )
-    ])
-    error_message = "Storage account private endpoint subresource_names must be one or more of: blob, table, queue, file, web, dfs"
-  }
-  validation {
-    condition = var.private_endpoint == null ? true : (
-      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.private_endpoint.subnet_id))
-    )
-    error_message = "The subnet_id must be a valid Azure resource ID for a subnet"
-  }
-  validation {
-    condition = var.private_endpoint == null ? true : (
-      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
-    )
-    error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
-  }
-}
-
 variable "private_endpoints" {
   description = "Private endpoints for the storage account, keyed by the target subresource name (e.g. \"blob\", \"file\"). Azure storage accounts only permit a single subresource per private endpoint, so each entry results in its own azurerm_private_endpoint. Preferred over the deprecated `private_endpoint`. Set `name` to override the Azure resource name (default: `<storage-name>-<subresource>-pe`); the private service connection name is derived as `<name without -pe suffix>-psc`."
   type = map(object({
