@@ -1,9 +1,11 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 6.0.0
+version: 6.1.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: changed
-    description: "💥 `customer_managed_key` replaces `key_name`, `key_vault_id`, and `key_version` with `key_vault_key_id` (Key Vault key resource ID) per azurerm_storage_account_customer_managed_key, and now supports optional `federated_identity_client_id` for cross-tenant CMKs. Self-managed CMK (`self_cmk`) CMK binding now uses `key_vault_key_id` on the created key resource and also supports optional `federated_identity_client_id`."
+  - kind: added
+    description: "Variable `private_endpoints` (map keyed by subresource name, e.g. `blob`, `file`) allowing multiple private endpoints per storage account. A `moved` block re-points the existing `azurerm_private_endpoint.storage_account_pe[0]` state address to `[\"blob\"]` so upgrading causes no resource replacement."
+  - kind: deprecated
+    description: "Variable `private_endpoint` is deprecated in favour of `private_endpoints`. It continues to work and is now validated to accept exactly one subresource name. Will be removed in a future major version."
