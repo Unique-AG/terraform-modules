@@ -679,7 +679,7 @@ variable "zones" {
 }
 
 variable "metric_alerts" {
-  description = "Map of metric alerts to create for the Application Gateway. By default includes 5xx error alerts. Set to {} to disable all default alerts."
+  description = "Map of additional custom metric alerts to create for the Application Gateway. The built-in backend 5xx alert is configured via var.backend_5xx_alert."
   type = map(object({
     name                     = string
     description              = optional(string, "")
@@ -740,30 +740,7 @@ variable "metric_alerts" {
     # Backward compatibility - will be deprecated in favor of actions
     action_group_ids = optional(list(string), [])
   }))
-  default = {
-    default_5xx_error_alert = {
-      name        = "Application Gateway 5xx Error"
-      description = "Alert when 5xx errors are above 100 for more than 1 hour"
-      severity    = 1
-      frequency   = "PT1M"
-      window_size = "PT1H"
-      enabled     = true
-      criteria = {
-        metric_namespace = "microsoft.network/applicationgateways"
-        metric_name      = "ResponseStatus"
-        aggregation      = "Total"
-        operator         = "GreaterThan"
-        threshold        = 100
-        dimension = [{
-          name     = "HttpStatusGroup"
-          operator = "StartsWith"
-          values = [
-            "5xx",
-          ]
-        }]
-      }
-    }
-  }
+  default = {}
 
   validation {
     condition = alltrue([
@@ -798,6 +775,17 @@ variable "metric_alerts" {
     ])
     error_message = "Window size must be one of: PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, P1D and must be greater than frequency."
   }
+}
+
+variable "backend_5xx_alert" {
+  description = "Built-in alert on backend 5xx responses (BackendResponseStatus metric). excluded_backend_settings takes exact AGIC-generated BackendHttpSetting names to exclude (e.g. argocd). action_group_ids falls back to var.metric_alerts_external_action_group_ids when empty."
+  type = object({
+    enabled                   = optional(bool, true)
+    threshold                 = optional(number, 100)
+    excluded_backend_settings = optional(list(string), [])
+    action_group_ids          = optional(list(string), [])
+  })
+  default = {}
 }
 
 variable "metric_alerts_external_action_group_ids" {

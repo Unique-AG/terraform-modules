@@ -1,3 +1,48 @@
+resource "azurerm_monitor_metric_alert" "backend_5xx" {
+  count = var.backend_5xx_alert.enabled ? 1 : 0
+
+  name                = "Application Gateway 5xx Error"
+  resource_group_name = var.resource_group.name
+  scopes              = [azurerm_application_gateway.appgw.id]
+  description         = "Alert when backend 5xx errors are above ${var.backend_5xx_alert.threshold} for more than 1 hour"
+  severity            = 1
+  frequency           = "PT1M"
+  window_size         = "PT1H"
+  auto_mitigate       = true
+
+  criteria {
+    metric_namespace = "microsoft.network/applicationgateways"
+    metric_name      = "BackendResponseStatus"
+    aggregation      = "Total"
+    operator         = "GreaterThan"
+    threshold        = var.backend_5xx_alert.threshold
+
+    dimension {
+      name     = "HttpStatusGroup"
+      operator = "StartsWith"
+      values   = ["5xx"]
+    }
+
+    dynamic "dimension" {
+      for_each = length(var.backend_5xx_alert.excluded_backend_settings) > 0 ? [1] : []
+      content {
+        name     = "BackendHttpSetting"
+        operator = "Exclude"
+        values   = var.backend_5xx_alert.excluded_backend_settings
+      }
+    }
+  }
+
+  dynamic "action" {
+    for_each = length(var.backend_5xx_alert.action_group_ids) > 0 ? var.backend_5xx_alert.action_group_ids : var.metric_alerts_external_action_group_ids
+    content {
+      action_group_id = action.value
+    }
+  }
+
+  tags = var.tags
+}
+
 resource "azurerm_monitor_metric_alert" "application_gateway_metric_alerts" {
   for_each = var.metric_alerts
 
