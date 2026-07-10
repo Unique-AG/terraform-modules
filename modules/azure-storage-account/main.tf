@@ -118,24 +118,25 @@ resource "azurerm_storage_container" "container" {
   container_access_type = each.value.access_type
 }
 
-resource "azurerm_private_endpoint" "storage_account_pe" {
-  count               = var.private_endpoint != null ? 1 : 0
-  name                = "${var.name}-pe"
-  location            = coalesce(var.private_endpoint.location, var.location)
+resource "azurerm_private_endpoint" "storage_account_pe_map" {
+  for_each = var.private_endpoints
+
+  name                = coalesce(each.value.name, "${var.name}-${each.key}-pe")
+  location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
-  subnet_id           = var.private_endpoint.subnet_id
-  tags                = merge(var.tags, var.private_endpoint.tags)
+  subnet_id           = each.value.subnet_id
+  tags                = merge(var.tags, each.value.tags)
 
   private_service_connection {
-    name                           = "${var.name}-psc"
+    name                           = "${trimsuffix(coalesce(each.value.name, "${var.name}-${each.key}-pe"), "-pe")}-psc"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
-    subresource_names              = var.private_endpoint.subresource_names
+    subresource_names              = [each.key]
   }
 
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [var.private_endpoint.private_dns_zone_id]
+    private_dns_zone_ids = [each.value.private_dns_zone_id]
   }
 }
 
