@@ -171,6 +171,20 @@ Before upgrading:
 2. **Action groups**: Default alerts have no action groups, so they won't send notifications until configured
 3. **Resource costs**: Additional monitoring alert resources will be created (minimal cost impact)
 
+## Database debugging parameters
+
+To improve database debugging and observability, the module always applies the following server parameters on top of `parameter_values`:
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| `metrics.collector_database_activity` | `ON` | Enhanced metrics: collects per-database activity metrics. |
+| `pgms_wait_sampling.query_capture_mode` | `ALL` | Query Store wait sampling: tracks wait events for all statements. |
+
+Both are dynamic parameters, so they take effect without a server restart. They can be overridden by setting the same key in `parameter_values`.
+
+> [!NOTE]
+> Wait sampling only surfaces data while Query Store is enabled. Set `pg_qs.query_capture_mode` to `top` or `all` (via `parameter_values`) if you want the wait data to be queryable.
+
 ## Pre-requisites
 - To deploy this module, you have at least the following permissions:
     + Reader of the subscription

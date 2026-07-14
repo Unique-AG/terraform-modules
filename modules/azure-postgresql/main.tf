@@ -1,6 +1,19 @@
 locals {
   uses_cmk = var.customer_managed_key != null && var.self_cmk == null
   self_cmk = var.self_cmk != null && var.customer_managed_key == null
+
+  # Server parameters that are always applied to improve database debugging and
+  # observability. Callers can still override any of these by setting the same
+  # key in var.parameter_values.
+  debug_parameter_values = {
+    # Enhanced metrics: collect per-database activity metrics.
+    "metrics.collector_database_activity" = "ON"
+    # Query Store wait sampling: track wait events for all statements. Requires
+    # pg_qs.query_capture_mode to be "top" or "all" to actually surface data.
+    "pgms_wait_sampling.query_capture_mode" = "ALL"
+  }
+
+  merged_parameter_values = merge(local.debug_parameter_values, var.parameter_values)
 }
 
 resource "azurerm_postgresql_flexible_server" "apfs" {
@@ -76,7 +89,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
 }
 
 resource "azurerm_postgresql_flexible_server_configuration" "parameters" {
-  for_each  = var.parameter_values
+  for_each  = local.merged_parameter_values
   server_id = azurerm_postgresql_flexible_server.apfs.id
   name      = each.key
   value     = each.value
