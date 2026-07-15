@@ -173,7 +173,7 @@ Before upgrading:
 
 ## Database debugging parameters
 
-To improve database debugging and observability, the default `parameter_values` include the following (nice-to-have) server parameters:
+To improve database debugging and observability, the default `parameter_values` include the following server parameters:
 
 | Parameter | Value | Purpose |
 |-----------|-------|---------|

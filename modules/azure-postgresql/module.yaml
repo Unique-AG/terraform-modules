@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.16
 changes:
   - kind: added
-    description: "Add metrics.collector_database_activity=ON (enhanced metrics) and pgms_wait_sampling.query_capture_mode=ALL (wait sampling) to the default parameter_values to improve database debugging. These are nice-to-have and can be omitted by callers that override parameter_values."
+    description: "Add metrics.collector_database_activity=ON (enhanced metrics) and pgms_wait_sampling.query_capture_mode=ALL (wait sampling) to the default parameter_values to improve database debugging."

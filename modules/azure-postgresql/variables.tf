@@ -69,13 +69,11 @@ variable "parameter_values" {
   type        = map(string)
   description = "values for the server configuration parameters"
   default = {
-    max_connections    = "400"
-    "azure.extensions" = "PG_STAT_STATEMENTS,PG_TRGM"
-    enable_seqscan     = "off",
-    # Nice-to-have debugging parameters. Not required for the server to run, so
-    # callers that override this map may safely omit them.
-    "metrics.collector_database_activity"   = "ON"  # Enhanced metrics.
-    "pgms_wait_sampling.query_capture_mode" = "ALL" # Query Store wait sampling.
+    max_connections                         = "400"
+    "azure.extensions"                      = "PG_STAT_STATEMENTS,PG_TRGM"
+    enable_seqscan                          = "off",
+    "metrics.collector_database_activity"   = "ON"
+    "pgms_wait_sampling.query_capture_mode" = "ALL"
   }
 }
 
