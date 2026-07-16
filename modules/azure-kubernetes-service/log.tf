@@ -1,6 +1,6 @@
 locals {
   # https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
-  diagnostic_logs_all_categories = [
+  diagnostic_logs_supported_categories = [
     "cloud-controller-manager",
     "cluster-autoscaler",
     "csi-azuredisk-controller",
@@ -9,23 +9,15 @@ locals {
     "kube-audit-admin",
     "kube-scheduler",
   ]
-  diagnostic_logs_enabled_categories = var.diagnostic_logs_categories != null ? [
-    for category in local.diagnostic_logs_all_categories : category
-    if contains(var.diagnostic_logs_categories, category)
-  ] : local.diagnostic_logs_all_categories
+  diagnostic_logs_default_categories = ["cluster-autoscaler"]
+  diagnostic_logs_enabled_categories = var.control_plane_logs.categories != null ? [
+    for category in local.diagnostic_logs_supported_categories : category
+    if contains(var.control_plane_logs.categories, category)
+  ] : local.diagnostic_logs_default_categories
 }
-
-resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each                = var.log_analytics_workspace != null ? toset(var.basic_log_tables) : []
-  workspace_id            = var.log_analytics_workspace.id
-  name                    = each.value
-  plan                    = var.log_table_plan
-  total_retention_in_days = var.retention_in_days
-}
-
 
 resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
-  count                          = var.log_analytics_workspace != null ? 1 : 0
+  count                          = var.log_analytics_workspace != null && var.control_plane_logs.enabled ? 1 : 0
   name                           = "aks-diagnostic-logs"
   target_resource_id             = azurerm_kubernetes_cluster.cluster.id
   log_analytics_workspace_id     = var.log_analytics_workspace.id
@@ -44,7 +36,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
-  count               = var.log_analytics_workspace != null ? 1 : 0
+  count               = var.log_analytics_workspace != null && var.data_plane_logs.enabled ? 1 : 0
   name                = "${var.cluster_name}-ci-dcr"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
@@ -59,14 +51,14 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
   }
 
   data_flow {
-    streams      = var.container_insights_streams
+    streams      = var.data_plane_logs.streams
     destinations = ["ciworkspace"]
   }
 
   data_sources {
     extension {
       name           = "ContainerInsightsExtension"
-      streams        = var.container_insights_streams
+      streams        = var.data_plane_logs.streams
       extension_name = "ContainerInsights"
       extension_json = jsonencode({
         dataCollectionSettings = {
@@ -85,7 +77,7 @@ resource "azurerm_monitor_data_collection_rule" "ci_dcr" {
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "ci_dcr_asc" {
-  count                   = var.log_analytics_workspace != null ? 1 : 0
+  count                   = var.log_analytics_workspace != null && var.data_plane_logs.enabled ? 1 : 0
   name                    = "${var.cluster_name}-ci-dcr-asc"
   target_resource_id      = azurerm_kubernetes_cluster.cluster.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.ci_dcr[0].id
