@@ -72,6 +72,18 @@ resource "azurerm_monitor_data_collection_rule" "this" {
   }
 }
 
+resource "azurerm_monitor_diagnostic_setting" "dcr_log_errors" {
+  count                          = local.dcr_enabled ? 1 : 0
+  log_analytics_destination_type = "Dedicated"
+  log_analytics_workspace_id     = azurerm_log_analytics_workspace.this.id
+  name                           = "dcr-log-errors"
+  target_resource_id             = azurerm_monitor_data_collection_rule.this[0].id
+
+  enabled_log {
+    category = "LogErrors"
+  }
+}
+
 resource "azapi_update_resource" "workspace_dcr" {
   count       = local.dcr_enabled ? 1 : 0
   resource_id = azurerm_log_analytics_workspace.this.id

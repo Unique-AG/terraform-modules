@@ -6,11 +6,11 @@ Creates one Azure Log Analytics workspace with a workspace-transform Data Collec
 
 ### Default tenant LAW
 
-Default tenant configuration. `ContainerLogV2` and `AKSControlPlane` are configured as Basic-plan tables, while the workspace-transform DCR is created and attached by default.
+Default tenant configuration. `ContainerLogV2` and `AKSControlPlane` are configured as Basic-plan tables, while the workspace-transform DCR is created and attached by default. DCR transformation errors are sent to the workspace's `DCRLogErrors` table.
 
 ```hcl
 module "law" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.0.0"
+  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.1.0"
 
   name                = "uq-${var.tenant_name}-${var.tenant_environment}"
   location            = data.azurerm_resource_group.rg_core.location
@@ -23,7 +23,7 @@ module "law" {
 
 ```hcl
 module "law" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.0.0"
+  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.1.0"
 
   name                = "law-example-prod"
   location            = azurerm_resource_group.core.location
@@ -101,6 +101,7 @@ No modules.
 | [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
 | [azurerm_log_analytics_workspace_table.basic_log_table](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace_table) | resource |
 | [azurerm_monitor_data_collection_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| [azurerm_monitor_diagnostic_setting.dcr_log_errors](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) | resource |
 
 ## Inputs
 
