@@ -10,7 +10,7 @@ Default tenant configuration. `ContainerLogV2` and `AKSControlPlane` are configu
 
 ```hcl
 module "law" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.1.0"
+  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.2.0"
 
   name                = "uq-${var.tenant_name}-${var.tenant_environment}"
   location            = data.azurerm_resource_group.rg_core.location
@@ -23,7 +23,7 @@ module "law" {
 
 ```hcl
 module "law" {
-  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.1.0"
+  source = "github.com/unique-ag/terraform-modules.git//modules/azure-log-analytics-workspace?depth=1&ref=azure-log-analytics-workspace-1.2.0"
 
   name                = "law-example-prod"
   location            = azurerm_resource_group.core.location
@@ -37,7 +37,7 @@ module "law" {
 
 ## Default redaction
 
-By default, the DCR redacts token-bearing query strings in `AGWAccessLogs.RequestUri`, `RequestQuery`, and `OriginalRequestUriWithArgs`. Override `data_collection_rule.transformations` to replace that default:
+By default, the DCR redacts query strings containing `token=`, `key=`, or `code=` in `AGWAccessLogs.RequestUri`, `RequestQuery`, and `OriginalRequestUriWithArgs`. Override `data_collection_rule.transformations` to replace that default:
 
 ```hcl
 data_collection_rule = {

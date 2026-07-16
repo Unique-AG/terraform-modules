@@ -1,10 +1,19 @@
 locals {
+  redacted_query_params = ["token=", "key=", "code="]
+  redacted_query_param_match = {
+    for column in ["RequestQuery", "RequestUri", "OriginalRequestUriWithArgs"] :
+    column => join(" or ", [
+      for param in local.redacted_query_params :
+      format("%s contains \"%s\"", column, param)
+    ])
+  }
+
   default_transformations = {
     AGWAccessLogs = <<-KQL
       source
-      | extend RequestUri = iif(RequestUri contains "token=" and indexof(RequestUri, "?") >= 0, strcat(substring(RequestUri, 0, indexof(RequestUri, "?")), "?[Redacted]"), RequestUri)
-      | extend RequestQuery = iif(RequestQuery contains "token=", "[Redacted]", RequestQuery)
-      | extend OriginalRequestUriWithArgs = iif(OriginalRequestUriWithArgs contains "token=" and indexof(OriginalRequestUriWithArgs, "?") >= 0, strcat(substring(OriginalRequestUriWithArgs, 0, indexof(OriginalRequestUriWithArgs, "?")), "?[Redacted]"), OriginalRequestUriWithArgs)
+      | extend RequestUri = iif((${local.redacted_query_param_match.RequestUri}) and indexof(RequestUri, "?") >= 0, strcat(substring(RequestUri, 0, indexof(RequestUri, "?")), "?[Redacted]"), RequestUri)
+      | extend RequestQuery = iif(${local.redacted_query_param_match.RequestQuery}, "[Redacted]", RequestQuery)
+      | extend OriginalRequestUriWithArgs = iif((${local.redacted_query_param_match.OriginalRequestUriWithArgs}) and indexof(OriginalRequestUriWithArgs, "?") >= 0, strcat(substring(OriginalRequestUriWithArgs, 0, indexof(OriginalRequestUriWithArgs, "?")), "?[Redacted]"), OriginalRequestUriWithArgs)
     KQL
   }
 
