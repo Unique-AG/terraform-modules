@@ -1,0 +1,7 @@
+name: azure-log-analytics-workspace
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-workspace
+version: 1.0.0
+changes:
+  - kind: added
+    description: "Initial release consolidating one Log Analytics workspace, a default-on workspace-transform DCR with automatic attachment, and default Basic-plan tables for ContainerLogV2 and AKSControlPlane."

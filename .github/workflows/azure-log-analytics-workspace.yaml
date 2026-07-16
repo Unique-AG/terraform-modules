@@ -1,4 +1,4 @@
-name: "Release Azure Log Analytics Data Collection Rule"
+name: "Release Azure Log Analytics Workspace"
 
 on:
   workflow_dispatch: # allow manual runs for missed release workflow updates
@@ -6,22 +6,22 @@ on:
     branches:
       - main
     paths:
-      - modules/azure-log-analytics-data-collection-rule/module.yaml
+      - modules/azure-log-analytics-workspace/module.yaml
   pull_request:
     branches:
       - main
     paths:
-      - modules/azure-log-analytics-data-collection-rule/**
+      - modules/azure-log-analytics-workspace/**
 
 jobs:
   validate:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/immutable-artifact.yaml
     with:
-      module: azure-log-analytics-data-collection-rule
+      module: azure-log-analytics-workspace
 
   release:
     if: ${{ github.event.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/release.yaml
     with:
-      module: azure-log-analytics-data-collection-rule
+      module: azure-log-analytics-workspace
