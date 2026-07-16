@@ -331,7 +331,8 @@ variable "control_plane_logs" {
     enabled    = optional(bool, true)
     categories = optional(list(string), null)
   })
-  default = {}
+  default  = {}
+  nullable = false
 }
 
 variable "data_plane_logs" {
@@ -346,7 +347,8 @@ variable "data_plane_logs" {
     enabled = optional(bool, false)
     streams = optional(list(string), ["Microsoft-ContainerInsights-Group-Default"])
   })
-  default = {}
+  default  = {}
+  nullable = false
 
   validation {
     condition     = !var.data_plane_logs.enabled || length(var.data_plane_logs.streams) > 0
