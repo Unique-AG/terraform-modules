@@ -1,7 +1,7 @@
 name: azure-log-analytics-workspace
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-workspace
-version: 1.1.0
+version: 1.2.0
 changes:
-  - kind: added
-    description: "DCR transformation errors are sent to the workspace's DCRLogErrors table."
+  - kind: changed
+    description: "Default AGWAccessLogs redaction also redacts query strings containing key= and code=."
