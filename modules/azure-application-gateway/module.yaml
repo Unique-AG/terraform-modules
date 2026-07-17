@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 6.5.0
+version: 6.6.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
-  - kind: added
-    description: "support configuring Application Gateway diagnostic logs for dedicated Log Analytics tables via log_analytics_destination_type"
+  - kind: changed
+    description: "add targeted WAF exclusion for OWASP rule 941130 (XSS attribute vector) matching the literal xhtml key in WebSearch crawlerConfig.contentTypes argument names"
