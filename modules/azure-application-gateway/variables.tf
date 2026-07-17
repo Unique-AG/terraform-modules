@@ -642,6 +642,24 @@ variable "waf_managed_rules" {
           excluded_rules  = ["931100"]
           rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
         }
+      },
+      # The WebSearch tool configuration (UN-21235, unique.ai 2026.29+) nests a literal
+      # `xhtml` key under crawlerConfig.contentTypes in space create/update mutations.
+      # OWASP CRS 941130 (XSS attribute vector) matches that key in ARGS_NAMES and blocks
+      # the whole request. Must be RequestArgKeys, not RequestArgNames: the match is on
+      # the argument NAME itself, and Names-exclusions only exempt argument values.
+      # EndsWith covers every mutation path the key appears under (modules.create.…,
+      # modules.upsert.create.…, modules.upsert.update.…).
+      {
+        match_variable          = "RequestArgKeys"
+        selector                = "crawlerConfig.contentTypes.xhtml"
+        selector_match_operator = "EndsWith"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          excluded_rules  = ["941130"]
+          rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+        }
       }
     ]
   }
