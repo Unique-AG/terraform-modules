@@ -1,7 +1,7 @@
 name: azure-log-analytics-workspace
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-workspace
-version: 1.2.0
+version: 1.2.1
 changes:
-  - kind: changed
-    description: "Default AGWAccessLogs redaction also redacts query strings containing key= and code=."
+  - kind: fixed
+    description: "Remove unsupported log_analytics_destination_type from DCR."
