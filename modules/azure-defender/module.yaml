@@ -1,8 +1,7 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.5.0
+version: 2.6.0
 changes:
   - kind: added
-    description: "Support for Event Hub export"
-
+    description: "Variable `workspace_settings` to route Defender for Cloud data to a custom Log Analytics workspace instead of the auto-provisioned default workspace"

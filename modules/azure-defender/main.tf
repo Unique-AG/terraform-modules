@@ -61,6 +61,12 @@ resource "azurerm_security_center_subscription_pricing" "free_plan" {
   tier          = each.value.config.tier
 }
 
+resource "azurerm_security_center_workspace" "default" {
+  count        = var.workspace_settings != null ? 1 : 0
+  scope        = coalesce(var.workspace_settings.scope, var.subscription_id)
+  workspace_id = var.workspace_settings.workspace_id
+}
+
 resource "azapi_resource" "security_contact" {
   type = "Microsoft.Security/securityContacts@2023-12-01-preview"
   # The only valid name for security contact is 'default'

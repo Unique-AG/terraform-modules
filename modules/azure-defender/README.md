@@ -6,6 +6,7 @@ This Terraform code configures Azure Defender for a subscription, enabling vario
 ## Pre-requisites
 - Contributor access to the subscription
 - If using Event Hub export: Access to the Event Hub connection string (can be in any subscription)
+- If using `workspace_settings`: Owner access to the subscription
 
 ## Features
 - Configure Defender plans for various Azure services (Cloud Posture, Storage, VMs, Key Vaults, ARM, Databases, Containers, AI)
@@ -13,6 +14,9 @@ This Terraform code configures Azure Defender for a subscription, enabling vario
 - **Optional: Continuous export to Event Hub** (alerts, assessments, secure scores)
   - Supports cross-subscription Event Hub export for centralized logging
   - For cross-subscription scenarios, use provider aliases or data sources to retrieve the connection string
+- **Optional: Custom Log Analytics workspace** (`workspace_settings`)
+  - Routes Defender agent data to a workspace you control
+  - Without it, Azure auto-provisions `DefaultWorkspace-<subscription-id>-<geo>` in `DefaultResourceGroup-<geo>` per geo, outside of Terraform state
 
 ## Default settings
 
@@ -63,6 +67,7 @@ No modules.
 | [azurerm_security_center_automation.eventhub_export](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_automation) | resource |
 | [azurerm_security_center_subscription_pricing.free_plan](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_subscription_pricing) | resource |
 | [azurerm_security_center_subscription_pricing.standard_plan](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_subscription_pricing) | resource |
+| [azurerm_security_center_workspace.default](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_workspace) | resource |
 
 ## Inputs
 
@@ -79,6 +84,7 @@ No modules.
 | <a name="input_storage_accounts_defender_settings"></a> [storage\_accounts\_defender\_settings](#input\_storage\_accounts\_defender\_settings) | n/a | <pre>object({<br/>    tier    = optional(string, "Standard")<br/>    subplan = optional(string, "DefenderForStorageV2")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | <pre>{<br/>  "extensions": [<br/>    {<br/>      "additional_extension_properties": {<br/>        "AutomatedResponse": "None",<br/>        "BlobScanResultsOptions": "BlobIndexTags",<br/>        "CapGBPerMonthPerStorageAccount": "1000"<br/>      },<br/>      "name": "OnUploadMalwareScanning"<br/>    },<br/>    {<br/>      "name": "SensitiveDataDiscovery"<br/>    }<br/>  ]<br/>}</pre> | no |
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | Subscription ID | `string` | n/a | yes |
 | <a name="input_virtual_machines_defender_settings"></a> [virtual\_machines\_defender\_settings](#input\_virtual\_machines\_defender\_settings) | n/a | <pre>object({<br/>    tier    = optional(string, "Standard")<br/>    subplan = optional(string, "P2")<br/>    extensions = optional(list(object({<br/>      name                            = string<br/>      additional_extension_properties = optional(map(string))<br/>    })), [])<br/>  })</pre> | <pre>{<br/>  "extensions": [<br/>    {<br/>      "additional_extension_properties": {<br/>        "ExclusionTags": "[]"<br/>      },<br/>      "name": "AgentlessVmScanning"<br/>    }<br/>  ]<br/>}</pre> | no |
+| <a name="input_workspace_settings"></a> [workspace\_settings](#input\_workspace\_settings) | Log Analytics workspace that Defender for Cloud agents send their data to. When unset, Azure auto-provisions a default workspace per geo (DefaultWorkspace-<subscription-id>-<geo> in DefaultResourceGroup-<geo>). scope defaults to the subscription. | <pre>object({<br/>    workspace_id = string<br/>    scope        = optional(string)<br/>  })</pre> | `null` | no |
 
 ## Outputs
 

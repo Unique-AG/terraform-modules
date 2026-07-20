@@ -184,6 +184,15 @@ variable "ai_defender_settings" {
   default = {}
 }
 
+variable "workspace_settings" {
+  description = "Log Analytics workspace that Defender for Cloud agents send their data to. When unset, Azure auto-provisions a default workspace per geo (DefaultWorkspace-<subscription-id>-<geo> in DefaultResourceGroup-<geo>). scope defaults to the subscription."
+  type = object({
+    workspace_id = string
+    scope        = optional(string)
+  })
+  default = null
+}
+
 variable "eventhub_export" {
   description = "Configuration for exporting Defender for Cloud data to Event Hub."
   type = object({
