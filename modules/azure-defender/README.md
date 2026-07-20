@@ -17,6 +17,7 @@ This Terraform code configures Azure Defender for a subscription, enabling vario
 - **Optional: Custom Log Analytics workspace** (`workspace_settings`)
   - Routes Defender agent data to a workspace you control
   - Without it, Azure auto-provisions `DefaultWorkspace-<subscription-id>-<geo>` in `DefaultResourceGroup-<geo>` per geo, outside of Terraform state
+  - Applied before any pricing plan is enabled, so greenfield applies never hit the auto-provisioning window
 
 ## Default settings
 

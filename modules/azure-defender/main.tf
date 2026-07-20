@@ -41,6 +41,14 @@ locals {
   defender_configs_standard_plan = [for config in local.defender_configs : config if config.config.tier == "Standard"]
 }
 
+resource "azurerm_security_center_workspace" "default" {
+  count        = var.workspace_settings != null ? 1 : 0
+  scope        = coalesce(var.workspace_settings.scope, var.subscription_id)
+  workspace_id = var.workspace_settings.workspace_id
+}
+
+# Pricing plans depend on the workspace setting: enabling a plan without it makes
+# Azure auto-provision DefaultWorkspace-<subscription-id>-<geo> on greenfield applies.
 resource "azurerm_security_center_subscription_pricing" "standard_plan" {
   for_each      = { for config in local.defender_configs_standard_plan : config.resource_type => config }
   resource_type = each.value.resource_type
@@ -54,17 +62,15 @@ resource "azurerm_security_center_subscription_pricing" "standard_plan" {
       additional_extension_properties = extension.value.additional_extension_properties
     }
   }
+
+  depends_on = [azurerm_security_center_workspace.default]
 }
 resource "azurerm_security_center_subscription_pricing" "free_plan" {
   for_each      = { for config in local.defender_configs_free_plan : config.resource_type => config }
   resource_type = each.value.resource_type
   tier          = each.value.config.tier
-}
 
-resource "azurerm_security_center_workspace" "default" {
-  count        = var.workspace_settings != null ? 1 : 0
-  scope        = coalesce(var.workspace_settings.scope, var.subscription_id)
-  workspace_id = var.workspace_settings.workspace_id
+  depends_on = [azurerm_security_center_workspace.default]
 }
 
 resource "azapi_resource" "security_contact" {
