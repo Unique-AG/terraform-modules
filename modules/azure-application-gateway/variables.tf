@@ -377,6 +377,19 @@ variable "waf_custom_rules_exempted_uris" {
     * Internal reference for mitigation: UN-12893
     */
     "/scim",
+    /**
+    * Unblocks the reflector artifact upload (`POST /html-store/<session>/chunk`), which streams the
+    * rendered HTML dashboard as `application/octet-stream` chunks. Byte sequences in that binary body
+    * false-positive on OWASP CRS 3.2 930100 (path traversal) and 944240 (Java deserialization), which
+    * together push the inbound anomaly score over the 949110 threshold and the gateway returns 403 —
+    * the Conduct side panel then fails to load with what the browser surfaces as a CORS error (the
+    * block page carries no `Access-Control-Allow-Origin`). `/html-store/init` and the `OPTIONS`
+    * preflight pass, only the chunk upload is blocked.
+    * Path-scoped Allow; `BlockUnwantedIPs` and `BlockSpecifiedHeaders` are evaluated first, so only
+    * allowlisted IPs reach this exemption.
+    * Internal reference for mitigation: UN-23412
+    */
+    "/html-store/",
   ]
 }
 
