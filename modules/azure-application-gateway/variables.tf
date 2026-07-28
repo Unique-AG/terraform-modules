@@ -377,6 +377,14 @@ variable "waf_custom_rules_exempted_uris" {
     * Internal reference for mitigation: UN-12893
     */
     "/scim",
+    /**
+    * Reflector (Conduct) artifact chunk uploads (/html-store/<session>/chunk) carry binary bodies whose
+    * byte sequences false-positive OWASP CRS 930100 (path traversal) and 944240 (Java deserialization),
+    * tripping the anomaly score (949110) and returning 403. Azure WAF exclusions cannot target the raw
+    * request body nor match on URI, so the path must bypass managed rules entirely.
+    * Internal reference for mitigation: UN-23412
+    */
+    "/html-store/",
   ]
 }
 

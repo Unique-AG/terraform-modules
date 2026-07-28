@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 6.6.0
+version: 6.7.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
   - kind: changed
-    description: "add targeted WAF exclusion for OWASP rule 941130 (XSS attribute vector) matching the literal xhtml key in WebSearch crawlerConfig.contentTypes argument names"
+    description: "exempt reflector /html-store/ URIs from WAF managed rules; binary artifact chunk uploads false-positive OWASP CRS 930100/944240 and get blocked via anomaly score (949110)"
