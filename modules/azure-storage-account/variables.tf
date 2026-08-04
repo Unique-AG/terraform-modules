@@ -34,6 +34,12 @@ variable "min_tls_version" {
   default     = "TLS1_2"
 }
 
+variable "https_traffic_only_enabled" {
+  description = "Require HTTPS for REST traffic. Must be set to false for NFS Azure File shares, which do not support in-protocol TLS."
+  type        = bool
+  default     = true
+}
+
 variable "account_tier" {
   description = "Tier to use for the storage account. Learn more about storage account tiers in the Azure Docs."
   default     = "Standard"
