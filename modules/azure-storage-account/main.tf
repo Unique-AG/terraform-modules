@@ -44,39 +44,43 @@ resource "azurerm_storage_account" "storage_account" {
   nfsv3_enabled  = var.is_nfs_mountable
   is_hns_enabled = var.is_nfs_mountable
 
-  blob_properties {
-    change_feed_enabled           = local.change_feed_enabled
-    change_feed_retention_in_days = local.change_feed_enabled ? var.data_protection_settings.change_feed_retention_days : null
-    versioning_enabled            = var.data_protection_settings.versioning_enabled
-    dynamic "cors_rule" {
-      for_each = var.cors_rules
-      content {
-        allowed_origins    = cors_rule.value.allowed_origins
-        allowed_methods    = cors_rule.value.allowed_methods
-        allowed_headers    = cors_rule.value.allowed_headers
-        exposed_headers    = cors_rule.value.exposed_headers
-        max_age_in_seconds = cors_rule.value.max_age_in_seconds
+  # blob_properties is unsupported on FileStorage accounts (Azure Files has no blob service).
+  dynamic "blob_properties" {
+    for_each = var.account_kind != "FileStorage" ? [1] : []
+    content {
+      change_feed_enabled           = local.change_feed_enabled
+      change_feed_retention_in_days = local.change_feed_enabled ? var.data_protection_settings.change_feed_retention_days : null
+      versioning_enabled            = var.data_protection_settings.versioning_enabled
+      dynamic "cors_rule" {
+        for_each = var.cors_rules
+        content {
+          allowed_origins    = cors_rule.value.allowed_origins
+          allowed_methods    = cors_rule.value.allowed_methods
+          allowed_headers    = cors_rule.value.allowed_headers
+          exposed_headers    = cors_rule.value.exposed_headers
+          max_age_in_seconds = cors_rule.value.max_age_in_seconds
+        }
       }
-    }
 
-    dynamic "container_delete_retention_policy" {
-      for_each = var.data_protection_settings.container_soft_delete_retention_days > 0 ? [1] : []
-      content {
-        days = var.data_protection_settings.container_soft_delete_retention_days
+      dynamic "container_delete_retention_policy" {
+        for_each = var.data_protection_settings.container_soft_delete_retention_days > 0 ? [1] : []
+        content {
+          days = var.data_protection_settings.container_soft_delete_retention_days
+        }
       }
-    }
 
-    dynamic "delete_retention_policy" {
-      for_each = var.data_protection_settings.blob_soft_delete_retention_days > 0 ? [1] : []
-      content {
-        days                     = var.data_protection_settings.blob_soft_delete_retention_days
-        permanent_delete_enabled = false
+      dynamic "delete_retention_policy" {
+        for_each = var.data_protection_settings.blob_soft_delete_retention_days > 0 ? [1] : []
+        content {
+          days                     = var.data_protection_settings.blob_soft_delete_retention_days
+          permanent_delete_enabled = false
+        }
       }
-    }
-    dynamic "restore_policy" {
-      for_each = var.data_protection_settings.point_in_time_restore_days > 0 ? [1] : []
-      content {
-        days = var.data_protection_settings.point_in_time_restore_days
+      dynamic "restore_policy" {
+        for_each = var.data_protection_settings.point_in_time_restore_days > 0 ? [1] : []
+        content {
+          days = var.data_protection_settings.point_in_time_restore_days
+        }
       }
     }
   }
