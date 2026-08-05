@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 7.1.0
+version: 7.1.1
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: added
-    description: "Variable `https_traffic_only_enabled` (default `true`, preserving prior behavior) to allow disabling HTTPS-only REST traffic, required for NFS Azure File shares which do not support in-protocol TLS."
+  - kind: fixed
+    description: "`blob_properties` is no longer emitted for `FileStorage`-kind accounts (e.g. Premium NFS Azure File shares), which don't have a blob service and previously failed to apply with `blob_properties aren't supported for account kind \"FileStorage\"`."
