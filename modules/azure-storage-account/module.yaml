@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 7.0.0
+version: 7.1.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: removed
-    description: "💥 Variable `private_endpoint` (singular, deprecated since 6.1.0) is removed. Migrate to `private_endpoints` (map keyed by subresource name). For each former caller: replace `private_endpoint = { ... }` with `private_endpoints = { <subresource> = { subnet_id = ..., private_dns_zone_id = ..., name = \"<storage-name>-pe\" } }` and add a `moved` block from `azurerm_private_endpoint.storage_account_pe[0]` to `azurerm_private_endpoint.storage_account_pe_map[\"<subresource>\"]` in your root module."
+  - kind: added
+    description: "Variable `https_traffic_only_enabled` (default `true`, preserving prior behavior) to allow disabling HTTPS-only REST traffic, required for NFS Azure File shares which do not support in-protocol TLS."
