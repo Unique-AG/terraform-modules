@@ -292,44 +292,33 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
   }
 }
 
-# Using azapi_resource because azurerm provider doesn't yet support KataVmIsolation workload_runtime.
-# Switch back to azurerm_kubernetes_cluster_node_pool once PR #31257 is released.
-# See: https://github.com/hashicorp/terraform-provider-azurerm/pull/31257
-resource "azapi_resource" "kata_node_pool" {
-  for_each = var.kata_node_pool_settings
+resource "azurerm_kubernetes_cluster_node_pool" "kata_node_pool" {
+  for_each              = var.kata_node_pool_settings
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
 
-  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
-  name      = each.key
-  parent_id = azurerm_kubernetes_cluster.cluster.id
+  auto_scaling_enabled        = each.value.auto_scaling_enabled
+  max_count                   = each.value.max_count
+  max_pods                    = try(each.value.max_pods, null)
+  min_count                   = each.value.min_count
+  mode                        = each.value.mode
+  name                        = each.key
+  node_labels                 = merge(each.value.node_labels, { "workload-runtime" = "kata" })
+  node_taints                 = distinct(concat(["workload-runtime=kata:NoSchedule"], each.value.node_taints))
+  os_disk_size_gb             = each.value.os_disk_size_gb
+  os_sku                      = each.value.os_sku
+  os_type                     = each.value.os_type
+  pod_subnet_id               = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
+  tags                        = var.tags
+  temporary_name_for_rotation = coalesce(each.value.temporary_name_for_rotation, "${each.key}repl")
+  vm_size                     = each.value.vm_size
+  vnet_subnet_id              = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
+  workload_runtime            = "KataVmIsolation"
+  zones                       = each.value.zones
 
-  body = {
-    properties = {
-      availabilityZones = each.value.zones
-      count             = coalesce(each.value.min_count, 0)
-      enableAutoScaling = each.value.auto_scaling_enabled
-      maxCount          = each.value.max_count
-      maxPods           = each.value.max_pods
-      minCount          = each.value.min_count
-      mode              = each.value.mode
-      nodeLabels        = merge(each.value.node_labels, { "workload-runtime" = "kata" })
-      nodeTaints        = distinct(concat(["workload-runtime=kata:NoSchedule"], each.value.node_taints))
-      osDiskSizeGB      = each.value.os_disk_size_gb
-      osSKU             = each.value.os_sku
-      osType            = each.value.os_type
-      podSubnetID       = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
-      vmSize            = each.value.vm_size
-      vnetSubnetID      = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
-      workloadRuntime   = "KataVmIsolation"
-      upgradeSettings = {
-        maxSurge                  = each.value.upgrade_settings.max_surge
-        drainTimeoutInMinutes     = each.value.upgrade_settings.drain_timeout_in_minutes
-        nodeSoakDurationInMinutes = each.value.upgrade_settings.node_soak_duration_in_minutes
-        undrainableNodeBehavior   = each.value.upgrade_settings.undrainable_node_behavior
-      }
-    }
-  }
-
-  lifecycle {
-    create_before_destroy = true
+  upgrade_settings {
+    max_surge                     = each.value.upgrade_settings.max_surge
+    drain_timeout_in_minutes      = each.value.upgrade_settings.drain_timeout_in_minutes
+    node_soak_duration_in_minutes = each.value.upgrade_settings.node_soak_duration_in_minutes
+    undrainable_node_behavior     = each.value.upgrade_settings.undrainable_node_behavior
   }
 }

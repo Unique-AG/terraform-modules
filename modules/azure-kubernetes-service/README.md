@@ -110,6 +110,31 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 
 For a complete customized logging setup, including Azure-native data-plane logs and caller-managed Log Analytics tables, see [the logging example](./examples/logging-test/).
 
+## Migrating kata node pools from < 8.0.0
+
+Before `8.0.0`, `kata_node_pool_settings` provisioned `azapi_resource.kata_node_pool`. `8.0.0` replaces it with native `azurerm_kubernetes_cluster_node_pool.kata_node_pool` (`workload_runtime = "KataVmIsolation"`), now that the azurerm provider supports it directly. Both resource types manage the same underlying Azure resource (`.../managedClusters/{cluster}/agentPools/{pool}`), so you can migrate in-place instead of destroying and recreating the pool.
+
+If you have an existing kata node pool, add the following to your root module, replacing `<key>` with the key(s) used in your `kata_node_pool_settings` map (e.g. `module.aks.kubernetes_cluster_id` assumes your module instance is named `aks`):
+
+```hcl
+removed {
+  from = module.aks.azapi_resource.kata_node_pool
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+import {
+  to = module.aks.azurerm_kubernetes_cluster_node_pool.kata_node_pool["<key>"]
+  id = "${module.aks.kubernetes_cluster_id}/agentPools/<key>"
+}
+```
+
+Apply once with both blocks in place, then remove them in a follow-up commit — they're only needed for the one-time migration. If you skip this step, Terraform will try to create a duplicate agent pool and the apply will fail (loudly, not silently).
+
+If you don't have an existing kata node pool, no action is needed.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -118,15 +143,13 @@ For a complete customized logging setup, including Azure-native data-plane logs 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
-| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.4 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.57 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.78 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.4 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.57 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.78 |
 
 ## Modules
 
@@ -136,9 +159,9 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azapi_resource.kata_node_pool](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_dashboard_grafana.grafana](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dashboard_grafana) | resource |
 | [azurerm_kubernetes_cluster.cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
+| [azurerm_kubernetes_cluster_node_pool.kata_node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_kubernetes_cluster_node_pool.node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_kubernetes_cluster_node_pool.spot_node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
 | [azurerm_monitor_action_group.aks_alerts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
@@ -181,7 +204,7 @@ No modules.
 | <a name="input_defender_log_analytics_workspace_id"></a> [defender\_log\_analytics\_workspace\_id](#input\_defender\_log\_analytics\_workspace\_id) | The ID of the Log Analytics Workspace for Microsoft Defender | `string` | `null` | no |
 | <a name="input_dns_service_ip"></a> [dns\_service\_ip](#input\_dns\_service\_ip) | The DNS service IP for the Kubernetes Cluster. | `string` | `"172.20.0.10"` | no |
 | <a name="input_drain_timeout_in_minutes"></a> [drain\_timeout\_in\_minutes](#input\_drain\_timeout\_in\_minutes) | Maximum minutes AKS will wait for pods on a node to drain during an upgrade. AKS uses a short internal default (~6 min) which is too tight for slow-to-evict workloads (Kata-VM, large stateful pods, custom controllers). Range 0-1440. | `number` | `null` | no |
-| <a name="input_kata_node_pool_settings"></a> [kata\_node\_pool\_settings](#input\_kata\_node\_pool\_settings) | Settings for Kata Containers node pools with hardware-isolated VM workload runtime.<br/>Kata Containers provide strong isolation by running each container in a lightweight<br/>VM, offering an additional security boundary between containers and the host.<br/><br/>The following label and taint are automatically added to every Kata pool:<br/>  - Label: workload-runtime=kata<br/>  - Taint: workload-runtime=kata:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass<br/>with handler 'kata' for pods that should run in Kata containers:<br/><br/>  apiVersion: node.k8s.io/v1<br/>  kind: RuntimeClass<br/>  metadata:<br/>    name: kata<br/>  handler: kata<br/>  scheduling:<br/>    nodeSelector:<br/>      workload-runtime: kata<br/>    tolerations:<br/>      - key: workload-runtime<br/>        operator: Equal<br/>        value: kata<br/>        effect: NoSchedule<br/><br/>Note: Kata node pools require VM sizes that support nested virtualization.<br/>The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload\_runtime. | <pre>map(object({<br/>    vm_size              = string<br/>    min_count            = optional(number)<br/>    max_count            = optional(number)<br/>    max_pods             = optional(number)<br/>    os_disk_size_gb      = number<br/>    os_sku               = optional(string, "AzureLinux")<br/>    os_type              = optional(string, "Linux")<br/>    node_labels          = optional(map(string), {})<br/>    node_taints          = optional(list(string), [])<br/>    auto_scaling_enabled = bool<br/>    mode                 = optional(string, "User")<br/>    zones                = list(string)<br/>    subnet_nodes_id      = optional(string, null)<br/>    subnet_pods_id       = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
+| <a name="input_kata_node_pool_settings"></a> [kata\_node\_pool\_settings](#input\_kata\_node\_pool\_settings) | Settings for Kata Containers node pools with hardware-isolated VM workload runtime.<br/>Kata Containers provide strong isolation by running each container in a lightweight<br/>VM, offering an additional security boundary between containers and the host.<br/><br/>The following label and taint are automatically added to every Kata pool:<br/>  - Label: workload-runtime=kata<br/>  - Taint: workload-runtime=kata:NoSchedule<br/><br/>Workloads must tolerate the taint to be scheduled on Kata nodes. Use a RuntimeClass<br/>with handler 'kata' for pods that should run in Kata containers:<br/><br/>  apiVersion: node.k8s.io/v1<br/>  kind: RuntimeClass<br/>  metadata:<br/>    name: kata<br/>  handler: kata<br/>  scheduling:<br/>    nodeSelector:<br/>      workload-runtime: kata<br/>    tolerations:<br/>      - key: workload-runtime<br/>        operator: Equal<br/>        value: kata<br/>        effect: NoSchedule<br/><br/>Note: Kata node pools require VM sizes that support nested virtualization. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = optional(map(string), {})<br/>    node_taints                 = optional(list(string), [])<br/>    auto_scaling_enabled        = bool<br/>    mode                        = optional(string, "User")<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The Kubernetes version to use for the AKS cluster. If not specified (null), the latest stable version will be used and version changes will be ignored. If specified, version changes will be tracked. | `string` | `null` | no |
 | <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled) | Specifies whether the local account is disabled for the Kubernetes Cluster. | `bool` | `true` | no |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | The Log Analytics Workspace configuration for monitoring and logging. | <pre>object({<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | `null` | no |

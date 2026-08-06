@@ -4,12 +4,8 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      # 4.57+ required for node_provisioning_profile.
-      version = "~> 4.57"
-    }
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.4"
+      # 4.78+ required for workload_runtime = "KataVmIsolation" on azurerm_kubernetes_cluster_node_pool.
+      version = "~> 4.78"
     }
   }
 }
