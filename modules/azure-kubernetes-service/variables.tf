@@ -507,23 +507,23 @@ variable "kata_node_pool_settings" {
             effect: NoSchedule
 
     Note: Kata node pools require VM sizes that support nested virtualization.
-    The azapi provider is used because azurerm doesn't yet support KataVmIsolation workload_runtime.
   EOT
   type = map(object({
-    vm_size              = string
-    min_count            = optional(number)
-    max_count            = optional(number)
-    max_pods             = optional(number)
-    os_disk_size_gb      = number
-    os_sku               = optional(string, "AzureLinux")
-    os_type              = optional(string, "Linux")
-    node_labels          = optional(map(string), {})
-    node_taints          = optional(list(string), [])
-    auto_scaling_enabled = bool
-    mode                 = optional(string, "User")
-    zones                = list(string)
-    subnet_nodes_id      = optional(string, null)
-    subnet_pods_id       = optional(string, null)
+    vm_size                     = string
+    min_count                   = optional(number)
+    max_count                   = optional(number)
+    max_pods                    = optional(number)
+    os_disk_size_gb             = number
+    os_sku                      = optional(string, "AzureLinux")
+    os_type                     = optional(string, "Linux")
+    node_labels                 = optional(map(string), {})
+    node_taints                 = optional(list(string), [])
+    auto_scaling_enabled        = bool
+    mode                        = optional(string, "User")
+    zones                       = list(string)
+    subnet_nodes_id             = optional(string, null)
+    subnet_pods_id              = optional(string, null)
+    temporary_name_for_rotation = optional(string, null)
     upgrade_settings = object({
       max_surge                     = string
       drain_timeout_in_minutes      = optional(number)
