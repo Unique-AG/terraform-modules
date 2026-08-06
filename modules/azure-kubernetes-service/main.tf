@@ -292,6 +292,20 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
   }
 }
 
+# Detaches the pre-8.0.0 azapi_resource-managed kata node pool from state without destroying the
+# live resource. No-op for consumers that never had this resource. Consumers upgrading with an
+# existing kata node pool must add a temporary root-module `import` block to adopt it into
+# azurerm_kubernetes_cluster_node_pool.kata_node_pool before applying, otherwise Terraform will try
+# to create a duplicate agent pool and the apply will fail. See module.yaml changelog for the
+# import block syntax.
+removed {
+  from = azapi_resource.kata_node_pool
+
+  lifecycle {
+    destroy = false
+  }
+}
+
 resource "azurerm_kubernetes_cluster_node_pool" "kata_node_pool" {
   for_each              = var.kata_node_pool_settings
   kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
