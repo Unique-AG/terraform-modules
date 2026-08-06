@@ -1,13 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 7.0.0
+version: 7.0.1
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: removed
-    description: "Variables `diagnostic_logs_categories`, `container_insights_streams`, `container_insights_enabled`, `basic_log_tables`, `log_table_plan`, and `retention_in_days`. Log Analytics workspace table resources are no longer managed by this module."
-  - kind: added
-    description: "Variables `control_plane_logs` and `data_plane_logs` to configure AKS control-plane diagnostic logs and Container Insights data-plane telemetry independently. `data_plane_logs.enabled` defaults to `false` (was implicitly always on when `log_analytics_workspace` was set)."
-  - kind: changed
-    description: "Default AKS control-plane diagnostic log categories now include only `cluster-autoscaler`. Pass the previous category list explicitly via `control_plane_logs.categories` to preserve all old control-plane logs."
+  - kind: fixed
+    description: "`kata_node_pool_settings` entries with `auto_scaling_enabled = true` no longer show permanent plan drift on `count`. The cluster-autoscaler owns the live node count once autoscaling is enabled, so Terraform now ignores changes to it after creation instead of reverting it back to `min_count` on every plan."

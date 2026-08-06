@@ -6,6 +6,37 @@ locals {
     time_format_regex  = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
     utc_offset_regex   = "^[+-]([01]?[0-9]|2[0-3]):[0-5][0-9]$"
   }
+
+  kata_node_pool_body = {
+    for k, v in var.kata_node_pool_settings : k => {
+      properties = {
+        availabilityZones = v.zones
+        count             = coalesce(v.min_count, 0)
+        enableAutoScaling = v.auto_scaling_enabled
+        maxCount          = v.max_count
+        maxPods           = v.max_pods
+        minCount          = v.min_count
+        mode              = v.mode
+        nodeLabels        = merge(v.node_labels, { "workload-runtime" = "kata" })
+        nodeTaints        = distinct(concat(["workload-runtime=kata:NoSchedule"], v.node_taints))
+        osDiskSizeGB      = v.os_disk_size_gb
+        osSKU             = v.os_sku
+        osType            = v.os_type
+        podSubnetID       = var.segregated_node_and_pod_subnets_enabled ? coalesce(v.subnet_pods_id, v.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
+        vmSize            = v.vm_size
+        vnetSubnetID      = coalesce(v.subnet_nodes_id, var.default_subnet_nodes_id)
+        workloadRuntime   = "KataVmIsolation"
+        upgradeSettings = {
+          maxSurge                  = v.upgrade_settings.max_surge
+          drainTimeoutInMinutes     = v.upgrade_settings.drain_timeout_in_minutes
+          nodeSoakDurationInMinutes = v.upgrade_settings.node_soak_duration_in_minutes
+          undrainableNodeBehavior   = v.upgrade_settings.undrainable_node_behavior
+        }
+      }
+    }
+  }
+  kata_node_pool_autoscaled_settings  = { for k, v in var.kata_node_pool_settings : k => v if v.auto_scaling_enabled }
+  kata_node_pool_fixed_count_settings = { for k, v in var.kata_node_pool_settings : k => v if !v.auto_scaling_enabled }
 }
 
 resource "azurerm_kubernetes_cluster" "cluster" {
@@ -295,39 +326,34 @@ resource "azurerm_kubernetes_cluster_node_pool" "spot_node_pool" {
 # Using azapi_resource because azurerm provider doesn't yet support KataVmIsolation workload_runtime.
 # Switch back to azurerm_kubernetes_cluster_node_pool once PR #31257 is released.
 # See: https://github.com/hashicorp/terraform-provider-azurerm/pull/31257
+#
+# Split into two resources by auto_scaling_enabled because lifecycle.ignore_changes can't be
+# conditioned per for_each instance. Once autoscaling is enabled, AKS's cluster-autoscaler owns
+# the live node count independently of Terraform, so re-asserting count = min_count on every plan
+# only fights the autoscaler and shows up as permanent drift. Toggling a pool's auto_scaling_enabled
+# moves it between these two resource addresses, which forces a destroy/recreate unless a moved
+# block is added at that time.
 resource "azapi_resource" "kata_node_pool" {
-  for_each = var.kata_node_pool_settings
+  for_each = local.kata_node_pool_autoscaled_settings
 
   type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
   name      = each.key
   parent_id = azurerm_kubernetes_cluster.cluster.id
+  body      = local.kata_node_pool_body[each.key]
 
-  body = {
-    properties = {
-      availabilityZones = each.value.zones
-      count             = coalesce(each.value.min_count, 0)
-      enableAutoScaling = each.value.auto_scaling_enabled
-      maxCount          = each.value.max_count
-      maxPods           = each.value.max_pods
-      minCount          = each.value.min_count
-      mode              = each.value.mode
-      nodeLabels        = merge(each.value.node_labels, { "workload-runtime" = "kata" })
-      nodeTaints        = distinct(concat(["workload-runtime=kata:NoSchedule"], each.value.node_taints))
-      osDiskSizeGB      = each.value.os_disk_size_gb
-      osSKU             = each.value.os_sku
-      osType            = each.value.os_type
-      podSubnetID       = var.segregated_node_and_pod_subnets_enabled ? coalesce(each.value.subnet_pods_id, each.value.subnet_nodes_id, var.default_subnet_pods_id, var.default_subnet_nodes_id) : null
-      vmSize            = each.value.vm_size
-      vnetSubnetID      = coalesce(each.value.subnet_nodes_id, var.default_subnet_nodes_id)
-      workloadRuntime   = "KataVmIsolation"
-      upgradeSettings = {
-        maxSurge                  = each.value.upgrade_settings.max_surge
-        drainTimeoutInMinutes     = each.value.upgrade_settings.drain_timeout_in_minutes
-        nodeSoakDurationInMinutes = each.value.upgrade_settings.node_soak_duration_in_minutes
-        undrainableNodeBehavior   = each.value.upgrade_settings.undrainable_node_behavior
-      }
-    }
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [body.properties.count]
   }
+}
+
+resource "azapi_resource" "kata_node_pool_fixed_count" {
+  for_each = local.kata_node_pool_fixed_count_settings
+
+  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
+  name      = each.key
+  parent_id = azurerm_kubernetes_cluster.cluster.id
+  body      = local.kata_node_pool_body[each.key]
 
   lifecycle {
     create_before_destroy = true
