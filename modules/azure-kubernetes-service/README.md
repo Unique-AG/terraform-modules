@@ -110,6 +110,31 @@ Prometheus-based alerts are available when `azure_prometheus_grafana_monitor` is
 
 For a complete customized logging setup, including Azure-native data-plane logs and caller-managed Log Analytics tables, see [the logging example](./examples/logging-test/).
 
+## Migrating kata node pools from < 8.0.0
+
+Before `8.0.0`, `kata_node_pool_settings` provisioned `azapi_resource.kata_node_pool`. `8.0.0` replaces it with native `azurerm_kubernetes_cluster_node_pool.kata_node_pool` (`workload_runtime = "KataVmIsolation"`), now that the azurerm provider supports it directly. Both resource types manage the same underlying Azure resource (`.../managedClusters/{cluster}/agentPools/{pool}`), so you can migrate in-place instead of destroying and recreating the pool.
+
+If you have an existing kata node pool, add the following to your root module, replacing `<key>` with the key(s) used in your `kata_node_pool_settings` map (e.g. `module.aks.kubernetes_cluster_id` assumes your module instance is named `aks`):
+
+```hcl
+removed {
+  from = module.aks.azapi_resource.kata_node_pool
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+import {
+  to = module.aks.azurerm_kubernetes_cluster_node_pool.kata_node_pool["<key>"]
+  id = "${module.aks.kubernetes_cluster_id}/agentPools/<key>"
+}
+```
+
+Apply once with both blocks in place, then remove them in a follow-up commit — they're only needed for the one-time migration. If you skip this step, Terraform will try to create a duplicate agent pool and the apply will fail (loudly, not silently).
+
+If you don't have an existing kata node pool, no action is needed.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
