@@ -1,7 +1,7 @@
 name: azure-log-analytics-workspace
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-workspace
-version: 1.2.1
+version: 1.2.2
 changes:
   - kind: fixed
-    description: "Remove unsupported log_analytics_destination_type from DCR."
+    description: "Wait for workspace propagation before creating the data collection rule to avoid an `InvalidPayload` race on newly created workspaces."

@@ -45,6 +45,13 @@ resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
   workspace_id            = azurerm_log_analytics_workspace.this.id
 }
 
+resource "time_sleep" "wait_for_workspace_propagation" {
+  count = local.dcr_enabled ? 1 : 0
+
+  depends_on      = [azurerm_log_analytics_workspace.this]
+  create_duration = "30s"
+}
+
 resource "azurerm_monitor_data_collection_rule" "this" {
   count               = local.dcr_enabled ? 1 : 0
   kind                = "WorkspaceTransforms"
@@ -52,6 +59,8 @@ resource "azurerm_monitor_data_collection_rule" "this" {
   name                = local.dcr_name
   resource_group_name = var.resource_group_name
   tags                = var.tags
+
+  depends_on = [time_sleep.wait_for_workspace_propagation]
 
   destinations {
     log_analytics {
