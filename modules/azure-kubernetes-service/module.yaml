@@ -1,11 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 9.0.0
+version: 9.0.1
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
-  - kind: changed
-    description: "Set the default Grafana major version to 13."
+  - kind: fixed
+    description: "Always emit node_provisioning_profile for AzureRM provider 5."
