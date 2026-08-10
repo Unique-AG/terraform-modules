@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 7.1.1
+version: 7.2.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: fixed
-    description: "`blob_properties` is no longer emitted for `FileStorage`-kind accounts (e.g. Premium NFS Azure File shares), which don't have a blob service and previously failed to apply with `blob_properties aren't supported for account kind \"FileStorage\"`."
+  - kind: changed
+    description: "Upgrade to AzureRM provider 5."

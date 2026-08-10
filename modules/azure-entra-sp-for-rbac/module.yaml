@@ -4,7 +4,7 @@ sources:
   - https://learn.microsoft.com/en-us/cli/azure/azure-cli-sp-tutorial-1
   - https://learn.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az-ad-sp-create-for-rbac
   - https://opencost.io/docs/configuration/azure
-version: 1.1.0
+version: 1.2.0
 changes:
   - kind: changed
-    description: "publish module with both tag separators – dash and @"
+    description: "Upgrade to AzureRM provider 5."

@@ -1,12 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 8.0.0
+version: 8.1.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: changed
-    description: |-
-      BREAKING: `kata_node_pool_settings` now provisions `azurerm_kubernetes_cluster_node_pool` with native `workload_runtime = "KataVmIsolation"` instead of the `azapi_resource` workaround, now that the azurerm provider supports it directly. Requires `azurerm ~> 4.78`; the `azapi` provider is no longer a dependency of this module.
-
-      If you have an existing kata node pool, you must migrate it in your root module with a temporary `removed` block (to detach the old `azapi_resource.kata_node_pool` from state) and a temporary `import` block (to adopt the live resource into `azurerm_kubernetes_cluster_node_pool.kata_node_pool`) before upgrading, or Terraform will try to create a duplicate agent pool and the apply will fail. See the "Migrating kata node pools" section in the module `README.md` for the exact blocks to add.
+    description: "Upgrade to AzureRM provider 5."
