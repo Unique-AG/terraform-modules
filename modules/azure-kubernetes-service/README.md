@@ -143,13 +143,13 @@ If you don't have an existing kata node pool, no action is needed.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.78 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.78 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 
 ## Modules
 
@@ -192,7 +192,7 @@ No modules.
 | <a name="input_application_gateway_id"></a> [application\_gateway\_id](#input\_application\_gateway\_id) | The ID of the Application Gateway. | `string` | `null` | no |
 | <a name="input_automatic_upgrade_channel"></a> [automatic\_upgrade\_channel](#input\_automatic\_upgrade\_channel) | The automatic upgrade channel for the Kubernetes Cluster. | `string` | `"stable"` | no |
 | <a name="input_azure_policy_enabled"></a> [azure\_policy\_enabled](#input\_azure\_policy\_enabled) | Specifies whether Azure Policy is enabled for the Kubernetes Cluster. | `bool` | `true` | no |
-| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 11)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 11,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
+| <a name="input_azure_prometheus_grafana_monitor"></a> [azure\_prometheus\_grafana\_monitor](#input\_azure\_prometheus\_grafana\_monitor) | Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster. | <pre>object({<br/>    enabled                = bool<br/>    azure_monitor_location = string<br/>    azure_monitor_rg_name  = string<br/>    grafana_major_version  = optional(number, 13)<br/>    identity = optional(object({<br/>      type         = string<br/>      identity_ids = optional(list(string))<br/>      }), {<br/>      type = "SystemAssigned"<br/>    })<br/>  })</pre> | <pre>{<br/>  "azure_monitor_location": "westeurope",<br/>  "azure_monitor_rg_name": "monitor-rg",<br/>  "enabled": false,<br/>  "grafana_major_version": 13,<br/>  "identity": {<br/>    "type": "SystemAssigned"<br/>  }<br/>}</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_control_plane_logs"></a> [control\_plane\_logs](#input\_control\_plane\_logs) | AKS control-plane diagnostic logs (cluster-autoscaler, kube-audit-admin, kube-scheduler,<br/>csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller), streamed<br/>directly from Azure Monitor diagnostic settings into log\_analytics\_workspace. No agent<br/>required. Defaults to cluster-autoscaler only. Has no effect when log\_analytics\_workspace is null.<br/>See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs | <pre>object({<br/>    enabled    = optional(bool, true)<br/>    categories = optional(list(string), null)<br/>  })</pre> | `{}` | no |
 | <a name="input_cost_analysis_enabled"></a> [cost\_analysis\_enabled](#input\_cost\_analysis\_enabled) | Specifies whether cost analysis is enabled for the Kubernetes Cluster. | `bool` | `true` | no |

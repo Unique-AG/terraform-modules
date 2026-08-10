@@ -27,19 +27,21 @@ resource "azurerm_subnet" "subnet" {
 
   private_endpoint_network_policies = "Disabled"
 
-  service_endpoints = ["Microsoft.KeyVault"]
+  service_endpoint {
+    service = "Microsoft.KeyVault"
+  }
 }
 
 # Key Vault with RBAC
 resource "azurerm_key_vault" "kv" {
-  name                       = "kv-${random_string.unique.result}"
-  resource_group_name        = azurerm_resource_group.rg.name
   location                   = azurerm_resource_group.rg.location
-  tenant_id                  = data.azurerm_client_config.current.tenant_id
-  sku_name                   = "standard"
+  name                       = "kv-${random_string.unique.result}"
   purge_protection_enabled   = true
+  rbac_authorization_enabled = true
+  resource_group_name        = azurerm_resource_group.rg.name
+  sku_name                   = "standard"
   soft_delete_retention_days = 7
-  enable_rbac_authorization  = true
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
 
   # Add network ACL rules to restrict access
   network_acls {
@@ -142,4 +144,4 @@ resource "random_string" "unique" {
   length  = 8
   special = false
   upper   = false
-} 
+}

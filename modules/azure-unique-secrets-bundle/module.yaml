@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 3.5.2
+version: 4.0.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: fixed
-    description: "manual secrets now ignore changes to their expiration date."
+  - kind: changed
+    description: "Upgrade to AzureRM provider 5."

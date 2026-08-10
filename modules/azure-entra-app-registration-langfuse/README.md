@@ -5,14 +5,14 @@
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3.6 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.15 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_azuread"></a> [azuread](#provider\_azuread) | ~> 3.6 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.15 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 
 ## Modules
 

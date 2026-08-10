@@ -22,17 +22,20 @@ resource "azurerm_subnet" "aks_pods" {
   resource_group_name  = azurerm_resource_group.example.name
   address_prefixes     = ["10.0.0.0/24"]
 
-  service_endpoints = ["Microsoft.CognitiveServices"]
+  service_endpoint {
+    service = "Microsoft.CognitiveServices"
+  }
 }
 
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "example" {
-  name                = "example-kv"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
+  location                   = azurerm_resource_group.example.location
+  name                       = "example-kv"
+  rbac_authorization_enabled = true
+  resource_group_name        = azurerm_resource_group.example.name
+  sku_name                   = "standard"
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
 }
 
 module "bing_grounded_search" {

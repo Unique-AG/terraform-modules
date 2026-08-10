@@ -30,7 +30,7 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_age"></a> [age](#requirement\_age) | ~> 0.1.1 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3 |
 
 ## Providers
@@ -38,7 +38,7 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 | Name | Version |
 |------|---------|
 | <a name="provider_age"></a> [age](#provider\_age) | ~> 0.1.1 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 

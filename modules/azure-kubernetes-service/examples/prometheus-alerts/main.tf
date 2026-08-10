@@ -135,7 +135,7 @@ module "aks" {
     enabled                = true
     azure_monitor_location = local.log_location
     azure_monitor_rg_name  = azurerm_resource_group.aks_rg.name
-    grafana_major_version  = 11
+    grafana_major_version  = 13
     identity = {
       type         = "UserAssigned"
       identity_ids = [azurerm_user_assigned_identity.grafana_identity.id]

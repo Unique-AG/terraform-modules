@@ -5,11 +5,13 @@ terraform {
 }
 
 resource "azurerm_key_vault" "core" {
-  name                = "core-kv"
-  location            = "world"
-  resource_group_name = "rg"
-  tenant_id           = "00000000-0000-0000-0000-000000000000"
-  sku_name            = "standard"
+  location                   = "world"
+  name                       = "core-kv"
+  rbac_authorization_enabled = true
+  resource_group_name        = "rg"
+  tenant_id                  = "00000000-0000-0000-0000-000000000000"
+
+  sku_name = "standard"
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
@@ -17,11 +19,12 @@ resource "azurerm_key_vault" "core" {
 }
 
 resource "azurerm_key_vault" "sensitive" {
-  name                = "sensitive-kv"
-  location            = "world"
-  resource_group_name = "rg"
-  tenant_id           = "00000000-0000-0000-0000-000000000000"
-  sku_name            = "standard"
+  location                   = "world"
+  name                       = "sensitive-kv"
+  rbac_authorization_enabled = true
+  resource_group_name        = "rg"
+  sku_name                   = "standard"
+  tenant_id                  = "00000000-0000-0000-0000-000000000000"
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
