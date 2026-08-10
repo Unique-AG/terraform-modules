@@ -150,12 +150,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
   }
 
-  dynamic "node_provisioning_profile" {
-    for_each = var.node_autoscaling.mode == "node-auto-provisioning" ? [1] : []
-    content {
-      mode               = "Auto"
-      default_node_pools = var.node_autoscaling.node_auto_provisioning.default_node_pools
-    }
+  node_provisioning_profile {
+    mode               = var.node_autoscaling.mode == "node-auto-provisioning" ? "Auto" : "Manual"
+    default_node_pools = var.node_autoscaling.mode == "node-auto-provisioning" ? var.node_autoscaling.node_auto_provisioning.default_node_pools : null
   }
 
   default_node_pool {
