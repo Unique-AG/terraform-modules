@@ -1,7 +1,7 @@
 name: azure-speech-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-speech-service
-version: 4.4.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.26
 changes:

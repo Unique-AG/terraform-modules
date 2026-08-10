@@ -1,7 +1,7 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 3.6.0
+version: 4.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:

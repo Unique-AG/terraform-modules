@@ -1,7 +1,7 @@
 name: azure-eventhub
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-eventhub
-version: 1.1.0
+version: 2.0.0
 changes:
   - kind: changed
     description: "Upgrade to AzureRM provider 5."

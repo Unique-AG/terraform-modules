@@ -290,7 +290,7 @@ variable "azure_prometheus_grafana_monitor" {
     enabled                = bool
     azure_monitor_location = string
     azure_monitor_rg_name  = string
-    grafana_major_version  = optional(number, 11)
+    grafana_major_version  = optional(number, 13)
     identity = optional(object({
       type         = string
       identity_ids = optional(list(string))
@@ -301,7 +301,7 @@ variable "azure_prometheus_grafana_monitor" {
   default = {
     enabled                = false
     azure_monitor_location = "westeurope"
-    grafana_major_version  = 11
+    grafana_major_version  = 13
     azure_monitor_rg_name  = "monitor-rg"
     identity = {
       type = "SystemAssigned"
