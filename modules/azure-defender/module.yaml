@@ -1,8 +1,8 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 2.5.0
+version: 2.5.1
 changes:
-  - kind: added
-    description: "Support for Event Hub export"
+  - kind: fixed
+    description: "Import defender pricing tiers and the security contact instead of failing with \"already exists\" after they're lost from state (e.g. a prior `terraform destroy`, which only resets them to Free rather than deleting them)"
 

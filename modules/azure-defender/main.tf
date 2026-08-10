@@ -61,6 +61,27 @@ resource "azurerm_security_center_subscription_pricing" "free_plan" {
   tier          = each.value.config.tier
 }
 
+# Defender pricing tiers and the security contact are subscription-level singletons: Azure never
+# deletes them, `terraform destroy` just resets pricing to Free. A create after that reset (or after
+# any state loss) then fails with "already exists". `import` is a no-op once the address is already
+# in state, so this is safe for tenants that have applied successfully before too.
+import {
+  for_each = { for config in local.defender_configs_standard_plan : config.resource_type => config }
+  to       = azurerm_security_center_subscription_pricing.standard_plan[each.key]
+  id       = "${var.subscription_id}/providers/Microsoft.Security/pricings/${each.key}"
+}
+
+import {
+  for_each = { for config in local.defender_configs_free_plan : config.resource_type => config }
+  to       = azurerm_security_center_subscription_pricing.free_plan[each.key]
+  id       = "${var.subscription_id}/providers/Microsoft.Security/pricings/${each.key}"
+}
+
+import {
+  to = azapi_resource.security_contact
+  id = "${var.subscription_id}/providers/Microsoft.Security/securityContacts/default"
+}
+
 resource "azapi_resource" "security_contact" {
   type = "Microsoft.Security/securityContacts@2023-12-01-preview"
   # The only valid name for security contact is 'default'
