@@ -143,13 +143,13 @@ If you don't have an existing kata node pool, no action is needed.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.12 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.78 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.78 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 
 ## Modules
 

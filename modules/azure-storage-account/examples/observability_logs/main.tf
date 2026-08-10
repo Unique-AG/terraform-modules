@@ -5,12 +5,12 @@ terraform {
 }
 
 resource "azurerm_key_vault" "sensitive" {
-  name                = "kvsens"
-  location            = "switzerlandnorth"
-  resource_group_name = "my-resource-group"
-  tenant_id           = "58455a0c-c831-4f5a-b460-07156e44f4c2"
-
-  sku_name = "premium" # needed for HSM keys
+  location                   = "switzerlandnorth"
+  name                       = "kvsens"
+  rbac_authorization_enabled = true
+  resource_group_name        = "my-resource-group"
+  sku_name                   = "premium" # needed for HSM keys
+  tenant_id                  = "58455a0c-c831-4f5a-b460-07156e44f4c2"
 }
 
 resource "azurerm_key_vault_key" "auditlogs_key" {

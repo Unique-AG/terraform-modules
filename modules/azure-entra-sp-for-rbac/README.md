@@ -9,7 +9,7 @@ This is the terraform variant of the often seen [`az ad sp create-for-rbac`](htt
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13 |
 
 ## Providers
@@ -17,7 +17,7 @@ This is the terraform variant of the often seen [`az ad sp create-for-rbac`](htt
 | Name | Version |
 |------|---------|
 | <a name="provider_azuread"></a> [azuread](#provider\_azuread) | ~> 3 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 | <a name="provider_time"></a> [time](#provider\_time) | ~> 0.13 |
 
 ## Modules

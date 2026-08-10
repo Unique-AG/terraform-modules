@@ -20,14 +20,14 @@ To move from the default (deny-all ACLs) to open access, a caller must **explici
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2 |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
 
 ## Modules
 
