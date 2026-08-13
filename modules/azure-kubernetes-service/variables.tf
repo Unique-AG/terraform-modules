@@ -639,6 +639,8 @@ variable "network_profile" {
     outbound_type:
       - "loadBalancer" (default) - Requires exactly one of managed_outbound_ip_count,
         outbound_ip_address_ids, or outbound_ip_prefix_ids. These are mutually exclusive.
+        outbound_ports_allocated sets SNAT ports per node (0-64000, multiple of 8; 0 is
+        Azure automatic allocation; omit to leave the Azure default).
       - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.
       - "userAssignedNATGateway" - Routes egress through a caller-managed NAT gateway
         associated with the node and pod subnets before cluster creation. Egress IPs and
@@ -662,6 +664,7 @@ variable "network_profile" {
     outbound_ip_address_ids     = optional(list(string), null)
     outbound_ip_prefix_ids      = optional(list(string), null)
     idle_timeout_in_minutes     = optional(number, 30)
+    outbound_ports_allocated    = optional(number, null)
     advanced_networking_enabled = optional(bool, false)
   })
   default = {
@@ -701,10 +704,34 @@ variable "network_profile" {
       (
         var.network_profile.managed_outbound_ip_count == null &&
         var.network_profile.outbound_ip_address_ids == null &&
-        var.network_profile.outbound_ip_prefix_ids == null
+        var.network_profile.outbound_ip_prefix_ids == null &&
+        var.network_profile.outbound_ports_allocated == null
       )
     )
-    error_message = "When outbound_type is 'userAssignedNATGateway', managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids must not be set."
+    error_message = "When outbound_type is 'userAssignedNATGateway', managed_outbound_ip_count, outbound_ip_address_ids, outbound_ip_prefix_ids, and outbound_ports_allocated must not be set."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_type == "loadBalancer" ||
+      var.network_profile.outbound_ports_allocated == null
+    )
+    error_message = "outbound_ports_allocated is only valid when outbound_type is 'loadBalancer'."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_ports_allocated == null ||
+      (
+        var.network_profile.outbound_ports_allocated >= 0 &&
+        var.network_profile.outbound_ports_allocated <= 64000 &&
+        (
+          var.network_profile.outbound_ports_allocated == 0 ||
+          var.network_profile.outbound_ports_allocated % 8 == 0
+        )
+      )
+    )
+    error_message = "outbound_ports_allocated must be between 0 and 64000 inclusive and a multiple of 8 (0 enables Azure automatic allocation)."
   }
 
   validation {

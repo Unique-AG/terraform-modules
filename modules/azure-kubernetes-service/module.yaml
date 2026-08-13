@@ -7,3 +7,5 @@ compatibility:
 changes:
   - kind: added
     description: "Support outbound_type userAssignedNATGateway for BYO NAT gateway egress."
+  - kind: added
+    description: "network_profile.outbound_ports_allocated for load balancer SNAT ports per node."
