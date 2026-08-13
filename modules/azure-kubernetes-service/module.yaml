@@ -1,9 +1,11 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 9.0.1
+version: 9.1.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
-  - kind: fixed
-    description: "Always emit node_provisioning_profile for AzureRM provider 5."
+  - kind: added
+    description: "Support outbound_type userAssignedNATGateway for BYO NAT gateway egress."
+  - kind: added
+    description: "network_profile.outbound_ports_allocated for load balancer SNAT ports per node."

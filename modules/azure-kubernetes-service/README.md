@@ -69,8 +69,58 @@ network_profile = {
   managed_outbound_ip_count = 1
   # outbound_ip_address_ids = ["/subscriptions/.../publicIPs/ip1"]
   # outbound_ip_prefix_ids  = ["/subscriptions/.../publicIPPrefixes/prefix1"]
+
+  # SNAT ports per node (loadBalancer only; 0 = Azure auto; NAT gateway has no equivalent)
+  # outbound_ports_allocated = 3000
 }
 ```
+
+### NAT gateway egress
+
+Use `outbound_type = "userAssignedNATGateway"` to route cluster egress through a caller-managed NAT gateway. The module does not create the NAT gateway or subnet associations — provision those alongside your VNet before calling this module. SNAT idle timeout is configured on `azurerm_nat_gateway.idle_timeout_in_minutes` (4–120, Azure default 4), not on this module.
+
+```hcl
+resource "azurerm_nat_gateway" "egress" {
+  name                    = "aks-egress"
+  location                = var.location
+  resource_group_name     = var.resource_group_name
+  sku_name                = "Standard"
+  idle_timeout_in_minutes = 30
+}
+
+resource "azurerm_public_ip" "egress" {
+  name                = "aks-egress"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "egress" {
+  nat_gateway_id       = azurerm_nat_gateway.egress.id
+  public_ip_address_id = azurerm_public_ip.egress.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "nodes" {
+  subnet_id      = azurerm_subnet.aks_nodes.id
+  nat_gateway_id = azurerm_nat_gateway.egress.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "pods" {
+  subnet_id      = azurerm_subnet.aks_pods.id
+  nat_gateway_id = azurerm_nat_gateway.egress.id
+}
+
+module "aks" {
+  source = "./modules/azure-kubernetes-service"
+
+  network_profile = {
+    outbound_type = "userAssignedNATGateway"
+  }
+}
+```
+
+Azure supports in-place migration from `loadBalancer` to `userAssignedNATGateway`, but the NAT gateway must be associated with the node and pod subnets before changing `outbound_type`.
 
 ## Alerts and Monitoring
 
@@ -215,7 +265,7 @@ No modules.
 | <a name="input_maintenance_window_start"></a> [maintenance\_window\_start](#input\_maintenance\_window\_start) | The start hour of the maintenance window. | `number` | `16` | no |
 | <a name="input_max_surge"></a> [max\_surge](#input\_max\_surge) | The maximum number of nodes to surge during upgrades. | `number` | `1` | no |
 | <a name="input_monitoring_account_name"></a> [monitoring\_account\_name](#input\_monitoring\_account\_name) | The name of the monitoring account | `string` | `"MonitoringAccount1"` | no |
-| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster.<br/><br/>outbound\_type:<br/>  - "loadBalancer" (default) - Requires exactly one of managed\_outbound\_ip\_count,<br/>    outbound\_ip\_address\_ids, or outbound\_ip\_prefix\_ids. These are mutually exclusive.<br/>  - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.<br/><br/>Cilium requirements:<br/>  - network\_data\_plane = "cilium" requires network\_plugin = "azure"<br/>  - network\_policy = "cilium" requires network\_data\_plane = "cilium"<br/>  - advanced\_networking\_enabled requires network\_data\_plane = "cilium" | <pre>object({<br/>    network_data_plane          = optional(string)<br/>    network_plugin              = optional(string, "azure")<br/>    network_plugin_mode         = optional(string, null)<br/>    network_policy              = optional(string)<br/>    service_cidr                = optional(string, "172.20.0.0/16")<br/>    dns_service_ip              = optional(string, "172.20.0.10")<br/>    outbound_type               = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count   = optional(number, null)<br/>    outbound_ip_address_ids     = optional(list(string), null)<br/>    outbound_ip_prefix_ids      = optional(list(string), null)<br/>    idle_timeout_in_minutes     = optional(number, 30)<br/>    advanced_networking_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
+| <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile) | Network profile configuration for the AKS cluster.<br/><br/>outbound\_type:<br/>  - "loadBalancer" (default) - Requires exactly one of managed\_outbound\_ip\_count,<br/>    outbound\_ip\_address\_ids, or outbound\_ip\_prefix\_ids. These are mutually exclusive.<br/>    outbound\_ports\_allocated sets SNAT ports per node (0-64000, multiple of 8; 0 is<br/>    Azure automatic allocation; omit to leave the Azure default).<br/>  - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.<br/>  - "userAssignedNATGateway" - Routes egress through a caller-managed NAT gateway<br/>    associated with the node and pod subnets before cluster creation. Egress IPs and<br/>    SNAT idle timeout (idle\_timeout\_in\_minutes, 4-120, Azure default 4) are properties<br/>    of the caller's azurerm\_nat\_gateway resource, not this module.<br/><br/>Cilium requirements:<br/>  - network\_data\_plane = "cilium" requires network\_plugin = "azure"<br/>  - network\_policy = "cilium" requires network\_data\_plane = "cilium"<br/>  - advanced\_networking\_enabled requires network\_data\_plane = "cilium" | <pre>object({<br/>    network_data_plane          = optional(string)<br/>    network_plugin              = optional(string, "azure")<br/>    network_plugin_mode         = optional(string, null)<br/>    network_policy              = optional(string)<br/>    service_cidr                = optional(string, "172.20.0.0/16")<br/>    dns_service_ip              = optional(string, "172.20.0.10")<br/>    outbound_type               = optional(string, "loadBalancer")<br/>    managed_outbound_ip_count   = optional(number, null)<br/>    outbound_ip_address_ids     = optional(list(string), null)<br/>    outbound_ip_prefix_ids      = optional(list(string), null)<br/>    idle_timeout_in_minutes     = optional(number, 30)<br/>    outbound_ports_allocated    = optional(number, null)<br/>    advanced_networking_enabled = optional(bool, false)<br/>  })</pre> | <pre>{<br/>  "network_plugin": "azure"<br/>}</pre> | no |
 | <a name="input_node_autoscaling"></a> [node\_autoscaling](#input\_node\_autoscaling) | Cluster node autoscaling mode. Use cluster-autoscaler for managed node pool autoscaling, node-auto-provisioning for AKS NAP, or none for fixed pools only. | <pre>object({<br/>    mode = optional(string, "cluster-autoscaler")<br/>    node_auto_provisioning = optional(object({<br/>      default_node_pools = optional(string, "None")<br/>    }), {})<br/>    profile = optional(object({<br/>      max_graceful_termination_sec     = optional(number, 14400)<br/>      skip_nodes_with_local_storage    = optional(bool, false)<br/>      expander                         = optional(string, "least-waste")<br/>      scale_down_unneeded              = optional(string, "10m")<br/>      scale_down_delay_after_delete    = optional(string, "120s")<br/>      scale_down_utilization_threshold = optional(number, 0.6)<br/>    }), {})<br/>  })</pre> | <pre>{<br/>  "mode": "cluster-autoscaler"<br/>}</pre> | no |
 | <a name="input_node_os_upgrade_channel"></a> [node\_os\_upgrade\_channel](#input\_node\_os\_upgrade\_channel) | The upgrade channel for the node OS image. Possible values are Unmanaged, SecurityPatch, NodeImage, None. | `string` | `"NodeImage"` | no |
 | <a name="input_node_pool_settings"></a> [node\_pool\_settings](#input\_node\_pool\_settings) | The settings for the node pools. Note that if you specify a subnet\_pods\_id for one of the node pools, you must specify it for all node pools. | <pre>map(object({<br/>    vm_size                     = string<br/>    min_count                   = optional(number)<br/>    max_count                   = optional(number)<br/>    max_pods                    = optional(number)<br/>    os_disk_size_gb             = number<br/>    os_sku                      = optional(string, "AzureLinux")<br/>    os_type                     = optional(string, "Linux")<br/>    node_labels                 = map(string)<br/>    node_taints                 = list(string)<br/>    auto_scaling_enabled        = bool<br/>    mode                        = string<br/>    zones                       = list(string)<br/>    subnet_nodes_id             = optional(string, null)<br/>    subnet_pods_id              = optional(string, null)<br/>    temporary_name_for_rotation = optional(string, null)<br/>    upgrade_settings = object({<br/>      max_surge                     = string<br/>      drain_timeout_in_minutes      = optional(number)<br/>      node_soak_duration_in_minutes = optional(number)<br/>      undrainable_node_behavior     = optional(string)<br/>    })<br/>  }))</pre> | `{}` | no |
