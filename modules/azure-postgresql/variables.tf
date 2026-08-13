@@ -89,6 +89,30 @@ variable "private_dns_zone_id" {
   default     = null
 }
 
+variable "private_endpoint" {
+  description = "Configuration for a private endpoint (Private Link) to the PostgreSQL Flexible Server. When specified, creates a private endpoint in the given subnet and registers it in the given private DNS zone (privatelink.postgres.database.azure.com). Cannot be combined with VNet integration (delegated_subnet_id)."
+  type = object({
+    subnet_id           = string
+    private_dns_zone_id = string
+    location            = optional(string)
+    tags                = optional(map(string), {})
+  })
+  default = null
+
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.private_endpoint.subnet_id))
+    )
+    error_message = "The subnet_id must be a valid Azure resource ID for a subnet"
+  }
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
+    )
+    error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}
+
 variable "identity_ids" {
   description = "List of managed identity IDs to assign to the storage account."
   type        = list(string)

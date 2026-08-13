@@ -207,6 +207,27 @@ Zone-redundant HA provisions a synchronous standby replica in a separate Availab
 
 **Cost:** enabling HA doubles the compute cost. Storage is shared and does not double.
 
+## Private Link
+
+<small>Added in `4.1.0`.</small>
+
+Set `private_endpoint` to expose the server through a [private endpoint](https://learn.microsoft.com/en-us/azure/postgresql/network/concepts-networking-private-link) instead of (or in addition to) public access:
+
+```hcl
+module "postgresql" {
+  source = "..."
+
+  private_endpoint = {
+    subnet_id           = azurerm_subnet.example.id
+    private_dns_zone_id = azurerm_private_dns_zone.example.id # privatelink.postgres.database.azure.com
+  }
+
+  # ... other configuration
+}
+```
+
+Private Link only works for servers using public access networking — it cannot be combined with VNet integration (`delegated_subnet_id`). See the [private-endpoint example](./examples/private-endpoint) for a full setup.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -243,6 +264,7 @@ No modules.
 | [azurerm_postgresql_flexible_server_configuration.parameters](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server_configuration) | resource |
 | [azurerm_postgresql_flexible_server_database.destroy_prevented_database](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server_database) | resource |
 | [azurerm_postgresql_flexible_server_database.destroyable_database](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/postgresql_flexible_server_database) | resource |
+| [azurerm_private_endpoint.pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) | resource |
 
 ## Inputs
 
@@ -274,6 +296,7 @@ No modules.
 | <a name="input_port_secret_name"></a> [port\_secret\_name](#input\_port\_secret\_name) | Name of the secret containing the port | `string` | `null` | no |
 | <a name="input_postgresql_server_tags"></a> [postgresql\_server\_tags](#input\_postgresql\_server\_tags) | Additional tags that apply only to the PostgreSQL server. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_private_dns_zone_id"></a> [private\_dns\_zone\_id](#input\_private\_dns\_zone\_id) | The ID of the private DNS zone. | `string` | `null` | no |
+| <a name="input_private_endpoint"></a> [private\_endpoint](#input\_private\_endpoint) | Configuration for a private endpoint (Private Link) to the PostgreSQL Flexible Server. When specified, creates a private endpoint in the given subnet and registers it in the given private DNS zone (privatelink.postgres.database.azure.com). Cannot be combined with VNet integration (delegated\_subnet\_id). | <pre>object({<br/>    subnet_id           = string<br/>    private_dns_zone_id = string<br/>    location            = optional(string)<br/>    tags                = optional(map(string), {})<br/>  })</pre> | `null` | no |
 | <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled) | Specifies whether this PostgreSQL Flexible Server is publicly accessible. Defaults to false | `string` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group where the resources will be created. | `string` | n/a | yes |
 | <a name="input_secrets_tags"></a> [secrets\_tags](#input\_secrets\_tags) | Tags that apply to the secrets. Can be used to trigger a terraform refresh of the secrets. | `map(string)` | `{}` | no |
