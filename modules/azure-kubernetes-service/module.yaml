@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Support outbound_type userAssignedNATGateway with nat_gateway_profile for BYO NAT gateway egress."
+    description: "Support outbound_type userAssignedNATGateway for BYO NAT gateway egress."

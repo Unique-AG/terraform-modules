@@ -641,9 +641,9 @@ variable "network_profile" {
         outbound_ip_address_ids, or outbound_ip_prefix_ids. These are mutually exclusive.
       - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.
       - "userAssignedNATGateway" - Routes egress through a caller-managed NAT gateway
-        associated with the node and pod subnets before cluster creation. Egress IPs are
-        defined by the NAT gateway's public IP associations. idle_timeout_in_minutes
-        (4-120, default 30) applies to the nat_gateway_profile block.
+        associated with the node and pod subnets before cluster creation. Egress IPs and
+        SNAT idle timeout (idle_timeout_in_minutes, 4-120, Azure default 4) are properties
+        of the caller's azurerm_nat_gateway resource, not this module.
 
     Cilium requirements:
       - network_data_plane = "cilium" requires network_plugin = "azure"
@@ -705,17 +705,6 @@ variable "network_profile" {
       )
     )
     error_message = "When outbound_type is 'userAssignedNATGateway', managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids must not be set."
-  }
-
-  validation {
-    condition = var.network_profile == null ? true : (
-      var.network_profile.outbound_type != "userAssignedNATGateway" ||
-      (
-        var.network_profile.idle_timeout_in_minutes >= 4 &&
-        var.network_profile.idle_timeout_in_minutes <= 120
-      )
-    )
-    error_message = "When outbound_type is 'userAssignedNATGateway', idle_timeout_in_minutes must be between 4 and 120."
   }
 
   validation {
