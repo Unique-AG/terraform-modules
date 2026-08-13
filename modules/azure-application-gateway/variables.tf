@@ -705,7 +705,7 @@ variable "zones" {
 }
 
 variable "metric_alerts" {
-  description = "Map of metric alerts to create for the Application Gateway. By default includes 5xx error alerts. Set to {} to disable all default alerts."
+  description = "Map of metric alerts to create for the Application Gateway. Defaults to none. Gateway 5xx errors are alerted on via Kong Prometheus metrics instead (UN-22295)."
   type = map(object({
     name                     = string
     description              = optional(string, "")
@@ -766,30 +766,7 @@ variable "metric_alerts" {
     # Backward compatibility - will be deprecated in favor of actions
     action_group_ids = optional(list(string), [])
   }))
-  default = {
-    default_5xx_error_alert = {
-      name        = "Application Gateway 5xx Error"
-      description = "Alert when 5xx errors are above 100 for more than 1 hour"
-      severity    = 1
-      frequency   = "PT1M"
-      window_size = "PT1H"
-      enabled     = true
-      criteria = {
-        metric_namespace = "microsoft.network/applicationgateways"
-        metric_name      = "ResponseStatus"
-        aggregation      = "Total"
-        operator         = "GreaterThan"
-        threshold        = 100
-        dimension = [{
-          name     = "HttpStatusGroup"
-          operator = "StartsWith"
-          values = [
-            "5xx",
-          ]
-        }]
-      }
-    }
-  }
+  default = {}
 
   validation {
     condition = alltrue([

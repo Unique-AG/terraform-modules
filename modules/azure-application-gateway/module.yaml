@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 7.0.0
+version: 8.0.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: removed
+    description: "Remove the default 5xx metric alert (metric_alerts now defaults to none). 5xx alerting moved to Kong Prometheus metrics (UN-22295). Upgrading destroys the 'Application Gateway 5xx Error' alert unless explicitly re-declared in metric_alerts."
