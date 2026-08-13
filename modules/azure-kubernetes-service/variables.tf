@@ -640,6 +640,10 @@ variable "network_profile" {
       - "loadBalancer" (default) - Requires exactly one of managed_outbound_ip_count,
         outbound_ip_address_ids, or outbound_ip_prefix_ids. These are mutually exclusive.
       - "userDefinedRouting" - Uses custom routing rules; no outbound IP configuration needed.
+      - "userAssignedNATGateway" - Routes egress through a caller-managed NAT gateway
+        associated with the node and pod subnets before cluster creation. Egress IPs are
+        defined by the NAT gateway's public IP associations. idle_timeout_in_minutes
+        (4-120, default 30) applies to the nat_gateway_profile block.
 
     Cilium requirements:
       - network_data_plane = "cilium" requires network_plugin = "azure"
@@ -682,6 +686,38 @@ variable "network_profile" {
     )
     error_message = "When outbound_type is 'loadBalancer', one of managed_outbound_ip_count, outbound_ip_address_ids, or outbound_ip_prefix_ids must be specified."
   }
+
+  validation {
+    condition = var.network_profile == null ? true : contains(
+      ["loadBalancer", "userDefinedRouting", "userAssignedNATGateway"],
+      var.network_profile.outbound_type
+    )
+    error_message = "network_profile.outbound_type must be loadBalancer, userDefinedRouting, or userAssignedNATGateway."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_type != "userAssignedNATGateway" ||
+      (
+        var.network_profile.managed_outbound_ip_count == null &&
+        var.network_profile.outbound_ip_address_ids == null &&
+        var.network_profile.outbound_ip_prefix_ids == null
+      )
+    )
+    error_message = "When outbound_type is 'userAssignedNATGateway', managed_outbound_ip_count, outbound_ip_address_ids, and outbound_ip_prefix_ids must not be set."
+  }
+
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.outbound_type != "userAssignedNATGateway" ||
+      (
+        var.network_profile.idle_timeout_in_minutes >= 4 &&
+        var.network_profile.idle_timeout_in_minutes <= 120
+      )
+    )
+    error_message = "When outbound_type is 'userAssignedNATGateway', idle_timeout_in_minutes must be between 4 and 120."
+  }
+
   validation {
     condition = var.network_profile == null ? true : (
       var.network_profile.network_data_plane != "cilium" ||
