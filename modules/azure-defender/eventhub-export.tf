@@ -31,7 +31,7 @@ resource "azurerm_security_center_automation" "eventhub_export" {
 
   # Action to send to Event Hub
   action {
-    type              = "eventhub"
+    type              = "EventHub"
     resource_id       = var.eventhub_export.eventhub.id
     connection_string = var.eventhub_export.eventhub.connection_string
   }
