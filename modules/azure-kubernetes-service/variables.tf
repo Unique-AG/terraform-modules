@@ -321,10 +321,11 @@ variable "tenant_id" {
 
 variable "control_plane_logs" {
   description = <<-EOT
-    AKS control-plane diagnostic logs (cluster-autoscaler, kube-audit-admin, kube-scheduler,
-    csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller), streamed
-    directly from Azure Monitor diagnostic settings into log_analytics_workspace. No agent
-    required. Defaults to cluster-autoscaler only. Has no effect when log_analytics_workspace is null.
+    AKS control-plane diagnostic logs (cluster-autoscaler, karpenter-events, kube-audit-admin,
+    kube-scheduler, csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller),
+    streamed directly from Azure Monitor diagnostic settings into log_analytics_workspace. No
+    agent required. Defaults to cluster-autoscaler only. Has no effect when
+    log_analytics_workspace is null.
     See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
   EOT
   type = object({

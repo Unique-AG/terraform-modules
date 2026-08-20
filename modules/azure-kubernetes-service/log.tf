@@ -6,6 +6,7 @@ locals {
     "csi-azuredisk-controller",
     "csi-azurefile-controller",
     "csi-snapshot-controller",
+    "karpenter-events",
     "kube-audit-admin",
     "kube-scheduler",
   ]

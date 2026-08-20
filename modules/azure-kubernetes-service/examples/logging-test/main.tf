@@ -115,7 +115,7 @@ module "aks" {
     resource_group_name = azurerm_resource_group.aks_rg.name
   }
   control_plane_logs = {
-    categories = ["cluster-autoscaler"]
+    categories = ["cluster-autoscaler", "karpenter-events"]
   }
   data_plane_logs = {
     enabled = true

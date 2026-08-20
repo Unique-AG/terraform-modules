@@ -1,11 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 9.1.0
+version: 9.2.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Support outbound_type userAssignedNATGateway for BYO NAT gateway egress."
-  - kind: added
-    description: "network_profile.outbound_ports_allocated for load balancer SNAT ports per node."
+    description: "Support the AKS `karpenter-events` control-plane diagnostic log category."
