@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Add control_plane_logs.extra_categories for additive diagnostic log categories validated against Azure at apply time."
+    description: "Enable cluster-autoscaler and karpenter-events diagnostic logs by default and validate configured categories against Azure."

@@ -322,15 +322,13 @@ variable "tenant_id" {
 variable "control_plane_logs" {
   description = <<-EOT
     AKS control-plane diagnostic logs streamed directly from Azure Monitor diagnostic settings
-    into log_analytics_workspace. No agent required. Defaults to cluster-autoscaler only.
-    Use extra_categories to add categories without restating defaults. Use categories to replace
-    the default set entirely. Has no effect when log_analytics_workspace is null.
+    into log_analytics_workspace. No agent required. Defaults to cluster-autoscaler and
+    karpenter-events. Has no effect when log_analytics_workspace is null.
     See https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
   EOT
   type = object({
-    enabled          = optional(bool, true)
-    categories       = optional(list(string), null)
-    extra_categories = optional(list(string), [])
+    enabled    = optional(bool, true)
+    categories = optional(list(string), ["cluster-autoscaler", "karpenter-events"])
   })
   default  = {}
   nullable = false

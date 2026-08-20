@@ -1,10 +1,5 @@
 locals {
-  diagnostic_logs_default_categories = ["cluster-autoscaler"]
-  diagnostic_logs_base_categories    = var.control_plane_logs.categories != null ? var.control_plane_logs.categories : local.diagnostic_logs_default_categories
-  diagnostic_logs_enabled_categories = distinct(concat(
-    local.diagnostic_logs_base_categories,
-    var.control_plane_logs.extra_categories,
-  ))
+  diagnostic_logs_enabled_categories = distinct(var.control_plane_logs.categories)
   diagnostic_logs_unsupported_categories = var.log_analytics_workspace != null && var.control_plane_logs.enabled ? [
     for category in local.diagnostic_logs_enabled_categories : category
     if !contains(data.azurerm_monitor_diagnostic_categories.aks[0].log_category_types, category)
