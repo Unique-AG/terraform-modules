@@ -114,9 +114,6 @@ module "aks" {
     location            = azurerm_log_analytics_workspace.aks_law.location
     resource_group_name = azurerm_resource_group.aks_rg.name
   }
-  control_plane_logs = {
-    categories = ["cluster-autoscaler"]
-  }
   data_plane_logs = {
     enabled = true
     streams = ["Microsoft-ContainerNetworkLogs"]
