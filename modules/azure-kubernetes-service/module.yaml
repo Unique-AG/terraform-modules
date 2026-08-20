@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Support the AKS `karpenter-events` control-plane diagnostic log category."
+    description: "Add control_plane_logs.extra_categories for additive diagnostic log categories validated against Azure at apply time."

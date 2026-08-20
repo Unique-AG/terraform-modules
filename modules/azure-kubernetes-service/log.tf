@@ -1,20 +1,19 @@
 locals {
-  # https://learn.microsoft.com/en-gb/azure/aks/monitor-aks-reference#resource-logs
-  diagnostic_logs_supported_categories = [
-    "cloud-controller-manager",
-    "cluster-autoscaler",
-    "csi-azuredisk-controller",
-    "csi-azurefile-controller",
-    "csi-snapshot-controller",
-    "karpenter-events",
-    "kube-audit-admin",
-    "kube-scheduler",
-  ]
   diagnostic_logs_default_categories = ["cluster-autoscaler"]
-  diagnostic_logs_enabled_categories = var.control_plane_logs.categories != null ? [
-    for category in local.diagnostic_logs_supported_categories : category
-    if contains(var.control_plane_logs.categories, category)
-  ] : local.diagnostic_logs_default_categories
+  diagnostic_logs_base_categories    = var.control_plane_logs.categories != null ? var.control_plane_logs.categories : local.diagnostic_logs_default_categories
+  diagnostic_logs_enabled_categories = distinct(concat(
+    local.diagnostic_logs_base_categories,
+    var.control_plane_logs.extra_categories,
+  ))
+  diagnostic_logs_unsupported_categories = var.log_analytics_workspace != null && var.control_plane_logs.enabled ? [
+    for category in local.diagnostic_logs_enabled_categories : category
+    if !contains(data.azurerm_monitor_diagnostic_categories.aks[0].log_category_types, category)
+  ] : []
+}
+
+data "azurerm_monitor_diagnostic_categories" "aks" {
+  count       = var.log_analytics_workspace != null && var.control_plane_logs.enabled ? 1 : 0
+  resource_id = azurerm_kubernetes_cluster.cluster.id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
@@ -33,6 +32,13 @@ resource "azurerm_monitor_diagnostic_setting" "aks_diagnostic_logs" {
 
   enabled_metric {
     category = "AllMetrics"
+  }
+
+  lifecycle {
+    precondition {
+      condition     = length(local.diagnostic_logs_unsupported_categories) == 0
+      error_message = "Unsupported control_plane_logs categories: ${join(", ", local.diagnostic_logs_unsupported_categories)}. Supported categories: ${join(", ", data.azurerm_monitor_diagnostic_categories.aks[0].log_category_types)}."
+    }
   }
 }
 
