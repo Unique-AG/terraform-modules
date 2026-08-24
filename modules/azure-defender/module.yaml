@@ -1,8 +1,8 @@
 name: azure-defender
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-defender
-version: 3.0.0
+version: 3.0.1
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: fixed
+    description: "Use the AzureRM v5 EventHub action type for Defender exports."
 
