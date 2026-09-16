@@ -228,7 +228,7 @@ resource "azuread_application_password" "aad_app_password" {
     var.client_secret_generation_config.explicit_password_display_name,
     "${var.client_secret_generation_config.secret_name}-client-secret",
   )
-  end_date = timeadd(time_rotating.aad_app_password[0].rotation_rfc3339, "${var.client_secret_generation_config.validity_hours}h")
+  end_date = timeadd(time_rotating.aad_app_password[0].rfc3339, "${var.client_secret_generation_config.validity_hours}h")
 
   rotate_when_changed = {
     keeper   = var.client_secret_generation_config.rotation_keeper
@@ -266,15 +266,17 @@ resource "azurerm_key_vault_secret" "aad_app_gitops_client_secret" {
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "aad_app_password_expiry" {
   count = var.client_secret_generation_config.enabled && var.client_secret_generation_config.expiry_alert != null ? 1 : 0
 
-  name                = "argo-sso-client-secret-expiry"
+  name = coalesce(
+    var.client_secret_generation_config.expiry_alert.name,
+    "${var.client_secret_generation_config.secret_name}-expiry",
+  )
   resource_group_name = try(var.client_secret_generation_config.expiry_alert.resource_group_name, "")
   location            = try(var.client_secret_generation_config.expiry_alert.location, "")
 
-  auto_mitigation_enabled           = true
   description                       = "Entra client secret for ${var.display_name} expires within 30 days. Apply Terraform so time_rotating can replace it."
   enabled                           = true
   evaluation_frequency              = "P1D"
-  mute_actions_after_alert_duration = "P3D"
+  mute_actions_after_alert_duration = "P2D"
   scopes                            = [try(var.client_secret_generation_config.expiry_alert.log_analytics_workspace_id, "")]
   severity                          = 2
   window_duration                   = "P1D"

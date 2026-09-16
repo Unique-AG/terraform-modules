@@ -19,6 +19,7 @@ variable "client_secret_generation_config" {
       action_group_ids           = list(string)
       location                   = string
       log_analytics_workspace_id = string
+      name                       = optional(string)
       resource_group_name        = string
     }))
   })
