@@ -7,5 +7,3 @@ compatibility:
 changes:
   - kind: added
     description: "Autorotate the Entra client secret every 12 months on the next Terraform apply, stamp Key Vault expiration, and optionally alert 30 days before expiry."
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
