@@ -1,9 +1,11 @@
 name: azure-entra-app-registration-argocd
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-argocd
-version: 2.0.0
+version: 2.1.0
 compatibility:
   argocd: ~> 3.3.6
 changes:
+  - kind: added
+    description: "Autorotate the Entra client secret every 12 months on the next Terraform apply, stamp Key Vault expiration, and optionally alert 30 days before expiry."
   - kind: changed
     description: "Upgrade to AzureRM provider 5."
