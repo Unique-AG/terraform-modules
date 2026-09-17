@@ -1,6 +1,7 @@
 
 terraform {
-  required_version = ">= 1.5"
+  # provider-defined functions (provider::time::rfc3339_parse)
+  required_version = ">= 1.8"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"

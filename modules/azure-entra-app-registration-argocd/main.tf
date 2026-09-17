@@ -214,25 +214,33 @@ resource "azuread_service_principal_delegated_permission_grant" "delegated_conse
 # Client Secret & Key Vault Storage
 #------------------------------------------------------------------------------
 
-resource "time_rotating" "aad_app_password" {
-  count = var.client_secret_generation_config.enabled ? 1 : 0
-
-  rotation_months = var.client_secret_generation_config.rotation_months
+# Two overlapping secrets (current + previous rotation epoch) so consumers that
+# lag behind a rotation (e.g. ExternalSecrets + Argo CD) keep a valid credential
+# for a full rotation period. Epochs are anchored to a fixed unix grid, making
+# every attribute deterministic per epoch: existing instances never drift.
+locals {
+  # 730h average month keeps the default validity_hours (17520h) at exactly two rotation periods
+  rotation_period_seconds = var.client_secret_generation_config.rotation_months * 2628000
+  rotation_epoch          = floor(provider::time::rfc3339_parse(plantimestamp()).unix / local.rotation_period_seconds)
+  rotation_epochs = var.client_secret_generation_config.enabled ? {
+    for epoch in [local.rotation_epoch - 1, local.rotation_epoch] :
+    formatdate("YYYYMMDD", timeadd("1970-01-01T00:00:00Z", "${epoch * local.rotation_period_seconds}s")) => epoch
+  } : {}
+  rotation_current_key = formatdate("YYYYMMDD", timeadd("1970-01-01T00:00:00Z", "${local.rotation_epoch * local.rotation_period_seconds}s"))
 }
 
 resource "azuread_application_password" "aad_app_password" {
-  count = var.client_secret_generation_config.enabled ? 1 : 0
+  for_each = local.rotation_epochs
 
   application_id = azuread_application.this.id
-  display_name = coalesce(
+  display_name = "${coalesce(
     var.client_secret_generation_config.explicit_password_display_name,
     "${var.client_secret_generation_config.secret_name}-client-secret",
-  )
-  end_date = timeadd(time_rotating.aad_app_password[0].rfc3339, "${var.client_secret_generation_config.validity_hours}h")
+  )}-${each.key}"
+  end_date = timeadd("1970-01-01T00:00:00Z", "${each.value * local.rotation_period_seconds + var.client_secret_generation_config.validity_hours * 3600}s")
 
   rotate_when_changed = {
-    keeper   = var.client_secret_generation_config.rotation_keeper
-    rotation = time_rotating.aad_app_password[0].id
+    keeper = var.client_secret_generation_config.rotation_keeper
   }
 
   lifecycle {
@@ -258,9 +266,9 @@ resource "azurerm_key_vault_secret" "aad_app_gitops_client_secret" {
     var.client_secret_generation_config.explicit_client_secret_secret_name,
     "${var.client_secret_generation_config.secret_name}-client-secret",
   )
-  value           = azuread_application_password.aad_app_password[0].value
+  value           = azuread_application_password.aad_app_password[local.rotation_current_key].value
   key_vault_id    = var.client_secret_generation_config.keyvault_id
-  expiration_date = azuread_application_password.aad_app_password[0].end_date
+  expiration_date = azuread_application_password.aad_app_password[local.rotation_current_key].end_date
 }
 
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "aad_app_password_expiry" {
@@ -283,7 +291,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "aad_app_password_expi
 
   criteria {
     query = <<-QUERY
-      print SecretExpiry = datetime(${jsonencode(azuread_application_password.aad_app_password[0].end_date)})
+      print SecretExpiry = datetime(${jsonencode(azuread_application_password.aad_app_password[local.rotation_current_key].end_date)})
       | where now() >= SecretExpiry - 30d
     QUERY
 

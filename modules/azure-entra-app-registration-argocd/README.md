@@ -3,7 +3,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.8 |
 | <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | ~> 3 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13 |
@@ -34,7 +34,6 @@ No modules.
 | [azurerm_key_vault_secret.aad_app_gitops_client_id](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.aad_app_gitops_client_secret](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_monitor_scheduled_query_rules_alert_v2.aad_app_password_expiry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | resource |
-| [time_rotating.aad_app_password](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) | resource |
 | [time_sleep.wait_for_propagation](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 
 ## Inputs
@@ -43,7 +42,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin_consent_enabled"></a> [admin\_consent\_enabled](#input\_admin\_consent\_enabled) | When enabled, tenant-wide admin consent will be automatically granted for all delegated permissions (Scope type) in required\_resource\_access\_list. | `bool` | `true` | no |
 | <a name="input_application_support_object_ids"></a> [application\_support\_object\_ids](#input\_application\_support\_object\_ids) | The object ids of the user/groups that should be able to support the application. | `list(string)` | `[]` | no |
-| <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, a client secret is generated, stored in Key Vault when keyvault\_id is set, and rotated in-place every rotation\_months (next Terraform apply after the period elapses). validity\_hours is the Entra/Key Vault lifetime (default 2 years). expiry\_alert fires ~30 days before that lifetime ends. | <pre>object({<br/>    enabled                            = bool<br/>    keyvault_id                        = optional(string)<br/>    secret_name                        = optional(string, "entra-app-client-secret")<br/>    output_enabled                     = optional(bool, false)<br/>    explicit_password_display_name     = optional(string)<br/>    explicit_client_id_secret_name     = optional(string)<br/>    explicit_client_secret_secret_name = optional(string)<br/>    rotation_months                    = optional(number, 12)<br/>    rotation_keeper                    = optional(number, 1)<br/>    validity_hours                     = optional(number, 17520)<br/>    expiry_alert = optional(object({<br/>      action_group_ids           = list(string)<br/>      location                   = string<br/>      log_analytics_workspace_id = string<br/>      name                       = optional(string)<br/>      resource_group_name        = string<br/>    }))<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
+| <a name="input_client_secret_generation_config"></a> [client\_secret\_generation\_config](#input\_client\_secret\_generation\_config) | When enabled, two overlapping client secrets are kept (current + previous rotation epoch, suffixed -YYYYMMDD); Key Vault always serves the current one. On the first apply after an epoch boundary (every rotation\_months) a new secret is created and the oldest removed, so lagging consumers keep a valid credential for a full extra period. validity\_hours is the Entra/Key Vault lifetime per secret (default 2 years = two epochs). expiry\_alert fires ~30 days before the served secret expires. Bump rotation\_keeper to force-rotate both secrets on leak. | <pre>object({<br/>    enabled                            = bool<br/>    keyvault_id                        = optional(string)<br/>    secret_name                        = optional(string, "entra-app-client-secret")<br/>    output_enabled                     = optional(bool, false)<br/>    explicit_password_display_name     = optional(string)<br/>    explicit_client_id_secret_name     = optional(string)<br/>    explicit_client_secret_secret_name = optional(string)<br/>    rotation_months                    = optional(number, 12)<br/>    rotation_keeper                    = optional(number, 1)<br/>    validity_hours                     = optional(number, 17520)<br/>    expiry_alert = optional(object({<br/>      action_group_ids           = list(string)<br/>      location                   = string<br/>      log_analytics_workspace_id = string<br/>      name                       = optional(string)<br/>      resource_group_name        = string<br/>    }))<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_display_name"></a> [display\_name](#input\_display\_name) | The displayed name in Entra ID. | `string` | n/a | yes |
 | <a name="input_homepage_url"></a> [homepage\_url](#input\_homepage\_url) | The homepage url of the app. | `string` | `"https://www.unique.ai"` | no |
 | <a name="input_infrastructure_support_object_ids"></a> [infrastructure\_support\_object\_ids](#input\_infrastructure\_support\_object\_ids) | The object ids of the user/groups that should be able to support the infrastructure of the platform. Roles trickle down so this role includes both system and application support. | `list(string)` | `[]` | no |
@@ -64,5 +63,5 @@ No modules.
 |------|-------------|
 | <a name="output_client_id"></a> [client\_id](#output\_client\_id) | The client ID of the Azure AD application. |
 | <a name="output_client_secret"></a> [client\_secret](#output\_client\_secret) | The client secret of the Azure AD application. |
-| <a name="output_client_secret_end_date"></a> [client\_secret\_end\_date](#output\_client\_secret\_end\_date) | RFC3339 expiry of the Terraform-managed Entra client secret. |
+| <a name="output_client_secret_end_date"></a> [client\_secret\_end\_date](#output\_client\_secret\_end\_date) | RFC3339 expiry of the currently served Entra client secret. |
 <!-- END_TF_DOCS -->
