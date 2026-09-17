@@ -12,8 +12,18 @@ variable "client_secret_generation_config" {
     explicit_password_display_name     = optional(string)
     explicit_client_id_secret_name     = optional(string)
     explicit_client_secret_secret_name = optional(string)
+    rotation_months                    = optional(number, 12)
+    rotation_keeper                    = optional(number, 1)
+    validity_hours                     = optional(number, 17520)
+    expiry_alert = optional(object({
+      action_group_ids           = list(string)
+      location                   = string
+      log_analytics_workspace_id = string
+      name                       = optional(string)
+      resource_group_name        = string
+    }))
   })
-  description = "When enabled, a client secret will be generated and stored in the keyvault. The three explicit_* fields override the templated names for backward compatibility (changing azuread_application_password.display_name forces recreation)."
+  description = "When enabled, a client secret is generated, stored in Key Vault when keyvault_id is set, and rotated in-place every rotation_months (next Terraform apply after the period elapses). validity_hours is the Entra/Key Vault lifetime (default 2 years). expiry_alert fires ~30 days before that lifetime ends."
   default = {
     enabled = false
   }

@@ -214,6 +214,12 @@ resource "azuread_service_principal_delegated_permission_grant" "delegated_conse
 # Client Secret & Key Vault Storage
 #------------------------------------------------------------------------------
 
+resource "time_rotating" "aad_app_password" {
+  count = var.client_secret_generation_config.enabled ? 1 : 0
+
+  rotation_months = var.client_secret_generation_config.rotation_months
+}
+
 resource "azuread_application_password" "aad_app_password" {
   count = var.client_secret_generation_config.enabled ? 1 : 0
 
@@ -222,6 +228,16 @@ resource "azuread_application_password" "aad_app_password" {
     var.client_secret_generation_config.explicit_password_display_name,
     "${var.client_secret_generation_config.secret_name}-client-secret",
   )
+  end_date = timeadd(time_rotating.aad_app_password[0].rfc3339, "${var.client_secret_generation_config.validity_hours}h")
+
+  rotate_when_changed = {
+    keeper   = var.client_secret_generation_config.rotation_keeper
+    rotation = time_rotating.aad_app_password[0].id
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "azurerm_key_vault_secret" "aad_app_gitops_client_id" {
@@ -242,6 +258,46 @@ resource "azurerm_key_vault_secret" "aad_app_gitops_client_secret" {
     var.client_secret_generation_config.explicit_client_secret_secret_name,
     "${var.client_secret_generation_config.secret_name}-client-secret",
   )
-  value        = azuread_application_password.aad_app_password[0].value
-  key_vault_id = var.client_secret_generation_config.keyvault_id
+  value           = azuread_application_password.aad_app_password[0].value
+  key_vault_id    = var.client_secret_generation_config.keyvault_id
+  expiration_date = azuread_application_password.aad_app_password[0].end_date
+}
+
+resource "azurerm_monitor_scheduled_query_rules_alert_v2" "aad_app_password_expiry" {
+  count = var.client_secret_generation_config.enabled && var.client_secret_generation_config.expiry_alert != null ? 1 : 0
+
+  name = coalesce(
+    var.client_secret_generation_config.expiry_alert.name,
+    "${var.client_secret_generation_config.secret_name}-expiry",
+  )
+  resource_group_name = try(var.client_secret_generation_config.expiry_alert.resource_group_name, "")
+  location            = try(var.client_secret_generation_config.expiry_alert.location, "")
+
+  description                       = "Entra client secret for ${var.display_name} expires within 30 days. Apply Terraform so time_rotating can replace it."
+  enabled                           = true
+  evaluation_frequency              = "P1D"
+  mute_actions_after_alert_duration = "P2D"
+  scopes                            = [try(var.client_secret_generation_config.expiry_alert.log_analytics_workspace_id, "")]
+  severity                          = 2
+  window_duration                   = "P1D"
+
+  criteria {
+    query = <<-QUERY
+      print SecretExpiry = datetime(${jsonencode(azuread_application_password.aad_app_password[0].end_date)})
+      | where now() >= SecretExpiry - 30d
+    QUERY
+
+    operator                = "GreaterThan"
+    threshold               = 0
+    time_aggregation_method = "Count"
+
+    failing_periods {
+      minimum_failing_periods_to_trigger_alert = 1
+      number_of_evaluation_periods             = 1
+    }
+  }
+
+  action {
+    action_groups = try(var.client_secret_generation_config.expiry_alert.action_group_ids, [])
+  }
 }
