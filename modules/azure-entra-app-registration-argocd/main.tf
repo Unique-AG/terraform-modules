@@ -223,11 +223,12 @@ locals {
   rotation_period_seconds = var.client_secret_generation_config.rotation_months * 2628000
   rotation_now_unix       = provider::time::rfc3339_parse(plantimestamp()).unix
   rotation_epoch          = floor(local.rotation_now_unix / local.rotation_period_seconds)
-  # previous epoch is skipped when its end_date is not comfortably in the future (validity_hours < 2 periods)
+  # previous epoch is skipped when its end_date is not comfortably in the future (validity_hours < 2 periods);
+  # the current epoch is always kept
   rotation_epochs = var.client_secret_generation_config.enabled ? {
     for epoch in [local.rotation_epoch - 1, local.rotation_epoch] :
     formatdate("YYYYMMDD", timeadd("1970-01-01T00:00:00Z", "${epoch * local.rotation_period_seconds}s")) => epoch
-    if epoch * local.rotation_period_seconds + var.client_secret_generation_config.validity_hours * 3600 > local.rotation_now_unix + 86400
+    if epoch == local.rotation_epoch || epoch * local.rotation_period_seconds + var.client_secret_generation_config.validity_hours * 3600 > local.rotation_now_unix + 86400
   } : {}
   rotation_current_key = formatdate("YYYYMMDD", timeadd("1970-01-01T00:00:00Z", "${local.rotation_epoch * local.rotation_period_seconds}s"))
 }
