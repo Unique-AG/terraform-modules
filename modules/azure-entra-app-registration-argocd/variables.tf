@@ -32,6 +32,11 @@ variable "client_secret_generation_config" {
     condition     = !var.client_secret_generation_config.enabled || var.client_secret_generation_config.keyvault_id != null || var.client_secret_generation_config.output_enabled == true
     error_message = "When client_secret_generation_config.enabled is true, either keyvault_id or output_enabled must be provided."
   }
+
+  validation {
+    condition     = var.client_secret_generation_config.validity_hours > var.client_secret_generation_config.rotation_months * 730
+    error_message = "validity_hours must exceed one rotation period (rotation_months x 730h), otherwise the served secret expires before it is rotated. Use 2x the rotation period for a full overlap."
+  }
 }
 
 variable "redirect_uris" {
