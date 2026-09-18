@@ -1,9 +1,9 @@
 name: azure-entra-app-registration-argocd
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-argocd
-version: 2.1.0
+version: 2.2.0
 compatibility:
   argocd: ~> 3.3.6
 changes:
-  - kind: added
-    description: "Autorotate the Entra client secret every 12 months on the next Terraform apply, stamp Key Vault expiration, and optionally alert 30 days before expiry."
+  - kind: changed
+    description: "Keep two overlapping client secrets (current + previous epoch) so rotation no longer invalidates the credential consumers still hold. Upgrading replaces the single managed secret once. Requires Terraform >= 1.8."

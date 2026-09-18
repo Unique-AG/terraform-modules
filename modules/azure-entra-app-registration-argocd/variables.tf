@@ -23,7 +23,7 @@ variable "client_secret_generation_config" {
       resource_group_name        = string
     }))
   })
-  description = "When enabled, a client secret is generated, stored in Key Vault when keyvault_id is set, and rotated in-place every rotation_months (next Terraform apply after the period elapses). validity_hours is the Entra/Key Vault lifetime (default 2 years). expiry_alert fires ~30 days before that lifetime ends."
+  description = "When enabled, two overlapping client secrets are kept (current + previous rotation epoch, suffixed -YYYYMMDD); Key Vault always serves the current one. On the first apply after an epoch boundary (every rotation_months) a new secret is created and the oldest removed, so lagging consumers keep a valid credential for a full extra period. validity_hours is the Entra/Key Vault lifetime per secret (default 2 years = two epochs). expiry_alert fires ~30 days before the served secret expires. Bump rotation_keeper to force-rotate both secrets on leak."
   default = {
     enabled = false
   }
@@ -31,6 +31,11 @@ variable "client_secret_generation_config" {
   validation {
     condition     = !var.client_secret_generation_config.enabled || var.client_secret_generation_config.keyvault_id != null || var.client_secret_generation_config.output_enabled == true
     error_message = "When client_secret_generation_config.enabled is true, either keyvault_id or output_enabled must be provided."
+  }
+
+  validation {
+    condition     = var.client_secret_generation_config.validity_hours > var.client_secret_generation_config.rotation_months * 730
+    error_message = "validity_hours must exceed one rotation period (rotation_months x 730h), otherwise the served secret expires before it is rotated. Use 2x the rotation period for a full overlap."
   }
 }
 
