@@ -59,6 +59,7 @@ variable "secrets_to_create" {
     hex_encryption_key_scope_management_2 = { create = true, name = "encryption-key-scope-management-2", content_type = "text/hex", rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     litellm_master_key                    = { create = true, name = "litellm-master-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     litellm_salt_key                      = { create = true, name = "litellm-salt-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
+    litellm_viewer_password               = { create = true, name = "litellm-viewer-password", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     rabbitmq_password_chat                = { create = true, name = "rabbitmq-password-chat", content_type = "text/plain", special = false, length = 24, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     zitadel_db_user_password              = { create = true, name = "zitadel-db-user-password", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }
     zitadel_main_key                      = { create = true, name = "zitadel-main-key", content_type = "text/plain", special = false, length = 32, rotation_counter = 0, expiration_date = "2099-12-31T23:59:59Z" }

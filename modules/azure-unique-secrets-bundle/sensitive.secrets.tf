@@ -132,6 +132,25 @@ resource "azurerm_key_vault_secret" "litellm_salt_key" {
 }
 
 # ---
+# @description LiteLLM read-only viewer password
+# @length 32 char flexible
+# @type random_password
+# ---
+resource "random_password" "litellm_viewer_password" {
+  keepers = { version = var.secrets_to_create.litellm_viewer_password.rotation_counter }
+  length  = var.secrets_to_create.litellm_viewer_password.length
+  special = var.secrets_to_create.litellm_viewer_password.special
+}
+resource "azurerm_key_vault_secret" "litellm_viewer_password" {
+  count           = var.secrets_to_create.litellm_viewer_password.create ? 1 : 0
+  name            = var.secrets_to_create.litellm_viewer_password.name
+  value           = random_password.litellm_viewer_password.result
+  content_type    = var.secrets_to_create.litellm_viewer_password.content_type
+  key_vault_id    = var.kv_id_sensitive
+  expiration_date = var.secrets_to_create.litellm_viewer_password.expiration_date
+}
+
+# ---
 # @description RabbitMQ password for chat
 # @length 24 char flexible
 # @type random_password

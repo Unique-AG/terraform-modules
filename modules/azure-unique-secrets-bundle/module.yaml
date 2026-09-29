@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 4.0.0
+version: 4.1.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: added
+    description: "Add litellm_viewer_password to secrets_to_create, mirroring litellm_master_key/litellm_salt_key."
