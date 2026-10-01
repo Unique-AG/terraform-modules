@@ -1,9 +1,9 @@
 name: azure-application-gateway
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-application-gateway
-version: 8.0.0
+version: 8.1.0
 compatibility:
   unique.ai: ~> 2026.14
 changes:
-  - kind: removed
-    description: "Remove the default 5xx metric alert (metric_alerts now defaults to none). 5xx alerting moved to Kong Prometheus metrics (UN-22295). Upgrading destroys the 'Application Gateway 5xx Error' alert unless explicitly re-declared in metric_alerts."
+  - kind: changed
+    description: "Allow /public/chat/openai-proxy bodies above the Azure WAF 2000 KB maximum and exclude OWASP CRS 944 (Java attack) on chat message fields plus rule 944110 on the User-Agent header. Request body enforcement stays enabled at 2000 KB for every other path (UN-26078)."

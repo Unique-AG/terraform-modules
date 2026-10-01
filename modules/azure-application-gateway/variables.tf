@@ -385,6 +385,13 @@ variable "waf_custom_rules_exempted_uris" {
     * Internal reference for mitigation: UN-23412
     */
     "/html-store/",
+    /**
+    * OpenAI proxy sends the whole conversation on every call. Bodies grow past the Azure WAF maximum of
+    * 2000 KB (max_request_body_size_in_kb cannot be set higher; enforcement stays on for every
+    * other path). Same Allow-rule bypass as the ingestion uploads above.
+    * Internal reference: UN-26078
+    */
+    "/public/chat/openai-proxy",
   ]
 }
 
@@ -592,6 +599,10 @@ variable "waf_managed_rules" {
           rule_group_name = "REQUEST-930-APPLICATION-ATTACK-LFI"
         }
       },
+      # Chat and agent payloads quote Java class names, stack traces, and source CRS 944
+      # scores those as critical (5) and 949110 blocks once the anomaly score reaches 5.
+      # Whole group on the chat fields; 944110 only on the User-Agent header so
+      # the rule still applies to other headers and to non-chat arguments.
       {
         match_variable          = "RequestArgNames"
         selector                = "variables.input.text,variables.text,messages.content,text"
@@ -599,7 +610,29 @@ variable "waf_managed_rules" {
         excluded_rule_set = {
           type            = "OWASP"
           version         = "3.2"
-          excluded_rules  = ["944250"]
+          rule_group_name = "REQUEST-944-APPLICATION-ATTACK-JAVA"
+        }
+      },
+      # Parsed JSON nests past the exact name messages.content (messages.content.text,
+      # tool-call arguments). StartsWith covers those without listing each path.
+      {
+        match_variable          = "RequestArgNames"
+        selector                = "messages."
+        selector_match_operator = "StartsWith"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          rule_group_name = "REQUEST-944-APPLICATION-ATTACK-JAVA"
+        }
+      },
+      {
+        match_variable          = "RequestHeaderValues"
+        selector                = "User-Agent"
+        selector_match_operator = "Equals"
+        excluded_rule_set = {
+          type            = "OWASP"
+          version         = "3.2"
+          excluded_rules  = ["944110"]
           rule_group_name = "REQUEST-944-APPLICATION-ATTACK-JAVA"
         }
       },
