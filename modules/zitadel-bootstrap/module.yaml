@@ -1,0 +1,9 @@
+name: zitadel-bootstrap
+sources:
+  - https://github.com/Unique-AG/terraform-modules/tree/main/modules/zitadel-bootstrap
+version: 1.0.0
+compatibility:
+  zitadel: ~> 3.4
+changes:
+  - kind: added
+    description: "Initial release. Unique Apps project with its roles, the Standalone Apps PKCE application, a granted tenant organization, the node-scope-management machine user with an IAM_OWNER PAT, and optional human users with project role grants."
