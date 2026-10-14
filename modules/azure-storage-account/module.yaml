@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 8.0.0
+version: 8.0.1
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: fixed
+    description: "Use `public_network_access` instead of the deprecated `public_network_access_enabled` argument. The `public_network_access_enabled` input is unchanged. Requires AzureRM provider `>= 5.5`."
