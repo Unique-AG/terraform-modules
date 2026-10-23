@@ -121,3 +121,32 @@ resource "azurerm_eventhub_consumer_group" "consumer_group" {
   resource_group_name = var.resource_group_name
   user_metadata       = each.value.user_metadata
 }
+
+resource "azurerm_private_endpoint" "pe" {
+  count               = var.private_endpoint != null ? 1 : 0
+  name                = "${var.namespace.name}-pe"
+  location            = coalesce(var.private_endpoint.location, var.location)
+  resource_group_name = var.resource_group_name
+  subnet_id           = var.private_endpoint.subnet_id
+  tags                = merge(local.namespace_tags, var.private_endpoint.tags)
+
+  private_service_connection {
+    name                           = "${var.namespace.name}-psc"
+    private_connection_resource_id = azurerm_eventhub_namespace.namespace.id
+    is_manual_connection           = false
+    subresource_names              = ["namespace"]
+  }
+
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [var.private_endpoint.private_dns_zone_id]
+  }
+
+  lifecycle {
+    precondition {
+      # https://learn.microsoft.com/en-us/azure/event-hubs/private-link-service
+      condition     = var.namespace.sku != "Basic"
+      error_message = "Private Link is not supported for the Basic SKU. Use Standard or higher."
+    }
+  }
+}

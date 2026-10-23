@@ -1,8 +1,7 @@
 name: azure-eventhub
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-eventhub
-version: 2.0.0
+version: 2.1.0
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
-
+  - kind: added
+    description: "private_endpoint variable to expose the namespace via Private Link (subresource namespace). Not supported for the Basic SKU."
