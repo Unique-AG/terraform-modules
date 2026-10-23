@@ -116,3 +116,26 @@ variable "eventhubs" {
     error_message = "At least one event hub must be defined."
   }
 }
+variable "private_endpoint" {
+  description = "Configuration for a private endpoint (Private Link) to the Event Hub namespace. When specified, creates a private endpoint in the given subnet and registers it in the given private DNS zone (privatelink.servicebus.windows.net). Use it for senders or consumers inside a VNet when the namespace firewall denies public access."
+  type = object({
+    subnet_id           = string
+    private_dns_zone_id = string
+    location            = optional(string)
+    tags                = optional(map(string), {})
+  })
+  default = null
+
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.private_endpoint.subnet_id))
+    )
+    error_message = "The subnet_id must be a valid Azure resource ID for a subnet"
+  }
+  validation {
+    condition = var.private_endpoint == null ? true : (
+      can(regex("^/subscriptions/[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft.Network/privateDnsZones/[^/]+$", var.private_endpoint.private_dns_zone_id))
+    )
+    error_message = "The private_dns_zone_id must be a valid Azure resource ID for a private DNS zone"
+  }
+}

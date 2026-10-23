@@ -27,3 +27,11 @@ output "eventhub_consumer_groups" {
     key => group
   }
 }
+
+output "private_endpoint" {
+  description = "Private endpoint of the Event Hub namespace (id and private IP address), or null if not configured."
+  value = var.private_endpoint == null ? null : {
+    id                 = azurerm_private_endpoint.pe[0].id
+    private_ip_address = azurerm_private_endpoint.pe[0].private_service_connection[0].private_ip_address
+  }
+}
