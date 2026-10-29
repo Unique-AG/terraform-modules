@@ -95,6 +95,18 @@ data_protection_settings = {
 }
 ```
 
+## 🔄 Migration Guide
+
+### ℹ️ Behavior Change: self_cmk Default Key Size (v9.0.0)
+
+Starting with version 9.0.0, `self_cmk.key_size` defaults to `4096` (RSA-HSM) instead of `2048`.
+
+**Impact**: `key_size` on `azurerm_key_vault_key` is [ForceNew](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) — a caller using `self_cmk` without an explicit `key_size` has their key **replaced** on the first apply after upgrading, not updated in place.
+
+**Migrating from Previous Versions**:
+- To adopt the new default (new key, plan for replacement and re-encryption of dependents): upgrade and apply.
+- To keep the previous key size: set `key_size = 2048` explicitly in `self_cmk` before upgrading.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -164,7 +176,7 @@ No modules.
 | <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints) | Private endpoints for the storage account, keyed by the target subresource name (e.g. "blob", "file"). Azure storage accounts only permit a single subresource per private endpoint, so each entry results in its own azurerm\_private\_endpoint. Preferred over the deprecated `private_endpoint`. Set `name` to override the Azure resource name (default: `<storage-name>-<subresource>-pe`); the private service connection name is derived as `<name without -pe suffix>-psc`. | <pre>map(object({<br/>    subnet_id           = string<br/>    private_dns_zone_id = string<br/>    location            = optional(string)<br/>    name                = optional(string)<br/>    tags                = optional(map(string), {})<br/>  }))</pre> | `{}` | no |
 | <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled) | Enable public network access for the storage account. | `bool` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group to put the resources in. | `string` | n/a | yes |
-| <a name="input_self_cmk"></a> [self\_cmk](#input\_self\_cmk) | Details for the self customer managed key. | <pre>object({<br/>    key_name                     = string<br/>    key_vault_id                 = string<br/>    key_type                     = optional(string, "RSA-HSM")<br/>    key_size                     = optional(number, 2048)<br/>    key_opts                     = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])<br/>    user_assigned_identity_id    = string<br/>    federated_identity_client_id = optional(string, null)<br/><br/>  })</pre> | `null` | no |
+| <a name="input_self_cmk"></a> [self\_cmk](#input\_self\_cmk) | Details for the self customer managed key. | <pre>object({<br/>    key_name                     = string<br/>    key_vault_id                 = string<br/>    key_type                     = optional(string, "RSA-HSM")<br/>    key_size                     = optional(number, 4096)<br/>    key_opts                     = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])<br/>    user_assigned_identity_id    = string<br/>    federated_identity_client_id = optional(string, null)<br/><br/>  })</pre> | `null` | no |
 | <a name="input_shared_access_key_enabled"></a> [shared\_access\_key\_enabled](#input\_shared\_access\_key\_enabled) | Enable shared access key for the storage account. Defaults to false for improved security. Note that when disabled, terraform must be configured to use Azure Entra Authentication for the storage (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account.html#shared_access_key_enabled-1). Additionally, connection\_settings cannot be used when this is disabled. | `bool` | `false` | no |
 | <a name="input_storage_account_tags"></a> [storage\_account\_tags](#input\_storage\_account\_tags) | Additional tags that apply only to the main storage account. These will be merged with the general tags variable. | `map(string)` | `{}` | no |
 | <a name="input_storage_management_policy_default"></a> [storage\_management\_policy\_default](#input\_storage\_management\_policy\_default) | A simple abstraction of the most common properties for storage management lifecycle policies. If the simple implementation does not meet your needs, please open an issue. If you use this module to safe files that are rarely to never accessed again, opt for a very aggressive policy (starting already cool and archiving early). If you want to implement your own storage management policy, disable the default and use the output storage\_account\_id to implement your own policies. Note: Archive tier is only supported for LRS, GRS, and RA-GRS replication types. It is NOT supported for ZRS, GZRS, or RA-GZRS. The module will automatically skip archive tier for unsupported replication types. | <pre>object({<br/>    blob_to_cool_after_last_modified_days    = optional(number, 10)<br/>    blob_to_cold_after_last_modified_days    = optional(number, 50)<br/>    blob_to_archive_after_last_modified_days = optional(number, null)<br/>    blob_to_deleted_after_last_modified_days = optional(number, null)<br/>  })</pre> | <pre>{<br/>  "blob_to_archive_after_last_modified_days": null,<br/>  "blob_to_cold_after_last_modified_days": 50,<br/>  "blob_to_cool_after_last_modified_days": 10,<br/>  "blob_to_deleted_after_last_modified_days": null<br/>}</pre> | no |

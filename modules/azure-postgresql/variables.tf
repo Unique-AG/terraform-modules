@@ -126,7 +126,7 @@ variable "self_cmk" {
     key_name                  = string
     key_vault_id              = string
     key_type                  = optional(string, "RSA-HSM")
-    key_size                  = optional(number, 2048)
+    key_size                  = optional(number, 4096)
     key_opts                  = optional(list(string), ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"])
     user_assigned_identity_id = string
 
