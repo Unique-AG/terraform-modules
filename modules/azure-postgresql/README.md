@@ -11,6 +11,16 @@ No additional configuration required! Set `metric_alerts = {}` to disable if not
 
 ## 🔄 Migration Guide
 
+### ℹ️ Behavior Change: self_cmk Default Key Size (v5.0.0)
+
+Starting with version 5.0.0, `self_cmk.key_size` defaults to `4096` (RSA-HSM) instead of `2048`.
+
+**Impact**: `key_size` on `azurerm_key_vault_key` is [ForceNew](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) — a caller using `self_cmk` without an explicit `key_size` has their key **replaced** on the first apply after upgrading, not updated in place.
+
+**Migrating from Previous Versions**:
+- To adopt the new default (new key, plan for replacement and re-encryption of dependents): upgrade and apply.
+- To keep the previous key size: set `key_size = 2048` explicitly in `self_cmk` before upgrading.
+
 ### ℹ️ Behavior Change: Default Monitoring Alerts (v2.1.0)
 
 Starting with version 2.1.0, the module creates monitoring alerts by default. Prior to 2.1.0, no alerts were created automatically.

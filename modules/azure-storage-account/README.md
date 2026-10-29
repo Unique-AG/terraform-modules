@@ -95,6 +95,18 @@ data_protection_settings = {
 }
 ```
 
+## 🔄 Migration Guide
+
+### ℹ️ Behavior Change: self_cmk Default Key Size (v9.0.0)
+
+Starting with version 9.0.0, `self_cmk.key_size` defaults to `4096` (RSA-HSM) instead of `2048`.
+
+**Impact**: `key_size` on `azurerm_key_vault_key` is [ForceNew](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) — a caller using `self_cmk` without an explicit `key_size` has their key **replaced** on the first apply after upgrading, not updated in place.
+
+**Migrating from Previous Versions**:
+- To adopt the new default (new key, plan for replacement and re-encryption of dependents): upgrade and apply.
+- To keep the previous key size: set `key_size = 2048` explicitly in `self_cmk` before upgrading.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
