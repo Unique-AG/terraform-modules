@@ -1,9 +1,9 @@
 name: azure-postgresql
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-postgresql
-version: 4.1.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.16
 changes:
-  - kind: added
-    description: "private_endpoint variable to expose the server via Private Link. Not supported for VNet-integrated servers (delegated_subnet_id)."
+  - kind: changed
+    description: "self_cmk.key_size now defaults to 4096 instead of 2048. Breaking for any caller relying on the default: the key is replaced on apply. Set key_size = 2048 explicitly to keep the previous behaviour."

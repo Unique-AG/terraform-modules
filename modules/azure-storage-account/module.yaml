@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 8.0.1
+version: 9.0.0
 compatibility:
   unique.ai: ~> 2025.24
 changes:
-  - kind: fixed
-    description: "Use `public_network_access` instead of the deprecated `public_network_access_enabled` argument. The `public_network_access_enabled` input is unchanged. Requires AzureRM provider `>= 5.5`."
+  - kind: changed
+    description: "self_cmk.key_size now defaults to 4096 instead of 2048. Breaking for any caller relying on the default: the key is replaced on apply. Set key_size = 2048 explicitly to keep the previous behaviour."
