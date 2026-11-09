@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 4.0.0
+version: 4.1.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: added
+    description: "added mip-azure-client-id, mip-azure-client-secret, and mip-azure-tenant-id to the default manual secrets."
