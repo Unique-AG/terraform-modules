@@ -6,4 +6,4 @@ compatibility:
   unique.ai: ~> 2025.30
 changes:
   - kind: added
-    description: "added mip-azure-client-id, mip-azure-client-secret, and mip-azure-tenant-id to the default manual secrets."
+    description: "mip-azure-client-id, mip-azure-client-secret, and mip-azure-tenant-id to the default manual secrets."
