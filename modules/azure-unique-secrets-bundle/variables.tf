@@ -26,6 +26,9 @@ variable "default_secrets_placeholders" {
     litellm-xai-api-key                 = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     mcp-hub-default-oauth-client-id     = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     mcp-hub-default-oauth-client-secret = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    mip-azure-client-id                 = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    mip-azure-client-secret             = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
+    mip-azure-tenant-id                 = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     quartr-api-creds                    = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     six-api-creds                       = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
     zitadel-scope-mgmt-pat              = { create = true, expiration_date = "2099-12-31T23:59:59Z" }
