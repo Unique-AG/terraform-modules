@@ -239,9 +239,9 @@ module "postgresql" {
   source = "..."
 
   authentication = {
-    active_directory_auth_enabled = true
-    password_auth_enabled         = true
-    tenant_id                     = data.azurerm_client_config.current.tenant_id
+    entra_auth_enabled    = true
+    password_auth_enabled = true
+    tenant_id             = data.azurerm_client_config.current.tenant_id
   }
 
   entra_administrators = {
@@ -263,7 +263,7 @@ module "postgresql" {
 
 To move a server off passwords without downtime:
 
-1. Set `active_directory_auth_enabled = true`, keep `password_auth_enabled = true`, and add `entra_administrators`.
+1. Set `entra_auth_enabled = true`, keep `password_auth_enabled = true`, and add `entra_administrators`.
 2. Switch every client to Entra logins.
 3. Set `password_auth_enabled = false`. Run this as its own apply, after the administrators from step 1 exist. In the same apply, Terraform turns off passwords before it creates the administrators.
 
@@ -314,13 +314,13 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin_password"></a> [admin\_password](#input\_admin\_password) | The Password associated with the administrator\_login for the PostgreSQL Flexible Server | `string` | n/a | yes |
 | <a name="input_administrator_login"></a> [administrator\_login](#input\_administrator\_login) | The Administrator login for the PostgreSQL Flexible Server | `string` | n/a | yes |
-| <a name="input_authentication"></a> [authentication](#input\_authentication) | Login methods the server accepts. Null leaves the login settings as they are (a new server gets password only); to change them back, set the values explicitly. Set active\_directory\_auth\_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password\_auth\_enabled to false so only Entra logins work; this needs at least one entry in entra\_administrators. The module always sets an admin login, so the azurerm provider only allows this on an existing server, not at creation. | <pre>object({<br/>    active_directory_auth_enabled = optional(bool, false)<br/>    password_auth_enabled         = optional(bool, true)<br/>    tenant_id                     = optional(string)<br/>  })</pre> | `null` | no |
+| <a name="input_authentication"></a> [authentication](#input\_authentication) | Login methods the server accepts. Null leaves the login settings as they are (a new server gets password only); to change them back, set the values explicitly. Set entra\_auth\_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password\_auth\_enabled to false so only Entra logins work; this needs at least one entry in entra\_administrators. The module always sets an admin login, so the azurerm provider only allows this on an existing server, not at creation. | <pre>object({<br/>    entra_auth_enabled    = optional(bool, false)<br/>    password_auth_enabled = optional(bool, true)<br/>    tenant_id             = optional(string)<br/>  })</pre> | `null` | no |
 | <a name="input_auto_grow_enabled"></a> [auto\_grow\_enabled](#input\_auto\_grow\_enabled) | Specifies whether the PostgreSQL Flexible Server should be automatically grow the storage. | `string` | `true` | no |
 | <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_vault_key_id          = string<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
 | <a name="input_database_connection_string_secret_prefix"></a> [database\_connection\_string\_secret\_prefix](#input\_database\_connection\_string\_secret\_prefix) | Prefix of the secret containing the full connection string. The full name of the secret is this prefix + database name | `string` | `"database-url-"` | no |
 | <a name="input_databases"></a> [databases](#input\_databases) | Map of databases and its properties | <pre>map(<br/>    object({<br/>      name            = string<br/>      collation       = optional(string, null)<br/>      charset         = optional(string, null)<br/>      lifecycle       = optional(bool, false)<br/>      prevent_destroy = optional(bool, true)<br/>    })<br/>  )</pre> | `{}` | no |
 | <a name="input_delegated_subnet_id"></a> [delegated\_subnet\_id](#input\_delegated\_subnet\_id) | The ID of the delegated subnet. | `string` | `null` | no |
-| <a name="input_entra_administrators"></a> [entra\_administrators](#input\_entra\_administrators) | Microsoft Entra principals that become server administrators. The key is only a Terraform key. principal\_name is the name the principal logs in with: the managed identity, group or user display name. principal\_type is Group, ServicePrincipal or User; a managed identity is a ServicePrincipal with its principal\_id as object\_id. Needs authentication.active\_directory\_auth\_enabled = true. | <pre>map(object({<br/>    object_id      = string<br/>    principal_name = string<br/>    principal_type = string<br/>  }))</pre> | `{}` | no |
+| <a name="input_entra_administrators"></a> [entra\_administrators](#input\_entra\_administrators) | Microsoft Entra principals that become server administrators. The key is only a Terraform key. principal\_name is the name the principal logs in with: the managed identity, group or user display name. principal\_type is Group, ServicePrincipal or User; a managed identity is a ServicePrincipal with its principal\_id as object\_id. Needs authentication.entra\_auth\_enabled = true. | <pre>map(object({<br/>    object_id      = string<br/>    principal_name = string<br/>    principal_type = string<br/>  }))</pre> | `{}` | no |
 | <a name="input_flex_pg_backup_retention_days"></a> [flex\_pg\_backup\_retention\_days](#input\_flex\_pg\_backup\_retention\_days) | The number of days to retain backups for the PostgreSQL server. | `number` | `14` | no |
 | <a name="input_flex_pg_version"></a> [flex\_pg\_version](#input\_flex\_pg\_version) | The version of the PostgreSQL server. | `string` | `"14"` | no |
 | <a name="input_flex_sku"></a> [flex\_sku](#input\_flex\_sku) | The SKU for the PostgreSQL server. | `string` | `"GP_Standard_D2ds_v5"` | no |

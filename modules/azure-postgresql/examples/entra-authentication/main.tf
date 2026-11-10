@@ -49,9 +49,9 @@ module "apfs" {
   location            = azurerm_resource_group.example.location
 
   authentication = {
-    active_directory_auth_enabled = true
-    password_auth_enabled         = true
-    tenant_id                     = data.azurerm_client_config.current.tenant_id
+    entra_auth_enabled    = true
+    password_auth_enabled = true
+    tenant_id             = data.azurerm_client_config.current.tenant_id
   }
 
   entra_administrators = {

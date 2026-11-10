@@ -64,7 +64,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   dynamic "authentication" {
     for_each = var.authentication != null ? [var.authentication] : []
     content {
-      active_directory_auth_enabled = authentication.value.active_directory_auth_enabled
+      active_directory_auth_enabled = authentication.value.entra_auth_enabled
       password_auth_enabled         = authentication.value.password_auth_enabled
       tenant_id                     = authentication.value.tenant_id
     }
@@ -101,8 +101,8 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "en
 
   lifecycle {
     precondition {
-      condition     = try(var.authentication.active_directory_auth_enabled, false)
-      error_message = "entra_administrators needs authentication.active_directory_auth_enabled = true."
+      condition     = try(var.authentication.entra_auth_enabled, false)
+      error_message = "entra_administrators needs authentication.entra_auth_enabled = true."
     }
   }
 }
