@@ -264,8 +264,9 @@ To move a server off passwords:
 
 1. Set `entra_auth_enabled = true` and keep `password_auth_enabled = true`.
 2. Assign at least one Entra administrator outside the module.
-3. An administrator creates the database role for the workload identity, and clients switch to Entra logins.
-4. Set `password_auth_enabled = false`. Run this as its own apply.
+3. An administrator creates the database role for the workload identity and grants it the permissions the workload needs. The new role does not inherit the permissions of the password role.
+4. Verify that the workload can reach its data with the new role, then switch clients to Entra logins.
+5. Set `password_auth_enabled = false`. Run this as its own apply.
 
 Turning on Microsoft Entra authentication restarts the server ([Microsoft documentation](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts)), so plan step 1 for a maintenance window.
 
