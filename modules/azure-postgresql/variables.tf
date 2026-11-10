@@ -245,7 +245,7 @@ variable "authentication" {
     error_message = "At least one of entra_auth_enabled and password_auth_enabled must be true."
   }
   validation {
-    condition     = var.authentication == null ? true : (!var.authentication.entra_auth_enabled || var.authentication.tenant_id != null)
+    condition     = var.authentication == null ? true : (!var.authentication.entra_auth_enabled || (var.authentication.tenant_id != null && var.authentication.tenant_id != ""))
     error_message = "tenant_id must be set when entra_auth_enabled is true."
   }
 }
