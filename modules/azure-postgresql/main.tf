@@ -9,7 +9,9 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   location            = var.location
   version             = var.flex_pg_version
 
-  administrator_login    = var.administrator_login
+  # Azure stops returning the admin login when password logins are off. Passing it again
+  # makes the provider reject the update, so it is only passed while password logins are on.
+  administrator_login    = try(var.authentication.password_auth_enabled, true) ? var.administrator_login : null
   administrator_password = var.admin_password
   sku_name               = var.flex_sku
   storage_mb             = var.flex_storage_mb

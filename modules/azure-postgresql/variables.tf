@@ -232,7 +232,7 @@ variable "admin_password" {
 }
 
 variable "authentication" {
-  description = "Login methods the server accepts. Null leaves the login settings as they are (a new server gets password only); to change them back, set the values explicitly. Set entra_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work; this needs at least one entry in entra_administrators. The module always sets an admin login, so the azurerm provider only allows this on an existing server, not at creation."
+  description = "Login methods the server accepts. Null leaves the login settings as they are (a new server gets password only); to change them back, set the values explicitly. Set entra_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work; this needs at least one entry in entra_administrators. The azurerm provider refuses an admin login on create when password logins are off, so turn them off on an existing server; while they are off the module does not pass the admin login."
   type = object({
     entra_auth_enabled    = optional(bool, false)
     password_auth_enabled = optional(bool, true)
