@@ -231,6 +231,36 @@ variable "admin_password" {
   sensitive   = true
 }
 
+variable "authentication" {
+  description = "Login methods the server accepts. Null leaves the login settings as they are (a new server gets password only); to change them back, set the values explicitly. Set active_directory_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work; this needs at least one entry in entra_administrators. The module always sets an admin login, so the azurerm provider only allows this on an existing server, not at creation."
+  type = object({
+    active_directory_auth_enabled = optional(bool, false)
+    password_auth_enabled         = optional(bool, true)
+    tenant_id                     = optional(string)
+  })
+  default = null
+
+  validation {
+    condition     = var.authentication == null ? true : (var.authentication.active_directory_auth_enabled || var.authentication.password_auth_enabled)
+    error_message = "At least one of active_directory_auth_enabled and password_auth_enabled must be true."
+  }
+  validation {
+    condition     = var.authentication == null ? true : (!var.authentication.active_directory_auth_enabled || var.authentication.tenant_id != null)
+    error_message = "tenant_id must be set when active_directory_auth_enabled is true."
+  }
+}
+
+variable "entra_administrators" {
+  description = "Microsoft Entra principals that become server administrators. The key is only a Terraform key. principal_name is the name the principal logs in with: the managed identity, group or user display name. principal_type is Group, ServicePrincipal or User; a managed identity is a ServicePrincipal with its principal_id as object_id. Needs authentication.active_directory_auth_enabled = true."
+  type = map(object({
+    object_id      = string
+    principal_name = string
+    principal_type = string
+  }))
+  default  = {}
+  nullable = false
+}
+
 variable "key_vault_id" {
   description = "The ID of the Key Vault where the secrets will be stored"
   default     = null

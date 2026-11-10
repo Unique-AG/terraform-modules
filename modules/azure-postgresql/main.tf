@@ -61,6 +61,15 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     }
   }
 
+  dynamic "authentication" {
+    for_each = var.authentication != null ? [var.authentication] : []
+    content {
+      active_directory_auth_enabled = authentication.value.active_directory_auth_enabled
+      password_auth_enabled         = authentication.value.password_auth_enabled
+      tenant_id                     = authentication.value.tenant_id
+    }
+  }
+
   dynamic "timeouts" {
     for_each = length(var.timeouts) > 0 ? [1] : []
     content {
@@ -72,6 +81,29 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   }
   lifecycle {
     ignore_changes = [zone, high_availability[0].standby_availability_zone, storage_mb]
+
+    precondition {
+      condition     = try(var.authentication.password_auth_enabled, true) || length(var.entra_administrators) > 0
+      error_message = "Turning off password_auth_enabled needs at least one entry in entra_administrators, or nobody can log in."
+    }
+  }
+}
+
+resource "azurerm_postgresql_flexible_server_active_directory_administrator" "entra" {
+  for_each = var.entra_administrators
+
+  server_name         = azurerm_postgresql_flexible_server.apfs.name
+  resource_group_name = var.resource_group_name
+  tenant_id           = var.authentication.tenant_id
+  object_id           = each.value.object_id
+  principal_name      = each.value.principal_name
+  principal_type      = each.value.principal_type
+
+  lifecycle {
+    precondition {
+      condition     = try(var.authentication.active_directory_auth_enabled, false)
+      error_message = "entra_administrators needs authentication.active_directory_auth_enabled = true."
+    }
   }
 }
 
