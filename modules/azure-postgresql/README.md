@@ -256,7 +256,7 @@ module "postgresql" {
 }
 ```
 
-Only the break-glass group is a server administrator. The workload's managed identity does not need to be one: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Instead, an administrator creates a database role for the identity, connected to the `postgres` database:
+Only the break-glass group is a server administrator. The workload's managed identity does not need to be one: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Instead, an Entra administrator (for example a member of the break-glass group) creates a database role for the identity. They connect to the `postgres` database with a Microsoft Entra access token and run the statement below. The PostgreSQL password administrator cannot create Entra roles: [only Microsoft Entra administrator users can create or enable users for Microsoft Entra ID-based authentication](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure).
 
 ```sql
 select * from pgaadauth_create_principal('<identity name>', false, false);
@@ -272,7 +272,9 @@ To move a server off passwords:
 
 Turning on Microsoft Entra authentication restarts the server ([Microsoft documentation](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts)), so plan step 1 for a maintenance window.
 
-This module passes the admin login and password while password logins are on. The azurerm provider refuses them on create when password logins are off, so a new server starts with `password_auth_enabled = true` and turns it off in a later apply. While password logins are off, the module does not pass the admin login, because Azure then stops returning it and the provider rejects setting it again. Turning off password logins needs at least one entry in `entra_administrators`, so the server never ends up with nobody who can log in. The admin password and its Key Vault secrets stay, but the server no longer accepts them.
+Setting `authentication` back to `null` leaves the server's login settings as they are, but it fails the administrator check while `entra_administrators` has entries, and removing the entries destroys those administrators in Azure. So with password logins off, keep `authentication` and `entra_administrators` set together: removing the administrators can leave a server with passwords off and nobody who can log in.
+
+This module passes the admin login and password while password logins are on. The azurerm provider refuses them on create when password logins are off, so a new server starts with `password_auth_enabled = true` and turns it off in a later apply. While password logins are off, the module does not pass the admin login, because Azure then stops returning it and the provider rejects setting it again. Turning off password logins needs at least one entry in `entra_administrators`. The module only checks that an entry exists, not that the principal can sign in: a deleted Entra principal, for example, stays configured but cannot get a token. Verify that an administrator can log in before turning passwords off. The admin password and its Key Vault secrets stay, but the server no longer accepts them.
 
 # Module
 

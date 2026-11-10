@@ -86,7 +86,7 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
 
     precondition {
       condition     = try(var.authentication.password_auth_enabled, true) || length(var.entra_administrators) > 0
-      error_message = "Turning off password_auth_enabled needs at least one entry in entra_administrators, or nobody can log in."
+      error_message = "Turning off password_auth_enabled needs at least one entry in entra_administrators. This only counts configured entries; make sure an administrator can log in with Microsoft Entra before turning passwords off."
     }
   }
 }
