@@ -17,7 +17,7 @@ resource "azurerm_key_vault_key" "auditlogs_key" {
   name         = "auditlogs-key"
   key_vault_id = azurerm_key_vault.sensitive.id
   key_type     = "RSA-HSM"
-  key_size     = 2048
+  key_size     = 4096
 
   key_opts = [
     "decrypt",
