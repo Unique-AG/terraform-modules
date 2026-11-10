@@ -245,11 +245,6 @@ module "postgresql" {
   }
 
   entra_administrators = {
-    app = {
-      object_id      = azurerm_user_assigned_identity.app.principal_id
-      principal_name = azurerm_user_assigned_identity.app.name
-      principal_type = "ServicePrincipal"
-    }
     break-glass = {
       object_id      = "00000000-0000-0000-0000-000000000000"
       principal_name = "postgres-admins"
@@ -260,6 +255,14 @@ module "postgresql" {
   # ... other configuration
 }
 ```
+
+Only the break-glass group is a server administrator. The workload's managed identity does not need to be one: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Instead, an administrator creates a database role for the identity, connected to the `postgres` database:
+
+```sql
+select * from pgaadauth_create_principal('<identity name>', false, false);
+```
+
+The workload then [logs in](https://learn.microsoft.com/en-us/azure/postgresql/security/security-connect-with-managed-identity) with the identity name as the user and a Microsoft Entra access token as the password. Grants on application databases are managed with normal PostgreSQL roles and are outside this module.
 
 To move a server off passwords:
 

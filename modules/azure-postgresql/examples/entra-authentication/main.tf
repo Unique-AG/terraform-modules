@@ -17,6 +17,7 @@ resource "azurerm_resource_group" "example" {
   location = "switzerlandnorth"
 }
 
+# The app identity logs in as a normal database role created with SQL; it is not a server administrator.
 resource "azurerm_user_assigned_identity" "app" {
   name                = "id-example-app"
   location            = azurerm_resource_group.example.location
@@ -58,11 +59,6 @@ module "apfs" {
   }
 
   entra_administrators = {
-    app = {
-      object_id      = azurerm_user_assigned_identity.app.principal_id
-      principal_name = azurerm_user_assigned_identity.app.name
-      principal_type = "ServicePrincipal"
-    }
     break-glass = {
       object_id      = var.break_glass_group.object_id
       principal_name = var.break_glass_group.display_name
