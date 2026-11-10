@@ -30,8 +30,11 @@ resource "random_password" "postgres_username" {
 }
 
 resource "random_password" "postgres_password" {
-  length  = 32
-  special = false
+  length      = 32
+  special     = false
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
 }
 
 resource "random_string" "server_name" {
