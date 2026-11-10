@@ -7,5 +7,3 @@ compatibility:
 changes:
   - kind: added
     description: "authentication variable to turn on Microsoft Entra logins and, optionally, turn off password logins."
-  - kind: added
-    description: "entra_administrators variable to make Entra principals (managed identities, groups, users) server administrators."

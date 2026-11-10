@@ -232,7 +232,7 @@ variable "admin_password" {
 }
 
 variable "authentication" {
-  description = "Login methods the server accepts. Null leaves the server's login settings as they are (a new server gets password only), but the module then passes the admin login as if password logins were on, so do not set null on a server whose password logins are off; set password_auth_enabled = true to turn them back on. Set entra_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work; this needs at least one entry in entra_administrators. The azurerm provider refuses an admin login on create when password logins are off, so turn them off on an existing server; while password_auth_enabled is false the module does not pass the admin login."
+  description = "Login methods the server accepts. Null leaves the server's login settings as they are (a new server gets password only), but the module then passes the admin login as if password logins were on, so do not set null on a server whose password logins are off; set password_auth_enabled = true to turn them back on. Set entra_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work. This module does not manage Entra administrators: assign at least one outside the module and verify an administrator login before turning passwords off. The azurerm provider refuses an admin login on create when password logins are off, so turn them off on an existing server; while password_auth_enabled is false the module does not pass the admin login."
   type = object({
     entra_auth_enabled    = optional(bool, false)
     password_auth_enabled = optional(bool, true)
@@ -248,17 +248,6 @@ variable "authentication" {
     condition     = var.authentication == null ? true : (!var.authentication.entra_auth_enabled || (var.authentication.tenant_id != null && var.authentication.tenant_id != ""))
     error_message = "tenant_id must be set when entra_auth_enabled is true."
   }
-}
-
-variable "entra_administrators" {
-  description = "Microsoft Entra principals that become server administrators. The key is only a Terraform key. principal_name is the name the principal logs in with: the managed identity, group or user display name. principal_type is Group, ServicePrincipal or User; a managed identity is a ServicePrincipal with its principal_id as object_id. Needs authentication.entra_auth_enabled = true."
-  type = map(object({
-    object_id      = string
-    principal_name = string
-    principal_type = string
-  }))
-  default  = {}
-  nullable = false
 }
 
 variable "key_vault_id" {

@@ -2,14 +2,6 @@ variable "subscription_id" {
   type = string
 }
 
-variable "break_glass_group" {
-  description = "Entra group whose members can log in as server administrators."
-  type = object({
-    object_id    = string
-    display_name = string
-  })
-}
-
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "example" {
@@ -56,14 +48,6 @@ module "apfs" {
     entra_auth_enabled    = true
     password_auth_enabled = true
     tenant_id             = data.azurerm_client_config.current.tenant_id
-  }
-
-  entra_administrators = {
-    break-glass = {
-      object_id      = var.break_glass_group.object_id
-      principal_name = var.break_glass_group.display_name
-      principal_type = "Group"
-    }
   }
 
   metric_alerts_external_action_group_ids = []

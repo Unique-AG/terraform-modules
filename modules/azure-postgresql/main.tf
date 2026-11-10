@@ -87,29 +87,6 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   }
   lifecycle {
     ignore_changes = [zone, high_availability[0].standby_availability_zone, storage_mb]
-
-    precondition {
-      condition     = try(var.authentication.password_auth_enabled, true) || length(var.entra_administrators) > 0
-      error_message = "Turning off password_auth_enabled needs at least one entry in entra_administrators. This only counts configured entries; make sure an administrator can log in with Microsoft Entra before turning passwords off."
-    }
-  }
-}
-
-resource "azurerm_postgresql_flexible_server_active_directory_administrator" "entra" {
-  for_each = var.entra_administrators
-
-  server_name         = azurerm_postgresql_flexible_server.apfs.name
-  resource_group_name = var.resource_group_name
-  tenant_id           = var.authentication.tenant_id
-  object_id           = each.value.object_id
-  principal_name      = each.value.principal_name
-  principal_type      = each.value.principal_type
-
-  lifecycle {
-    precondition {
-      condition     = try(var.authentication.entra_auth_enabled, false)
-      error_message = "entra_administrators needs authentication.entra_auth_enabled = true."
-    }
   }
 }
 
