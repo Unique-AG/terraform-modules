@@ -1,0 +1,36 @@
+name: "[terraform] AWS modules"
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/aws-*/**
+      - .github/checkov/**
+      - .github/configs/tflint.hcl
+      - .github/configs/trivyignore.yaml
+      - .github/workflows/aws.validate.yaml
+      - scripts/aws-checks.sh
+      - scripts/images.sh
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: AWS module checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.14.9
+          terraform_wrapper: false
+
+      - name: TFLint, trivy, checkov and terraform test
+        run: ./scripts/aws-checks.sh

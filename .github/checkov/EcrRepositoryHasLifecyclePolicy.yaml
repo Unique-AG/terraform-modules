@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_UQ_AWS_3"
+  name: "Ensure every ECR repository has a lifecycle policy"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "connection"
+  resource_types:
+    - "aws_ecr_repository"
+  connected_resource_types:
+    - "aws_ecr_lifecycle_policy"
+  operator: "exists"
