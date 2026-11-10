@@ -8,7 +8,8 @@ source "$(dirname "$0")/images.sh"
 
 echo "Running Trivy for Terraform scanning"
 
-CMD="docker run --rm -v "$(pwd):/workdir" $TRIVY_IMAGE config --ignorefile /workdir/.github/configs/trivyignore.yaml"
+# .github/checkov holds checkov's test fixtures, which break rules on purpose.
+CMD="docker run --rm -v "$(pwd):/workdir" $TRIVY_IMAGE config --ignorefile /workdir/.github/configs/trivyignore.yaml --skip-dirs /workdir/.github/checkov"
 
 # Check if output file path is provided as argument
 if [ -n "$1" ]; then
