@@ -261,11 +261,13 @@ module "postgresql" {
 }
 ```
 
-To move a server off passwords without downtime:
+To move a server off passwords:
 
 1. Set `entra_auth_enabled = true`, keep `password_auth_enabled = true`, and add `entra_administrators`.
 2. Switch every client to Entra logins.
 3. Set `password_auth_enabled = false`. Run this as its own apply, after the administrators from step 1 exist. In the same apply, Terraform turns off passwords before it creates the administrators.
+
+Turning on Microsoft Entra authentication restarts the server ([Microsoft documentation](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts)), so plan step 1 for a maintenance window.
 
 This module always sets an admin login and password, and the azurerm provider refuses those on create when password logins are off. So a new server also starts with `password_auth_enabled = true` and turns it off in a later apply. Turning off password logins needs at least one entry in `entra_administrators`, so the server never ends up with nobody who can log in. The admin password and its Key Vault secrets stay, but the server no longer accepts them.
 
