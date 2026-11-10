@@ -2,6 +2,8 @@
 
 We rely on you to test your changes sufficiently (GitHub Actions will ensure you did).
 
+AWS modules follow the [infrastructure as code standard](./STANDARD.md), which says which rules the checks enforce and which ones review covers.
+
 ## Pull Requests
 
 All submissions, including submissions by project members, require review. We use GitHub pull requests for this purpose. Consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more information on using pull requests.

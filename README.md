@@ -17,6 +17,8 @@ module "module_name" {
 ## Design
 Before using any module, you should get familiar with the [design principles](./DESIGN.md) of this repository as well as the _glossary_ in there.
 
+The AWS modules, and the Terraform that calls them, follow the [infrastructure as code standard](./STANDARD.md).
+
 ## Examples
 
 Each module contains an `example` folder, wherein you can see how to use the module.
