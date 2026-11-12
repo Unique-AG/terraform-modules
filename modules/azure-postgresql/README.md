@@ -248,23 +248,19 @@ module "postgresql" {
 }
 ```
 
-This module does not create or manage Entra administrators. Administrator assignments belong to your own configuration, outside the module (see [DESIGN.md](../../DESIGN.md): role assignments are a Perimeter-layer concern and `azure-postgresql` is a Workloads module).
+This module only enables Entra logins (`authentication`). It does not create Entra administrators and it does not create database roles. Both belong to your own configuration and automation, outside the module (see [DESIGN.md](../../DESIGN.md): role assignments are a Perimeter-layer concern and `azure-postgresql` is a Workloads module).
 
-At least one Entra administrator must exist before anyone can create database roles for workload identities: [only Microsoft Entra administrator users can create or enable users for Microsoft Entra ID-based authentication](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure). The PostgreSQL password administrator cannot create Entra roles. The module cannot check that an administrator exists or can sign in, so verify an administrator login before turning off password logins.
+Creating a database role for a workload identity needs an Entra administrator principal: [only Microsoft Entra administrator users can create or enable users for Microsoft Entra ID-based authentication](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure). The PostgreSQL password administrator cannot create Entra roles. Your automation runs as that administrator principal, a non-human identity that you register as Entra administrator outside the module. The module cannot check that an administrator exists or can sign in, so verify an administrator login before turning off password logins.
 
-The workload's managed identity does not need to be an administrator: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Instead, an Entra administrator creates a database role for the identity. They connect to the `postgres` database with a Microsoft Entra access token and run the statement below. A member of an Entra administrator group signs in with the group name as the user name and their own Microsoft Entra access token as the password, as described in the [Microsoft Entra concepts](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts) page.
+The workload's managed identity does not need to be an administrator: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Use the administrator principal only for the role automation, not for the application.
 
-```sql
-select * from pgaadauth_create_principal('<identity name>', false, false);
-```
-
-The workload then [logs in](https://learn.microsoft.com/en-us/azure/postgresql/security/security-connect-with-managed-identity) with the identity name as the user and a Microsoft Entra access token as the password. Grants on application databases are managed with normal PostgreSQL roles and are outside this module.
+The automation has to create a database role that carries the identity's name and is mapped to the identity's object id, for example with the `pgaadauth_create_principal` family of functions or an equivalent mechanism. The workload then [logs in](https://learn.microsoft.com/en-us/azure/postgresql/security/security-connect-with-managed-identity) with the identity name as the user and a Microsoft Entra access token as the password. Grants on application databases are managed with normal PostgreSQL roles and are outside this module.
 
 To move a server off passwords:
 
 1. Set `entra_auth_enabled = true` and keep `password_auth_enabled = true`.
 2. Assign at least one Entra administrator outside the module.
-3. An administrator creates the database role for the workload identity and grants it the permissions the workload needs. The new role does not inherit the permissions of the password role.
+3. Your automation, running as the Entra administrator principal, creates the database role for the workload identity and grants it the permissions the workload needs. The new role does not inherit the permissions of the password role.
 4. Verify that the workload can reach its data with the new role, then switch clients to Entra logins.
 5. Set `password_auth_enabled = false`. Run this as its own apply.
 
