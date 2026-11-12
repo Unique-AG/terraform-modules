@@ -9,7 +9,10 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
   location            = var.location
   version             = var.flex_pg_version
 
-  administrator_login    = var.administrator_login
+  # Left out while password_auth_enabled is false: Azure stops returning the login and
+  # the provider rejects setting it again; see the README.
+  administrator_login = try(var.authentication.password_auth_enabled, true) ? var.administrator_login : null
+  # The provider refuses an admin password on create when password logins are off; see the README.
   administrator_password = var.admin_password
   sku_name               = var.flex_sku
   storage_mb             = var.flex_storage_mb
@@ -58,6 +61,15 @@ resource "azurerm_postgresql_flexible_server" "apfs" {
     content {
       type         = "UserAssigned"
       identity_ids = var.identity_ids
+    }
+  }
+
+  dynamic "authentication" {
+    for_each = var.authentication != null ? [var.authentication] : []
+    content {
+      active_directory_auth_enabled = authentication.value.entra_auth_enabled
+      password_auth_enabled         = authentication.value.password_auth_enabled
+      tenant_id                     = authentication.value.tenant_id
     }
   }
 

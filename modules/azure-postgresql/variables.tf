@@ -231,6 +231,25 @@ variable "admin_password" {
   sensitive   = true
 }
 
+variable "authentication" {
+  description = "Login methods the server accepts. Null leaves the server's login settings as they are (a new server gets password only), but the module then passes the admin login as if password logins were on, so do not set null on a server whose password logins are off; set password_auth_enabled = true to turn them back on. Set entra_auth_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password_auth_enabled to false so only Entra logins work. This module does not manage Entra administrators: assign at least one outside the module and verify an administrator login before turning passwords off. The azurerm provider refuses an admin login on create when password logins are off, so turn them off on an existing server; while password_auth_enabled is false the module does not pass the admin login."
+  type = object({
+    entra_auth_enabled    = optional(bool, false)
+    password_auth_enabled = optional(bool, true)
+    tenant_id             = optional(string)
+  })
+  default = null
+
+  validation {
+    condition     = var.authentication == null ? true : (var.authentication.entra_auth_enabled || var.authentication.password_auth_enabled)
+    error_message = "At least one of entra_auth_enabled and password_auth_enabled must be true."
+  }
+  validation {
+    condition     = var.authentication == null ? true : (!var.authentication.entra_auth_enabled || (var.authentication.tenant_id != null && var.authentication.tenant_id != ""))
+    error_message = "tenant_id must be set when entra_auth_enabled is true."
+  }
+}
+
 variable "key_vault_id" {
   description = "The ID of the Key Vault where the secrets will be stored"
   default     = null

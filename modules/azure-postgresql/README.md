@@ -228,6 +228,50 @@ module "postgresql" {
 
 Private Link only works for servers using public access networking — it cannot be combined with VNet integration (`delegated_subnet_id`). See the [private-endpoint example](./examples/private-endpoint) for a full setup.
 
+## Microsoft Entra authentication
+
+<small>Added in `4.2.0`.</small>
+
+Set `authentication` to let [Microsoft Entra principals](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts) log in. A workload then logs in with a workload identity token instead of a password:
+
+```hcl
+module "postgresql" {
+  source = "..."
+
+  authentication = {
+    entra_auth_enabled    = true
+    password_auth_enabled = true
+    tenant_id             = data.azurerm_client_config.current.tenant_id
+  }
+
+  # ... other configuration
+}
+```
+
+This module only enables Entra logins (`authentication`). It does not create Entra administrators and it does not create database roles. Both belong to your own configuration and automation, outside the module (see [DESIGN.md](../../DESIGN.md): role assignments are a Perimeter-layer concern and `azure-postgresql` is a Workloads module).
+
+Creating a database role for a workload identity needs an Entra administrator principal: [only Microsoft Entra administrator users can create or enable users for Microsoft Entra ID-based authentication](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure). The PostgreSQL password administrator cannot create Entra roles. Your automation runs as that administrator principal, a non-human identity that you register as Entra administrator outside the module. The module cannot check that an administrator exists or can sign in, so verify an administrator login before turning off password logins.
+
+The workload's managed identity does not need to be an administrator: Microsoft recommends [not using the Entra administrator for regular database operations](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure), because that role has elevated permissions such as `CREATEDB`. Use the administrator principal only for the role automation, not for the application.
+
+The automation has to create a database role that carries the identity's name and is mapped to the identity's object id, for example with the `pgaadauth_create_principal` family of functions or an equivalent mechanism. The workload then [logs in](https://learn.microsoft.com/en-us/azure/postgresql/security/security-connect-with-managed-identity) with the identity name as the user and a Microsoft Entra access token as the password. Grants on application databases are managed with normal PostgreSQL roles and are outside this module.
+
+To move a server off passwords:
+
+1. Set `entra_auth_enabled = true` and keep `password_auth_enabled = true`.
+2. Assign at least one Entra administrator outside the module.
+3. Your automation, running as the Entra administrator principal, creates the database role for the workload identity and grants it the permissions the workload needs. The new role does not inherit the permissions of the password role.
+4. Verify that the workload can reach its data with the new role, then switch clients to Entra logins.
+5. Set `password_auth_enabled = false`. Run this as its own apply.
+
+Turning on Microsoft Entra authentication restarts the server ([Microsoft documentation](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts)), so plan step 1 for a maintenance window.
+
+Do not set `authentication` back to `null` on a server whose password logins are off. `null` leaves the server's login settings as they are, but the module then passes the admin login as if password logins were on, which the provider rejects while they are off. To turn password logins back on, set `password_auth_enabled = true` explicitly.
+
+This module passes the admin login and password while password logins are on. The azurerm provider refuses them on create when password logins are off, so a new server starts with `password_auth_enabled = true` and turns it off in a later apply. While `password_auth_enabled = false` is set, the module does not pass the admin login, because Azure then stops returning it and the provider rejects setting it again. The module does not manage administrators, so nothing in it checks that one exists. The admin password and its Key Vault secrets stay, but the server no longer accepts them.
+
+A server whose password logins are off cannot be replaced by Terraform. The provider refuses an admin password on create when password logins are off, and Terraform destroys the old server before it creates the new one, so a replacement (for example after changing `name`) would destroy the server and then fail. Turn password logins back on before changing anything that replaces the server, and keep `management_lock` set so an accidental destroy is blocked.
+
 # Module
 
 <!-- BEGIN_TF_DOCS -->
@@ -272,6 +316,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin_password"></a> [admin\_password](#input\_admin\_password) | The Password associated with the administrator\_login for the PostgreSQL Flexible Server | `string` | n/a | yes |
 | <a name="input_administrator_login"></a> [administrator\_login](#input\_administrator\_login) | The Administrator login for the PostgreSQL Flexible Server | `string` | n/a | yes |
+| <a name="input_authentication"></a> [authentication](#input\_authentication) | Login methods the server accepts. Null leaves the server's login settings as they are (a new server gets password only), but the module then passes the admin login as if password logins were on, so do not set null on a server whose password logins are off; set password\_auth\_enabled = true to turn them back on. Set entra\_auth\_enabled to allow Microsoft Entra logins (managed identities, groups, users). Set password\_auth\_enabled to false so only Entra logins work. This module does not manage Entra administrators: assign at least one outside the module and verify an administrator login before turning passwords off. The azurerm provider refuses an admin login on create when password logins are off, so turn them off on an existing server; while password\_auth\_enabled is false the module does not pass the admin login. | <pre>object({<br/>    entra_auth_enabled    = optional(bool, false)<br/>    password_auth_enabled = optional(bool, true)<br/>    tenant_id             = optional(string)<br/>  })</pre> | `null` | no |
 | <a name="input_auto_grow_enabled"></a> [auto\_grow\_enabled](#input\_auto\_grow\_enabled) | Specifies whether the PostgreSQL Flexible Server should be automatically grow the storage. | `string` | `true` | no |
 | <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key) | Customer managed key properties for the storage account. Refer to the readme for more information on what is needed to enable customer-managed key encryption. It is recommended to not use key\_version unless you have a specific reason to do so as leaving it out will allow automatic key rotation. The key\_vault\_id must be accessible to the user\_assigned\_identity\_id. | <pre>object({<br/>    key_vault_key_id          = string<br/>    user_assigned_identity_id = string<br/>  })</pre> | `null` | no |
 | <a name="input_database_connection_string_secret_prefix"></a> [database\_connection\_string\_secret\_prefix](#input\_database\_connection\_string\_secret\_prefix) | Prefix of the secret containing the full connection string. The full name of the secret is this prefix + database name | `string` | `"database-url-"` | no |
