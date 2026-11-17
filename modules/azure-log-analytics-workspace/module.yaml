@@ -1,7 +1,7 @@
 name: azure-log-analytics-workspace
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-log-analytics-workspace
-version: 2.0.0
+version: 2.1.0
 changes:
-  - kind: changed
-    description: "Upgrade to AzureRM provider 5."
+  - kind: added
+    description: "Redact token-bearing query strings in AGWFirewallLogs.RequestUri by default."
