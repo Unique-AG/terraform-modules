@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV_UQ_AWS_2"
+  name: "Ensure a resource share sets allow_external_principals to false"
+  category: "IAM"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_ram_resource_share"
+  attribute: "allow_external_principals"
+  operator: "is_false"

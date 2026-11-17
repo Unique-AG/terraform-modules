@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV_UQ_AWS_4"
+  name: "Ensure an ElastiCache replication group uses its own subnet group, not the default"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_elasticache_replication_group"
+      attribute: "subnet_group_name"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_elasticache_replication_group"
+      attribute: "subnet_group_name"
+      operator: "not_equals"
+      value: "default"

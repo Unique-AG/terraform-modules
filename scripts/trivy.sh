@@ -3,9 +3,13 @@
 # SPDX-License-Identifier: Proprietary
 # SPDX-SnippetCopyrightText: 2024 © Unique AG
 # SPDX-SnippetEnd
+# shellcheck source=scripts/images.sh
+source "$(dirname "$0")/images.sh"
+
 echo "Running Trivy for Terraform scanning"
 
-CMD="docker run --rm -v "$(pwd):/workdir" aquasec/trivy@sha256:bcc376de8d77cfe086a917230e818dc9f8528e3c852f7b1aff648949b6258d1c config --ignorefile /workdir/.github/configs/trivyignore.yaml" # v0.69.3
+# .github/checkov holds checkov's test fixtures, which break rules on purpose.
+CMD="docker run --rm -v "$(pwd):/workdir" $TRIVY_IMAGE config --ignorefile /workdir/.github/configs/trivyignore.yaml --skip-dirs /workdir/.github/checkov"
 
 # Check if output file path is provided as argument
 if [ -n "$1" ]; then
