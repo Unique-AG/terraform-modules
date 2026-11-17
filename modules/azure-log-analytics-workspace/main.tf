@@ -9,11 +9,15 @@ locals {
   }
 
   default_transformations = {
-    AGWAccessLogs = <<-KQL
+    AGWAccessLogs   = <<-KQL
       source
       | extend RequestUri = iif((${local.redacted_query_param_match.RequestUri}) and indexof(RequestUri, "?") >= 0, strcat(substring(RequestUri, 0, indexof(RequestUri, "?")), "?[Redacted]"), RequestUri)
       | extend RequestQuery = iif(${local.redacted_query_param_match.RequestQuery}, "[Redacted]", RequestQuery)
       | extend OriginalRequestUriWithArgs = iif((${local.redacted_query_param_match.OriginalRequestUriWithArgs}) and indexof(OriginalRequestUriWithArgs, "?") >= 0, strcat(substring(OriginalRequestUriWithArgs, 0, indexof(OriginalRequestUriWithArgs, "?")), "?[Redacted]"), OriginalRequestUriWithArgs)
+    KQL
+    AGWFirewallLogs = <<-KQL
+      source
+      | extend RequestUri = iif((${local.redacted_query_param_match.RequestUri}) and indexof(RequestUri, "?") >= 0, strcat(substring(RequestUri, 0, indexof(RequestUri, "?")), "?[Redacted]"), RequestUri)
     KQL
   }
 
