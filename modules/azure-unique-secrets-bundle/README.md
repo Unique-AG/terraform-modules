@@ -31,7 +31,8 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_age"></a> [age](#requirement\_age) | ~> 0.1.1 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.6 |
+| <a name="requirement_tls"></a> [tls](#requirement\_tls) | ~> 4 |
 
 ## Providers
 
@@ -39,8 +40,9 @@ The default expiration dates date to `2099-12-31T23:59:59Z`. This is not due to 
 |------|---------|
 | <a name="provider_age"></a> [age](#provider\_age) | ~> 0.1.1 |
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.6 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | ~> 4 |
 
 ## Modules
 
@@ -52,6 +54,9 @@ No modules.
 |------|------|
 | [age_secret_key.sops_age_key_custom_assistant_1](https://registry.terraform.io/providers/clementblaise/age/latest/docs/resources/secret_key) | resource |
 | [age_secret_key.sops_age_key_custom_assistant_2](https://registry.terraform.io/providers/clementblaise/age/latest/docs/resources/secret_key) | resource |
+| [azurerm_key_vault_secret.activity_records_fingerprint_secret](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.activity_records_seal_private_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.activity_records_seal_public_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.encryption_app_repository](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
@@ -65,6 +70,7 @@ No modules.
 | [azurerm_key_vault_secret.sops_age_key_custom_assistant_2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.zitadel_db_user_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.zitadel_main_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [random_bytes.activity_records_fingerprint_secret](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/bytes) | resource |
 | [random_id.hex_encryption_key_ingestion](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [random_id.hex_encryption_key_node_chat_lxm](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [random_id.hex_encryption_key_scope_management_1](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
@@ -77,11 +83,13 @@ No modules.
 | [random_password.zitadel_main_key](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [terraform_data.sops_age_key_custom_assistant_1_rotation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [terraform_data.sops_age_key_custom_assistant_2_rotation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [tls_private_key.activity_records_seal_key](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_activity_records_keys"></a> [activity\_records\_keys](#input\_activity\_records\_keys) | Versions of the Activity Records keys, stored in `key_vault_id` (defaults to `kv_id_sensitive`). Each version gets its own secrets, suffixed with the version, e.g. `activity-records-fingerprint-secret-1`.<br/><br/>- `fingerprint_secret_versions`: HMAC secrets (32 random bytes, base64) for the row level fingerprints. A fingerprint can only be verified with the secret that created it, so every version must be kept forever.<br/>- `seal_key_versions`: ECDSA P-256 (ES256) key pairs that seal a batch of rows every minute, stored as `activity-records-seal-private-key-<version>` (PKCS#8 PEM) and `activity-records-seal-public-key-<version>` (PEM). A seal is verified with the public key only, so it must be kept forever. Losing an old private key only stops new seals with it.<br/><br/>Rotate by appending a new version and pointing the workload to it, never by removing or replacing one. The generated keys have `prevent_destroy`, so removing a version fails on purpose. Set a list to `[]` before the first apply to not create the keys. | <pre>object({<br/>    key_vault_id                = optional(string)<br/>    fingerprint_secret_versions = optional(set(number), [1])<br/>    seal_key_versions           = optional(set(number), [1])<br/>  })</pre> | `{}` | no |
 | <a name="input_default_secrets_placeholders"></a> [default\_secrets\_placeholders](#input\_default\_secrets\_placeholders) | List of secrets that are manually created and need to be placed in the core key vault. The manual- prefix is prepended automatically. | <pre>map(object({<br/>    create          = optional(bool, true)<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>  }))</pre> | <pre>{<br/>  "google-search-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-anthropic-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-bedrock-access-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-bedrock-secret-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-gemini-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-openai-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-together-ai-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-voyage-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "litellm-xai-api-key": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "mcp-hub-default-oauth-client-id": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "mcp-hub-default-oauth-client-secret": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "mip-azure-client-id": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "mip-azure-client-secret": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "mip-azure-tenant-id": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "quartr-api-creds": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "six-api-creds": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  },<br/>  "zitadel-scope-mgmt-pat": {<br/>    "create": true,<br/>    "expiration_date": "2099-12-31T23:59:59Z"<br/>  }<br/>}</pre> | no |
 | <a name="input_extra_secrets_placeholders"></a> [extra\_secrets\_placeholders](#input\_extra\_secrets\_placeholders) | List of secrets that are additionally, manually created and need to be placed in the core key vault. The manual- prefix is prepended automatically. | <pre>map(object({<br/>    expiration_date = optional(string, "2099-12-31T23:59:59Z")<br/>  }))</pre> | `{}` | no |
 | <a name="input_kv_id_core"></a> [kv\_id\_core](#input\_kv\_id\_core) | The ID of the core key vault, all manually created secrets will be placed here. | `string` | n/a | yes |
@@ -92,6 +100,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_activity_records_seal_public_keys"></a> [activity\_records\_seal\_public\_keys](#output\_activity\_records\_seal\_public\_keys) | PEM public keys per version that verify the Activity Records minute seals. Not secret, hand them to auditors. |
 | <a name="output_manual_secrets_created"></a> [manual\_secrets\_created](#output\_manual\_secrets\_created) | List of names of secrets created in the core key vault. |
 | <a name="output_sops_age_keys_custom_assistant"></a> [sops\_age\_keys\_custom\_assistant](#output\_sops\_age\_keys\_custom\_assistant) | The public keys of the SOPS age keys for custom assistants. The keys are public and have a secret, private, asymmetric sibling. Learn more at https://github.com/getsops/sops. These keys must and should be provided plain text to the Developers or put into their repository. |
 <!-- END_TF_DOCS -->

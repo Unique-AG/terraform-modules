@@ -15,3 +15,9 @@ output "sops_age_keys_custom_assistant" {
     key_2 = var.secrets_to_create.sops_age_key_custom_assistant_2.create ? age_secret_key.sops_age_key_custom_assistant_2.public_key : null
   }
 }
+
+output "activity_records_seal_public_keys" {
+  description = "PEM public keys per version that verify the Activity Records minute seals. Not secret, hand them to auditors."
+  sensitive   = false
+  value       = { for version, key in tls_private_key.activity_records_seal_key : version => key.public_key_pem }
+}

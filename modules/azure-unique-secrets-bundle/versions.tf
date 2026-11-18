@@ -7,7 +7,11 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3"
+      version = "~> 3.6"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4"
     }
     age = {
       source  = "clementblaise/age"
