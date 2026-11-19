@@ -72,14 +72,15 @@ variable "secrets_to_create" {
 
 variable "activity_records_keys" {
   description = <<-EOT
-    Versions of the Activity Records keys, stored in `key_vault_id` (defaults to `kv_id_sensitive`). Each version gets its own secrets, suffixed with the version, e.g. `activity-records-fingerprint-secret-1`.
+    Versions of the Activity Records keys, stored in `key_vault_id` (defaults to `kv_id_sensitive`). Each version gets its own secrets, prefixed with `explicit_name` and suffixed with the version, e.g. `activity-records-fingerprint-secret-1`. Changing `explicit_name` renames the secrets, the values stay the same.
 
     - `fingerprint_secret_versions`: HMAC secrets (32 random bytes, base64) for the row level fingerprints. A fingerprint can only be verified with the secret that created it, so every version must be kept forever.
-    - `seal_key_versions`: ECDSA P-256 (ES256) key pairs that seal a batch of rows every minute, stored as `activity-records-seal-private-key-<version>` (PKCS#8 PEM) and `activity-records-seal-public-key-<version>` (PEM). A seal is verified with the public key only, so it must be kept forever. Losing an old private key only stops new seals with it.
+    - `seal_key_versions`: ECDSA P-256 (ES256) key pairs that seal a batch of rows every minute, stored as `<explicit_name>-seal-private-key-<version>` (PKCS#8 PEM) and `<explicit_name>-seal-public-key-<version>` (PEM). A seal is verified with the public key only, so it must be kept forever. Losing an old private key only stops new seals with it.
 
     Rotate by appending a new version and pointing the workload to it, never by removing or replacing one. The generated keys have `prevent_destroy`, so removing a version fails on purpose. Set a list to `[]` before the first apply to not create the keys.
   EOT
   type = object({
+    explicit_name               = optional(string, "activity-records")
     key_vault_id                = optional(string)
     fingerprint_secret_versions = optional(set(number), [1])
     seal_key_versions           = optional(set(number), [1])

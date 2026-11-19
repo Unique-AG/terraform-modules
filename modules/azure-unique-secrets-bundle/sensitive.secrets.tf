@@ -253,7 +253,7 @@ resource "random_bytes" "activity_records_fingerprint_secret" {
 }
 resource "azurerm_key_vault_secret" "activity_records_fingerprint_secret" {
   for_each        = local.activity_records_fingerprint_versions
-  name            = "activity-records-fingerprint-secret-${each.key}"
+  name            = "${var.activity_records_keys.explicit_name}-fingerprint-secret-${each.key}"
   value           = random_bytes.activity_records_fingerprint_secret[each.key].base64
   content_type    = "text/base64"
   key_vault_id    = local.activity_records_kv_id
@@ -271,7 +271,7 @@ resource "tls_private_key" "activity_records_seal_key" {
 }
 resource "azurerm_key_vault_secret" "activity_records_seal_private_key" {
   for_each        = local.activity_records_seal_versions
-  name            = "activity-records-seal-private-key-${each.key}"
+  name            = "${var.activity_records_keys.explicit_name}-seal-private-key-${each.key}"
   value           = tls_private_key.activity_records_seal_key[each.key].private_key_pem_pkcs8
   content_type    = "application/x-pem-file"
   key_vault_id    = local.activity_records_kv_id
@@ -279,7 +279,7 @@ resource "azurerm_key_vault_secret" "activity_records_seal_private_key" {
 }
 resource "azurerm_key_vault_secret" "activity_records_seal_public_key" {
   for_each        = local.activity_records_seal_versions
-  name            = "activity-records-seal-public-key-${each.key}"
+  name            = "${var.activity_records_keys.explicit_name}-seal-public-key-${each.key}"
   value           = tls_private_key.activity_records_seal_key[each.key].public_key_pem
   content_type    = "application/x-pem-file"
   key_vault_id    = local.activity_records_kv_id
