@@ -231,3 +231,57 @@ resource "azurerm_key_vault_secret" "sops_age_key_custom_assistant_2" {
   key_vault_id    = var.kv_id_sensitive
   expiration_date = var.secrets_to_create.sops_age_key_custom_assistant_2.expiration_date
 }
+# ---
+# @description Activity Records row fingerprint secrets (HMAC) and minute seal keys (ES256)
+# @length 32 byte base64 (fingerprint), ECDSA P-256 (seal)
+# @type random_bytes#base64, tls_private_key
+# @note Versions are append-only and must never be replaced, see var.activity_records_keys
+# ---
+locals {
+  activity_records_kv_id                = coalesce(var.activity_records_keys.key_vault_id, var.kv_id_sensitive)
+  activity_records_fingerprint_versions = toset([for v in var.activity_records_keys.fingerprint_secret_versions : tostring(v)])
+  activity_records_seal_versions        = toset([for v in var.activity_records_keys.seal_key_versions : tostring(v)])
+}
+
+resource "random_bytes" "activity_records_fingerprint_secret" {
+  for_each = local.activity_records_fingerprint_versions
+  length   = 32
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+resource "azurerm_key_vault_secret" "activity_records_fingerprint_secret" {
+  for_each        = local.activity_records_fingerprint_versions
+  name            = "${var.activity_records_keys.explicit_name}-fingerprint-secret-${each.key}"
+  value           = random_bytes.activity_records_fingerprint_secret[each.key].base64
+  content_type    = "text/base64"
+  key_vault_id    = local.activity_records_kv_id
+  expiration_date = "2099-12-31T23:59:59Z"
+}
+
+resource "tls_private_key" "activity_records_seal_key" {
+  for_each    = local.activity_records_seal_versions
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+resource "azurerm_key_vault_secret" "activity_records_seal_private_key" {
+  for_each        = local.activity_records_seal_versions
+  name            = "${var.activity_records_keys.explicit_name}-seal-private-key-${each.key}"
+  value           = tls_private_key.activity_records_seal_key[each.key].private_key_pem_pkcs8
+  content_type    = "application/x-pem-file"
+  key_vault_id    = local.activity_records_kv_id
+  expiration_date = "2099-12-31T23:59:59Z"
+}
+resource "azurerm_key_vault_secret" "activity_records_seal_public_key" {
+  for_each        = local.activity_records_seal_versions
+  name            = "${var.activity_records_keys.explicit_name}-seal-public-key-${each.key}"
+  value           = tls_private_key.activity_records_seal_key[each.key].public_key_pem
+  content_type    = "application/x-pem-file"
+  key_vault_id    = local.activity_records_kv_id
+  expiration_date = "2099-12-31T23:59:59Z"
+}
