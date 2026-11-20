@@ -237,6 +237,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   min_count                   = each.value.min_count
   mode                        = each.value.mode
   name                        = each.key
+  node_count                  = each.value.auto_scaling_enabled ? null : each.value.node_count
   node_labels                 = each.value.node_labels
   node_taints                 = each.value.node_taints
   os_disk_size_gb             = each.value.os_disk_size_gb
@@ -300,6 +301,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "kata_node_pool" {
   min_count                   = each.value.min_count
   mode                        = each.value.mode
   name                        = each.key
+  node_count                  = each.value.auto_scaling_enabled ? null : each.value.node_count
   node_labels                 = merge(each.value.node_labels, { "workload-runtime" = "kata" })
   node_taints                 = distinct(concat(["workload-runtime=kata:NoSchedule"], each.value.node_taints))
   os_disk_size_gb             = each.value.os_disk_size_gb

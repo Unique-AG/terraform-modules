@@ -356,9 +356,10 @@ variable "data_plane_logs" {
 }
 
 variable "node_pool_settings" {
-  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
+  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools. node_count sets a fixed node count and is only used when auto_scaling_enabled is false (required for node-auto-provisioning and none modes); 0 is allowed."
   type = map(object({
     vm_size                     = string
+    node_count                  = optional(number)
     min_count                   = optional(number)
     max_count                   = optional(number)
     max_pods                    = optional(number)
@@ -506,9 +507,13 @@ variable "kata_node_pool_settings" {
             effect: NoSchedule
 
     Note: Kata node pools require VM sizes that support nested virtualization.
+
+    node_count sets a fixed node count and is only used when auto_scaling_enabled is false
+    (required for node-auto-provisioning and none modes); 0 is allowed.
   EOT
   type = map(object({
     vm_size                     = string
+    node_count                  = optional(number)
     min_count                   = optional(number)
     max_count                   = optional(number)
     max_pods                    = optional(number)

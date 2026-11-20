@@ -79,7 +79,34 @@ module "aks" {
     zones           = ["1", "3"]
   }
 
-  node_pool_settings = {}
+  node_pool_settings = {
+    pinned = {
+      vm_size              = "Standard_D2ps_v6"
+      node_count           = 2
+      os_disk_size_gb      = 30
+      node_labels          = {}
+      node_taints          = []
+      auto_scaling_enabled = false
+      mode                 = "User"
+      zones                = ["1", "3"]
+      upgrade_settings = {
+        max_surge = "10%"
+      }
+    }
+    scaled_to_zero = {
+      vm_size              = "Standard_D2ps_v6"
+      node_count           = 0
+      os_disk_size_gb      = 30
+      node_labels          = {}
+      node_taints          = []
+      auto_scaling_enabled = false
+      mode                 = "User"
+      zones                = ["1", "3"]
+      upgrade_settings = {
+        max_surge = "10%"
+      }
+    }
+  }
 
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.aks_logs.id

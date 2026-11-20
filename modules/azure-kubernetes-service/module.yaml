@@ -1,9 +1,9 @@
 name: azure-kubernetes-service
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-kubernetes-service
-version: 9.2.0
+version: 9.3.0
 compatibility:
   unique.ai: ~> 2025.20
 changes:
   - kind: added
-    description: "Enable cluster-autoscaler and karpenter-events diagnostic logs by default and validate configured categories against Azure."
+    description: "Add optional node_count to node_pool_settings and kata_node_pool_settings for pinning or zeroing pools when autoscaling is disabled (e.g. node auto provisioning)."
