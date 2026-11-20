@@ -233,6 +233,11 @@ resource "azurerm_data_protection_backup_vault" "backup_vault" {
       type = identity.value.type
     }
   }
+
+  lifecycle {
+    # Azure migrates vaults to the irreversible AlwaysOn soft delete, reverting it would replace the vault.
+    ignore_changes = [soft_delete]
+  }
 }
 
 # Role assignment for backup vault to access storage account

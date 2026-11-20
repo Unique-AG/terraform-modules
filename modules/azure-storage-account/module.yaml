@@ -1,9 +1,9 @@
 name: azure-storage-account
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-storage-account
-version: 8.0.1
+version: 8.0.2
 compatibility:
   unique.ai: ~> 2025.24
 changes:
   - kind: fixed
-    description: "Use `public_network_access` instead of the deprecated `public_network_access_enabled` argument. The `public_network_access_enabled` input is unchanged. Requires AzureRM provider `>= 5.5`."
+    description: "Ignore changes to the backup vault `soft_delete`, Azure migrates vaults to the irreversible `AlwaysOn` and Terraform would replace them."
