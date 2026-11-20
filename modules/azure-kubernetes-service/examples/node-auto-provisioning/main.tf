@@ -93,7 +93,7 @@ module "aks" {
         max_surge = "10%"
       }
     }
-    scaled_to_zero = {
+    zero = {
       vm_size              = "Standard_D2ps_v6"
       node_count           = 0
       os_disk_size_gb      = 30
