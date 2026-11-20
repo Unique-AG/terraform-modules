@@ -1,9 +1,9 @@
 name: azure-unique-secrets-bundle
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-unique-secrets-bundle
-version: 4.2.0
+version: 5.0.0
 compatibility:
   unique.ai: ~> 2025.30
 changes:
-  - kind: added
-    description: "Activity Records row fingerprint secrets and minute seal keys, versioned for rotation (activity_records_keys)."
+  - kind: changed
+    description: "BREAKING: Removed the Activity Records seal keys (activity_records_keys.seal_key_versions, output activity_records_seal_public_keys, tls provider). Existing seal key secrets are destroyed on apply, only the fingerprint HMAC secrets remain."
