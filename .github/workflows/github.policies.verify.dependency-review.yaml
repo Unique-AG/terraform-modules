@@ -1,0 +1,27 @@
+name: "GitHub · Policies · Verify · Dependency review"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dependency-review:
+    name: No known vulnerability in added dependencies
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      # Every scope counts, not only runtime. Scorecard is off: its deps.dev and
+      # scorecard lookups aren't the control, and a lookup error fails the check.
+      - name: Review the dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-scopes: runtime, development, unknown
+          show-openssf-scorecard: false
