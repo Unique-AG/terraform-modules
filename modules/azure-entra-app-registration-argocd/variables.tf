@@ -46,9 +46,9 @@ variable "redirect_uris" {
 }
 
 variable "redirect_uris_public_native" {
-  description = "Public client/native redirects. For the ArgoCD CLI flow, set to [\"http://localhost:8085/auth/callback\"] (see ArgoCD docs)."
+  description = "Public client (native) redirects. Defaults to the Argo CD CLI callback used by `argocd login --sso`; set to [] to disable CLI login."
   type        = list(string)
-  default     = []
+  default     = ["http://localhost:8085/auth/callback"]
 }
 
 variable "owner_user_object_ids" {

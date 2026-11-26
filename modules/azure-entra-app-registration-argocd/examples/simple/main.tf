@@ -11,8 +11,7 @@ module "entra_app" {
 
   display_name = "argocd-example"
 
-  redirect_uris               = ["https://argocd.example.com/auth/callback"]
-  redirect_uris_public_native = ["http://localhost:8085/auth/callback"]
+  redirect_uris = ["https://argocd.example.com/auth/callback"]
 
   # Map Entra groups to app roles used by Argo CD RBAC (scopes: "[roles]").
   user_object_ids                   = ["00000000-0000-0000-0000-000000000010"]

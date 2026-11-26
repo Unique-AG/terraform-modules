@@ -1,9 +1,9 @@
 name: azure-entra-app-registration-argocd
 sources:
   - https://github.com/Unique-AG/terraform-modules/tree/main/modules/azure-entra-app-registration-argocd
-version: 2.2.0
+version: 2.3.0
 compatibility:
   argocd: ~> 3.3.6
 changes:
   - kind: changed
-    description: "Keep two overlapping client secrets (current + previous epoch) so rotation no longer invalidates the credential consumers still hold. Upgrading replaces the single managed secret once. Requires Terraform >= 1.8."
+    description: "Default `redirect_uris_public_native` to the Argo CD CLI callback `http://localhost:8085/auth/callback`, so `argocd login --sso` works without each caller setting it. Pass `[]` to keep the previous behaviour."
