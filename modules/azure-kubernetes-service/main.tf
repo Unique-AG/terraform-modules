@@ -43,6 +43,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
       network_plugin      = var.network_profile.network_plugin
       network_plugin_mode = var.network_profile.network_plugin_mode
       network_policy      = var.network_profile.network_policy
+      pod_cidr            = var.network_profile.pod_cidr
       service_cidr        = var.network_profile.service_cidr
       dns_service_ip      = var.network_profile.dns_service_ip
       outbound_type       = var.network_profile.outbound_type
@@ -181,7 +182,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type         = var.control_plane_identity.type
+    identity_ids = var.control_plane_identity.type == "UserAssigned" ? var.control_plane_identity.identity_ids : null
   }
 
   dynamic "oms_agent" {
@@ -235,6 +237,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   max_count                   = each.value.max_count
   max_pods                    = try(each.value.max_pods, null)
   min_count                   = each.value.min_count
+  node_count                  = each.value.node_count
   mode                        = each.value.mode
   name                        = each.key
   node_labels                 = each.value.node_labels
@@ -298,6 +301,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "kata_node_pool" {
   max_count                   = each.value.max_count
   max_pods                    = try(each.value.max_pods, null)
   min_count                   = each.value.min_count
+  node_count                  = each.value.node_count
   mode                        = each.value.mode
   name                        = each.key
   node_labels                 = merge(each.value.node_labels, { "workload-runtime" = "kata" })

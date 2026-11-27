@@ -356,11 +356,12 @@ variable "data_plane_logs" {
 }
 
 variable "node_pool_settings" {
-  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools."
+  description = "The settings for the node pools. Note that if you specify a subnet_pods_id for one of the node pools, you must specify it for all node pools. node_count is the fixed node count of a pool without auto scaling (for example next to node auto provisioning); leave it null to keep the provider default."
   type = map(object({
     vm_size                     = string
     min_count                   = optional(number)
     max_count                   = optional(number)
+    node_count                  = optional(number)
     max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "AzureLinux")
@@ -386,6 +387,13 @@ variable "node_pool_settings" {
       v.upgrade_settings.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(v.upgrade_settings.undrainable_node_behavior, "null"))
     ])
     error_message = "node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every node pool."
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.node_pool_settings :
+      v.node_count == null || v.node_count >= 0
+    ])
+    error_message = "node_pool_settings.node_count must not be negative when set."
   }
   default = {}
 }
@@ -511,6 +519,7 @@ variable "kata_node_pool_settings" {
     vm_size                     = string
     min_count                   = optional(number)
     max_count                   = optional(number)
+    node_count                  = optional(number)
     max_pods                    = optional(number)
     os_disk_size_gb             = number
     os_sku                      = optional(string, "AzureLinux")
@@ -538,6 +547,14 @@ variable "kata_node_pool_settings" {
       v.upgrade_settings.undrainable_node_behavior == null || contains(["Cordon", "Schedule"], coalesce(v.upgrade_settings.undrainable_node_behavior, "null"))
     ])
     error_message = "kata_node_pool_settings.upgrade_settings.undrainable_node_behavior must be \"Cordon\", \"Schedule\", or null on every kata node pool."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.kata_node_pool_settings :
+      v.node_count == null || v.node_count >= 0
+    ])
+    error_message = "kata_node_pool_settings.node_count must not be negative when set."
   }
 }
 
@@ -646,6 +663,11 @@ variable "network_profile" {
         SNAT idle timeout (idle_timeout_in_minutes, 4-120, Azure default 4) are properties
         of the caller's azurerm_nat_gateway resource, not this module.
 
+    pod_cidr:
+      - Overlay pod range. Only valid with network_plugin_mode = "overlay"; leave null to keep
+        the Azure default (10.244.0.0/16). Use distinct ranges when several clusters share
+        peered networks.
+
     Cilium requirements:
       - network_data_plane = "cilium" requires network_plugin = "azure"
       - network_policy = "cilium" requires network_data_plane = "cilium"
@@ -656,6 +678,7 @@ variable "network_profile" {
     network_plugin              = optional(string, "azure")
     network_plugin_mode         = optional(string, null)
     network_policy              = optional(string)
+    pod_cidr                    = optional(string, null)
     service_cidr                = optional(string, "172.20.0.0/16")
     dns_service_ip              = optional(string, "172.20.0.10")
     outbound_type               = optional(string, "loadBalancer")
@@ -760,6 +783,55 @@ variable "network_profile" {
       var.network_profile.network_data_plane == "cilium"
     )
     error_message = "When advanced_networking_enabled is set to true, network_data_plane must be set to 'cilium'."
+  }
+  validation {
+    condition = var.network_profile == null ? true : (
+      var.network_profile.pod_cidr == null ||
+      (can(cidrhost(var.network_profile.pod_cidr, 0)) && var.network_profile.network_plugin_mode == "overlay")
+    )
+    error_message = "network_profile.pod_cidr must be a valid CIDR block and requires network_plugin_mode to be 'overlay'."
+  }
+}
+
+variable "control_plane_identity" {
+  description = <<-EOT
+    Identity of the cluster control plane.
+
+    - "SystemAssigned" (default) - Azure creates the identity together with the cluster.
+    - "UserAssigned" - Uses exactly the identities in identity_ids. Create the identity and
+      grant it its network roles (for example on the node subnet) before the cluster, so
+      the cluster can be deleted and created again without losing those grants.
+  EOT
+  type = object({
+    type         = optional(string, "SystemAssigned")
+    identity_ids = optional(list(string), [])
+  })
+  default = {}
+
+  validation {
+    condition     = contains(["SystemAssigned", "UserAssigned"], var.control_plane_identity.type)
+    error_message = "control_plane_identity.type must be SystemAssigned or UserAssigned."
+  }
+
+  validation {
+    condition     = var.control_plane_identity.type != "UserAssigned" || length(var.control_plane_identity.identity_ids) == 1
+    error_message = "control_plane_identity.identity_ids must contain exactly one identity ID when control_plane_identity.type is UserAssigned."
+  }
+
+  validation {
+    condition     = var.control_plane_identity.type != "SystemAssigned" || length(var.control_plane_identity.identity_ids) == 0
+    error_message = "control_plane_identity.identity_ids must be empty when control_plane_identity.type is SystemAssigned."
+  }
+}
+
+variable "grafana_name" {
+  description = "The name of the managed Grafana instance. When null, the name is the first 15 characters of cluster_name followed by -grafana, which is not unique for cluster names that only differ after the 15th character."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.grafana_name == null || can(regex("^[a-zA-Z][a-zA-Z0-9-]{0,21}[a-zA-Z0-9]$", var.grafana_name))
+    error_message = "grafana_name must be 2 to 23 characters, start with a letter, end with a letter or digit and contain only letters, digits and hyphens."
   }
 }
 
